@@ -1,127 +1,557 @@
 <!doctype html>
-<html lang="ru">
+<html lang="uk" data-pixel="obsidian">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Пип — панель</title>
+<title>Піп — панель керування</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
 <style>
-/* the keychain's own world: AMOLED black, the Приборка orange, mono headers like the device's "МУЗЫКА // КОМПЬЮТЕР".
-   Layout: a sticky rail (Pip, the link, the tabs) beside a wide grid of cards; one column under 900px. */
+/* Material 3 / Material You color system driven by Google Pixel seed palettes.
+   Light and dark modes follow the system preference automatically; flat tonal surfaces only. */
 :root{
-  --bg:#09090a; --panel:#131315; --raised:#1b1b1e; --line:#29292d; --text:#efede8; --dim:#99968e;
-  --acc:#ff5a1f; --good:#34c759; --bad:#ff453a;
-  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  color-scheme:dark;
+  --font-sans:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light dark;
+
+  /* Default seed: Obsidian (neutral obsidian-slate surfaces + sky-cyan accent synced with eyes) */
+  --md-sys-color-surface:#f7f9fb;
+  --md-sys-color-surface-container-lowest:#ffffff;
+  --md-sys-color-surface-container-low:#f1f4f7;
+  --md-sys-color-surface-container:#ebeef2;
+  --md-sys-color-surface-container-high:#e5e8ec;
+  --md-sys-color-surface-container-highest:#dfe3e8;
+  --md-sys-color-on-surface:#181c1f;
+  --md-sys-color-on-surface-variant:#41484d;
+  --md-sys-color-outline:#71787e;
+  --md-sys-color-outline-variant:#c1c7ce;
+  --md-sys-color-primary:#00668a;
+  --md-sys-color-on-primary:#ffffff;
+  --md-sys-color-primary-container:#c3e8ff;
+  --md-sys-color-on-primary-container:#001e2c;
+  --md-sys-color-secondary:#4e616d;
+  --md-sys-color-on-secondary:#ffffff;
+  --md-sys-color-secondary-container:#d1e5f4;
+  --md-sys-color-on-secondary-container:#0a1e28;
+  --md-sys-color-tertiary:#2d6a5b;
+  --md-sys-color-on-tertiary:#ffffff;
+  --md-sys-color-tertiary-container:#b2f1df;
+  --md-sys-color-on-tertiary-container:#002019;
+  --md-sys-color-error:#ba1a1a;
+  --md-sys-color-error-container:#ffdad6;
+  --md-sys-color-on-error-container:#410002;
+  --md-sys-color-success:#1e6e3e;
+  --md-sys-color-success-container:#b9f2ca;
+  --md-sys-color-on-success-container:#00210e;
+
+  --pip-eye-bg:#070b10;
+  --pip-eye-border:#4dd0ff;
+  --pip-eye-pupil:#7ce8ff;
 }
+
+/* Pixel Bay (blue) */
+:root[data-pixel="bay"]{
+  --md-sys-color-surface:#f8f9ff;
+  --md-sys-color-surface-container-lowest:#ffffff;
+  --md-sys-color-surface-container-low:#f1f3fa;
+  --md-sys-color-surface-container:#eceef5;
+  --md-sys-color-surface-container-high:#e6e8ef;
+  --md-sys-color-surface-container-highest:#e0e2ea;
+  --md-sys-color-on-surface:#191c20;
+  --md-sys-color-on-surface-variant:#43474e;
+  --md-sys-color-outline:#74777f;
+  --md-sys-color-outline-variant:#c4c6cf;
+  --md-sys-color-primary:#1f5fa9;
+  --md-sys-color-on-primary:#ffffff;
+  --md-sys-color-primary-container:#d5e3ff;
+  --md-sys-color-on-primary-container:#001c3b;
+  --md-sys-color-secondary:#555f71;
+  --md-sys-color-on-secondary:#ffffff;
+  --md-sys-color-secondary-container:#d9e3f8;
+  --md-sys-color-on-secondary-container:#121c2b;
+  --md-sys-color-tertiary:#296b52;
+  --md-sys-color-on-tertiary:#ffffff;
+  --md-sys-color-tertiary-container:#aef2d3;
+  --md-sys-color-on-tertiary-container:#002115;
+  --pip-eye-bg:#7cb6ff;
+}
+
+/* Pixel Hazel / Sage (green) */
+:root[data-pixel="hazel"]{
+  --md-sys-color-surface:#f6fbf5;
+  --md-sys-color-surface-container-lowest:#ffffff;
+  --md-sys-color-surface-container-low:#f0f5ef;
+  --md-sys-color-surface-container:#eaefe9;
+  --md-sys-color-surface-container-high:#e4eae4;
+  --md-sys-color-surface-container-highest:#dee4de;
+  --md-sys-color-on-surface:#181d19;
+  --md-sys-color-on-surface-variant:#414942;
+  --md-sys-color-outline:#717972;
+  --md-sys-color-outline-variant:#c1c9c0;
+  --md-sys-color-primary:#2d6a4a;
+  --md-sys-color-on-primary:#ffffff;
+  --md-sys-color-primary-container:#b1f1c8;
+  --md-sys-color-on-primary-container:#002112;
+  --md-sys-color-secondary:#4e6355;
+  --md-sys-color-on-secondary:#ffffff;
+  --md-sys-color-secondary-container:#d1e8d7;
+  --md-sys-color-on-secondary-container:#0c1f15;
+  --md-sys-color-tertiary:#3c6472;
+  --md-sys-color-on-tertiary:#ffffff;
+  --md-sys-color-tertiary-container:#c0e9fa;
+  --md-sys-color-on-tertiary-container:#001f29;
+  --pip-eye-bg:#9ed3ae;
+}
+
+/* Pixel Coral (warm orange-coral) */
+:root[data-pixel="coral"]{
+  --md-sys-color-surface:#fff8f6;
+  --md-sys-color-surface-container-lowest:#ffffff;
+  --md-sys-color-surface-container-low:#fef1ed;
+  --md-sys-color-surface-container:#f8ebe7;
+  --md-sys-color-surface-container-high:#f2e5e1;
+  --md-sys-color-surface-container-highest:#ecdfdb;
+  --md-sys-color-on-surface:#231917;
+  --md-sys-color-on-surface-variant:#53433f;
+  --md-sys-color-outline:#85736e;
+  --md-sys-color-outline-variant:#d8c2bc;
+  --md-sys-color-primary:#a53b22;
+  --md-sys-color-on-primary:#ffffff;
+  --md-sys-color-primary-container:#ffdbd1;
+  --md-sys-color-on-primary-container:#3c0800;
+  --md-sys-color-secondary:#77574e;
+  --md-sys-color-on-secondary:#ffffff;
+  --md-sys-color-secondary-container:#ffdbd1;
+  --md-sys-color-on-secondary-container:#2c150f;
+  --md-sys-color-tertiary:#6c5d2f;
+  --md-sys-color-on-tertiary:#ffffff;
+  --md-sys-color-tertiary-container:#f6e1a7;
+  --md-sys-color-on-tertiary-container:#231b00;
+  --pip-eye-bg:#ff8e72;
+}
+
+/* Pixel Peony (pink) */
+:root[data-pixel="peony"]{
+  --md-sys-color-surface:#fff8f8;
+  --md-sys-color-surface-container-lowest:#ffffff;
+  --md-sys-color-surface-container-low:#fdf0f2;
+  --md-sys-color-surface-container:#f7eaed;
+  --md-sys-color-surface-container-high:#f1e5e7;
+  --md-sys-color-surface-container-highest:#ebdfe2;
+  --md-sys-color-on-surface:#22191c;
+  --md-sys-color-on-surface-variant:#514347;
+  --md-sys-color-outline:#847377;
+  --md-sys-color-outline-variant:#d6c2c6;
+  --md-sys-color-primary:#9b355c;
+  --md-sys-color-on-primary:#ffffff;
+  --md-sys-color-primary-container:#ffd9e3;
+  --md-sys-color-on-primary-container:#3e001d;
+  --md-sys-color-secondary:#75565f;
+  --md-sys-color-on-secondary:#ffffff;
+  --md-sys-color-secondary-container:#ffd9e3;
+  --md-sys-color-on-secondary-container:#2b151c;
+  --md-sys-color-tertiary:#7c5635;
+  --md-sys-color-on-tertiary:#ffffff;
+  --md-sys-color-tertiary-container:#ffdcc1;
+  --md-sys-color-on-tertiary-container:#2e1500;
+  --pip-eye-bg:#ff9ec1;
+}
+
+/* Pixel Porcelain (warm sand/gold) */
+:root[data-pixel="porcelain"]{
+  --md-sys-color-surface:#fcf9f1;
+  --md-sys-color-surface-container-lowest:#ffffff;
+  --md-sys-color-surface-container-low:#f6f3eb;
+  --md-sys-color-surface-container:#f0ede5;
+  --md-sys-color-surface-container-high:#eae8e0;
+  --md-sys-color-surface-container-highest:#e5e2da;
+  --md-sys-color-on-surface:#1e1b16;
+  --md-sys-color-on-surface-variant:#4c463b;
+  --md-sys-color-outline:#7e7669;
+  --md-sys-color-outline-variant:#cfc5b6;
+  --md-sys-color-primary:#755b27;
+  --md-sys-color-on-primary:#ffffff;
+  --md-sys-color-primary-container:#ffdf9e;
+  --md-sys-color-on-primary-container:#261a00;
+  --md-sys-color-secondary:#695d44;
+  --md-sys-color-on-secondary:#ffffff;
+  --md-sys-color-secondary-container:#f2e1c1;
+  --md-sys-color-on-secondary-container:#231a07;
+  --md-sys-color-tertiary:#48664b;
+  --md-sys-color-on-tertiary:#ffffff;
+  --md-sys-color-tertiary-container:#c9ecc9;
+  --md-sys-color-on-tertiary-container:#04210c;
+  --pip-eye-bg:#f6ecda;
+}
+
+@media (prefers-color-scheme:dark){
+  :root{
+    --md-sys-color-surface:#101417;
+    --md-sys-color-surface-container-lowest:#0b0e11;
+    --md-sys-color-surface-container-low:#181c1f;
+    --md-sys-color-surface-container:#1c2024;
+    --md-sys-color-surface-container-high:#262b2e;
+    --md-sys-color-surface-container-highest:#313539;
+    --md-sys-color-on-surface:#e0e3e7;
+    --md-sys-color-on-surface-variant:#c1c7ce;
+    --md-sys-color-outline:#8b9198;
+    --md-sys-color-outline-variant:#41484d;
+    --md-sys-color-primary:#7ad0ff;
+    --md-sys-color-on-primary:#003549;
+    --md-sys-color-primary-container:#004c68;
+    --md-sys-color-on-primary-container:#c3e8ff;
+    --md-sys-color-secondary:#b5c9d7;
+    --md-sys-color-on-secondary:#20333e;
+    --md-sys-color-secondary-container:#364955;
+    --md-sys-color-on-secondary-container:#d1e5f4;
+    --md-sys-color-tertiary:#96d4c3;
+    --md-sys-color-on-tertiary:#00382d;
+    --md-sys-color-tertiary-container:#0f5144;
+    --md-sys-color-on-tertiary-container:#b2f1df;
+    --md-sys-color-error:#ffb4ab;
+    --md-sys-color-error-container:#93000a;
+    --md-sys-color-on-error-container:#ffdad6;
+    --md-sys-color-success:#7dda9c;
+    --md-sys-color-success-container:#00522a;
+    --md-sys-color-on-success-container:#b9f2ca;
+  }
+  :root[data-pixel="bay"]{
+    --md-sys-color-surface:#111318;
+    --md-sys-color-surface-container-lowest:#0c0e13;
+    --md-sys-color-surface-container-low:#191c20;
+    --md-sys-color-surface-container:#1d2024;
+    --md-sys-color-surface-container-high:#282a2f;
+    --md-sys-color-surface-container-highest:#33353a;
+    --md-sys-color-on-surface:#e2e2e9;
+    --md-sys-color-on-surface-variant:#c4c6cf;
+    --md-sys-color-outline:#8e9099;
+    --md-sys-color-outline-variant:#43474e;
+    --md-sys-color-primary:#a7c8ff;
+    --md-sys-color-on-primary:#003062;
+    --md-sys-color-primary-container:#00468b;
+    --md-sys-color-on-primary-container:#d5e3ff;
+    --md-sys-color-secondary:#bdc7dc;
+    --md-sys-color-on-secondary:#273141;
+    --md-sys-color-secondary-container:#3d4758;
+    --md-sys-color-on-secondary-container:#d9e3f8;
+    --md-sys-color-tertiary:#93d5b7;
+    --md-sys-color-on-tertiary:#003827;
+    --md-sys-color-tertiary-container:#07523b;
+    --md-sys-color-on-tertiary-container:#aef2d3;
+  }
+  :root[data-pixel="hazel"]{
+    --md-sys-color-surface:#101511;
+    --md-sys-color-surface-container-lowest:#0b0f0c;
+    --md-sys-color-surface-container-low:#181d19;
+    --md-sys-color-surface-container:#1c211d;
+    --md-sys-color-surface-container-high:#262b27;
+    --md-sys-color-surface-container-highest:#313632;
+    --md-sys-color-on-surface:#dfe4dd;
+    --md-sys-color-on-surface-variant:#c1c9c0;
+    --md-sys-color-outline:#8b938b;
+    --md-sys-color-outline-variant:#414942;
+    --md-sys-color-primary:#95d5ad;
+    --md-sys-color-on-primary:#003920;
+    --md-sys-color-primary-container:#0f5234;
+    --md-sys-color-on-primary-container:#b1f1c8;
+    --md-sys-color-secondary:#b5ccbb;
+    --md-sys-color-on-secondary:#213528;
+    --md-sys-color-secondary-container:#374b3e;
+    --md-sys-color-on-secondary-container:#d1e8d7;
+    --md-sys-color-tertiary:#a4cddd;
+    --md-sys-color-on-tertiary:#063542;
+    --md-sys-color-tertiary-container:#234c5a;
+    --md-sys-color-on-tertiary-container:#c0e9fa;
+  }
+  :root[data-pixel="coral"]{
+    --md-sys-color-surface:#1a110f;
+    --md-sys-color-surface-container-lowest:#140c0a;
+    --md-sys-color-surface-container-low:#231917;
+    --md-sys-color-surface-container:#271d1b;
+    --md-sys-color-surface-container-high:#322825;
+    --md-sys-color-surface-container-highest:#3d3230;
+    --md-sys-color-on-surface:#f1dfda;
+    --md-sys-color-on-surface-variant:#d8c2bc;
+    --md-sys-color-outline:#a08c87;
+    --md-sys-color-outline-variant:#53433f;
+    --md-sys-color-primary:#ffb4a0;
+    --md-sys-color-on-primary:#631503;
+    --md-sys-color-primary-container:#85250e;
+    --md-sys-color-on-primary-container:#ffdbd1;
+    --md-sys-color-secondary:#e7bdb2;
+    --md-sys-color-on-secondary:#442a22;
+    --md-sys-color-secondary-container:#5d4038;
+    --md-sys-color-on-secondary-container:#ffdbd1;
+    --md-sys-color-tertiary:#d9c58d;
+    --md-sys-color-on-tertiary:#3b2f05;
+    --md-sys-color-tertiary-container:#53461a;
+    --md-sys-color-on-tertiary-container:#f6e1a7;
+  }
+  :root[data-pixel="peony"]{
+    --md-sys-color-surface:#191113;
+    --md-sys-color-surface-container-lowest:#140c0e;
+    --md-sys-color-surface-container-low:#22191c;
+    --md-sys-color-surface-container:#261d20;
+    --md-sys-color-surface-container-high:#31282a;
+    --md-sys-color-surface-container-highest:#3c3235;
+    --md-sys-color-on-surface:#efdfe2;
+    --md-sys-color-on-surface-variant:#d6c2c6;
+    --md-sys-color-outline:#9e8c91;
+    --md-sys-color-outline-variant:#514347;
+    --md-sys-color-primary:#ffb0c9;
+    --md-sys-color-on-primary:#5f0f30;
+    --md-sys-color-primary-container:#7d1e45;
+    --md-sys-color-on-primary-container:#ffd9e3;
+    --md-sys-color-secondary:#e3bdc7;
+    --md-sys-color-on-secondary:#422931;
+    --md-sys-color-secondary-container:#5b3f47;
+    --md-sys-color-on-secondary-container:#ffd9e3;
+    --md-sys-color-tertiary:#eebd94;
+    --md-sys-color-on-tertiary:#472a0b;
+    --md-sys-color-tertiary-container:#613f20;
+    --md-sys-color-on-tertiary-container:#ffdcc1;
+  }
+  :root[data-pixel="porcelain"]{
+    --md-sys-color-surface:#16130e;
+    --md-sys-color-surface-container-lowest:#100e09;
+    --md-sys-color-surface-container-low:#1e1b16;
+    --md-sys-color-surface-container:#221f1a;
+    --md-sys-color-surface-container-high:#2d2a24;
+    --md-sys-color-surface-container-highest:#38342e;
+    --md-sys-color-on-surface:#e9e2d8;
+    --md-sys-color-on-surface-variant:#cfc5b6;
+    --md-sys-color-outline:#989082;
+    --md-sys-color-outline-variant:#4c463b;
+    --md-sys-color-primary:#e5c384;
+    --md-sys-color-on-primary:#412d00;
+    --md-sys-color-primary-container:#5b4311;
+    --md-sys-color-on-primary-container:#ffdf9e;
+    --md-sys-color-secondary:#d5c5a6;
+    --md-sys-color-on-secondary:#392f19;
+    --md-sys-color-secondary-container:#51462e;
+    --md-sys-color-on-secondary-container:#f2e1c1;
+    --md-sys-color-tertiary:#aecfae;
+    --md-sys-color-on-tertiary:#1b361f;
+    --md-sys-color-tertiary-container:#314e34;
+    --md-sys-color-on-tertiary-container:#c9ecc9;
+  }
+}
+
+.ico{
+  font-family:"Material Symbols Rounded";
+  font-weight:normal;font-style:normal;font-size:22px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;
+  user-select:none;
+  font-variation-settings:"FILL" 0,"wght" 500,"GRAD" 0,"opsz" 24;
+}
+
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:16px/1.5 var(--sans)}
-a{color:var(--acc)}
-.app{max-width:1280px;margin:0 auto;padding:24px 24px 64px;display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
+body{
+  background:var(--md-sys-color-surface);
+  color:var(--md-sys-color-on-surface);
+  font:400 16px/1.5 var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--md-sys-color-primary);text-decoration:none}
+a:hover{text-decoration:underline}
 
-/* ---- the rail ---- */
+.app{max-width:1280px;margin:0 auto;padding:24px 24px 64px;display:grid;grid-template-columns:312px minmax(0,1fr);gap:24px;align-items:start}
+
+/* ---- sidebar ---- */
 .rail{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px}
-.brand{display:flex;align-items:baseline;gap:10px}
-.brand h1{font:600 28px/1 var(--mono);margin:0;letter-spacing:-.5px}
-.brand span{font:500 12px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
-.device{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
-.screen{width:180px;aspect-ratio:1;border-radius:50%;background:#000;border:6px solid #1f1f22;box-shadow:0 0 0 1px var(--line),0 20px 40px -20px #000;display:grid;place-items:center}
-.eyes{display:flex;gap:22px}
-.eyes i{width:30px;height:46px;background:#fff;border-radius:12px;transition:height .4s,transform .4s,opacity .4s;animation:blink 5s infinite}
-body:not(.linked) .eyes i{height:8px;opacity:.55;transform:translateY(10px);animation:none}
-@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
-.status{display:flex;gap:8px;align-items:center;font-weight:600}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--bad);flex:none}
-.linked .dot{background:var(--good);box-shadow:0 0 0 4px color-mix(in srgb,var(--good) 20%,transparent)}
-.facts{width:100%;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px;margin:0}
-.facts dt{font:500 12px/21px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
-.facts dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.brand{display:flex;align-items:baseline;gap:10px;padding:0 4px}
+.brand h1{font:700 28px/1 var(--font-sans);margin:0;letter-spacing:-.02em}
+.brand span{font:500 13px/1 var(--font-sans);color:var(--md-sys-color-on-surface-variant)}
+
+.device{
+  background:var(--md-sys-color-surface-container-low);
+  border-radius:28px;
+  padding:22px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+
+/* Keychain AMOLED round display & expressive Pixel eyes */
+.screen{
+  width:184px;aspect-ratio:1;border-radius:50%;
+  background:#000;
+  border:7px solid #202327;
+  display:grid;place-items:center;
+  position:relative;
+}
+.eyes{display:flex;gap:22px;align-items:center}
+.eyes i{
+  position:relative;
+  width:34px;height:50px;
+  background:var(--pip-eye-bg);
+  border-radius:15px;
+  display:grid;place-items:center;
+  transition:background-color .25s,border-color .25s,height .3s,transform .3s,opacity .3s;
+  animation:blink 5.2s infinite;
+}
+body:not(.linked) .eyes i{height:40px;opacity:.88}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.08)}}
+
+/* Obsidian special: black eye body + glowing sky-blue outline + glowing sky-blue pupil */
+:root[data-pixel="obsidian"] .eyes i{
+  background:#060a10;
+  border:2.5px solid var(--pip-eye-border);
+  box-shadow:0 0 12px rgba(77,208,255,.7),inset 0 0 8px rgba(77,208,255,.35);
+}
+:root[data-pixel="obsidian"] .eyes i::after{
+  content:"";
+  width:11px;height:15px;border-radius:999px;
+  background:var(--pip-eye-pupil);
+  box-shadow:0 0 10px 2px rgba(77,208,255,.95),0 0 20px rgba(77,208,255,.65);
+}
+
+/* Pixel color swatches */
+.swatches{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.swatch{
+  width:32px;height:32px;min-height:32px;padding:0;border-radius:50%;
+  border:2px solid var(--md-sys-color-outline-variant);
+  background:var(--sw);
+  cursor:pointer;position:relative;
+  display:grid;place-items:center;
+}
+.swatch[data-set-pixel="obsidian"]{
+  background:#0c1118;
+  border-color:#4dd0ff;
+}
+.swatch .ico{font-size:17px;color:#fff;opacity:0;transition:opacity .2s}
+.swatch[data-set-pixel="porcelain"] .ico{color:#261a00}
+.swatch[aria-pressed="true"]{
+  border-color:var(--md-sys-color-on-surface);
+  outline:2px solid var(--md-sys-color-primary);
+  outline-offset:2px;
+}
+.swatch[aria-pressed="true"] .ico{opacity:1}
+
+.status{display:flex;gap:8px;align-items:center;font-weight:600;font-size:15px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--md-sys-color-outline);flex:none}
+.linked .dot{background:var(--md-sys-color-success)}
+
+.facts{width:100%;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;margin:0}
+.facts dt{font:500 13px/21px var(--font-sans);color:var(--md-sys-color-on-surface-variant)}
+.facts dd{margin:0;text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+
 .connect{width:100%;display:grid;gap:8px}
 nav{display:flex;flex-direction:column;gap:4px}
-nav button{justify-content:flex-start;background:transparent;border-color:transparent;min-height:44px;color:var(--dim)}
-nav button:hover{background:var(--panel);color:var(--text)}
-nav button.on{background:var(--panel);border-color:var(--line);color:var(--text);box-shadow:inset 3px 0 0 var(--acc)}
-.rail footer{color:var(--dim);font-size:13px}
+nav button{justify-content:flex-start;background:transparent;border:none;min-height:48px;color:var(--md-sys-color-on-surface-variant);border-radius:999px;padding:10px 18px}
+nav button:hover{background:var(--md-sys-color-surface-container-high);color:var(--md-sys-color-on-surface)}
+nav button.on{background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container)}
+.rail footer{color:var(--md-sys-color-on-surface-variant);font-size:13px;padding:0 6px;line-height:1.5}
 
-/* ---- the content ---- */
+/* ---- main content ---- */
 main{min-width:0}
-.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:6px 0 20px}
-.head h2{font:600 26px/1.2 var(--sans);margin:0;text-wrap:balance}
-.head p{margin:4px 0 0;color:var(--dim);max-width:60ch}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:4px 0 20px}
+.head h2{font:700 28px/1.2 var(--font-sans);margin:0;letter-spacing:-.015em;text-wrap:balance}
+.head p{margin:6px 0 0;color:var(--md-sys-color-on-surface-variant);max-width:60ch}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .wide{grid-column:1/-1}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
-.card h3{font:600 12px/1 var(--mono);margin:0;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
-.card h3 b{color:var(--acc);font-weight:600}
-.muted{color:var(--dim);font-size:14px;margin:0}
-.notice{border:1px solid #5a3018;background:#22150e;color:#ffb28f;border-radius:12px;padding:12px 14px;margin:0 0 16px}
+.card{
+  background:var(--md-sys-color-surface-container-low);
+  border-radius:26px;
+  padding:22px;
+  display:flex;flex-direction:column;gap:14px;min-width:0;
+}
+.card h3{font:600 16px/1.2 var(--font-sans);margin:0;color:var(--md-sys-color-on-surface);display:flex;align-items:center;gap:8px}
+.card h3 b{color:var(--md-sys-color-primary);font-weight:600;font-size:13px}
+.muted{color:var(--md-sys-color-on-surface-variant);font-size:14px;margin:0}
+.notice{
+  background:var(--md-sys-color-error-container);
+  color:var(--md-sys-color-on-error-container);
+  border-radius:20px;padding:14px 18px;margin:0 0 18px;
+  display:flex;align-items:center;gap:12px;
+}
 
-button{font:600 15px var(--sans);border-radius:12px;padding:10px 16px;border:1px solid var(--line);background:var(--raised);color:var(--text);cursor:pointer;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-button:hover{border-color:var(--dim)}
-button.main{background:var(--acc);border-color:var(--acc);color:#000}
-button.main:hover{filter:brightness(1.08)}
-button:disabled{opacity:.45;cursor:default}
-:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button{
+  font:600 15px var(--font-sans);
+  border-radius:999px;padding:10px 20px;
+  border:none;
+  background:var(--md-sys-color-secondary-container);
+  color:var(--md-sys-color-on-secondary-container);
+  cursor:pointer;min-height:46px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+button:hover{filter:brightness(.96)}
+button.main{background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary)}
+button:disabled{opacity:.42;cursor:default}
+:focus-visible{outline:2px solid var(--md-sys-color-primary);outline-offset:2px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-label,.lbl{display:block;font-size:13px;color:var(--dim);margin:0 0 4px}
-input[type=text],input[type=url],select{width:100%;font:inherit;font-size:15px;color:var(--text);background:#0d0d0f;border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-height:44px}
-input:focus,select:focus{border-color:var(--acc);outline:none}
-input[type=range]{width:100%;accent-color:var(--acc)}
+label,.lbl{display:block;font-size:13px;font-weight:500;color:var(--md-sys-color-on-surface-variant);margin:0 0 6px}
+input[type=text],input[type=url],select{
+  width:100%;font:inherit;font-size:15px;
+  color:var(--md-sys-color-on-surface);
+  background:var(--md-sys-color-surface-container-highest);
+  border:1px solid transparent;border-radius:16px;padding:10px 14px;min-height:46px;
+}
+input:focus,select:focus{border-color:var(--md-sys-color-primary);outline:none;background:var(--md-sys-color-surface-container-lowest)}
+input[type=range]{width:100%;accent-color:var(--md-sys-color-primary)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.saved{color:var(--good);font-size:14px;opacity:0;transition:opacity .3s}
+.saved{color:var(--md-sys-color-success);font-size:14px;font-weight:600;opacity:0;transition:opacity .25s}
 .saved.show{opacity:1}
 
-/* badge: fields beside a round preview */
-.badge{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:20px;align-items:center}
-.preview{width:150px;aspect-ratio:1;border-radius:50%;background:#000;border:4px solid #1f1f22;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;overflow:hidden}
-.preview .mark{display:flex;gap:6px;margin-bottom:8px}.preview .mark i{width:8px;height:12px;background:#fff;border-radius:3px}
-.preview b{font:600 17px/1.1 var(--sans);max-width:100%;overflow-wrap:anywhere}
-.preview small{font:500 9px var(--mono);color:var(--acc);letter-spacing:.12em;text-transform:uppercase;margin-top:6px}
+/* badge preview */
+.badge{display:grid;grid-template-columns:minmax(0,1fr) 156px;gap:20px;align-items:center}
+.preview{
+  width:156px;aspect-ratio:1;border-radius:50%;
+  background:#000;border:5px solid #202327;color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:16px;overflow:hidden;
+}
+.preview .mark{display:flex;gap:6px;margin-bottom:8px}
+.preview .mark i{width:9px;height:13px;background:var(--pip-eye-bg);border-radius:4px}
+:root[data-pixel="obsidian"] .preview .mark i{
+  background:#060a10;border:1.5px solid var(--pip-eye-border);
+  box-shadow:0 0 6px rgba(77,208,255,.75);
+}
+.preview b{font:600 17px/1.1 var(--font-sans);max-width:100%;overflow-wrap:anywhere}
+.preview small{font:600 10px var(--font-mono);color:var(--md-sys-color-primary);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
 
-/* QR links: a table of four */
-.links{display:grid;gap:8px}
+/* QR links */
+.links{display:grid;gap:10px}
 .link{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,2.2fr);gap:8px;align-items:center}
-.link .n{font:600 13px var(--mono);color:var(--dim);text-align:center}
-.link.head-row span{font-size:12px;color:var(--dim)}
+.link .n{font:600 13px var(--font-mono);color:var(--md-sys-color-on-surface-variant);text-align:center}
+.link.head-row span{font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant)}
 
 .range{display:flex;align-items:center;gap:12px}
-.range output{font:600 14px var(--mono);min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
+.range output{font:600 14px var(--font-mono);min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
 .toggles{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
-.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
-.toggle small{display:block;color:var(--dim);font-size:13px;line-height:1.35}
-.switch{position:relative;width:48px;height:28px;flex:none}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--md-sys-color-outline-variant)}
+.toggle small{display:block;color:var(--md-sys-color-on-surface-variant);font-size:13px;line-height:1.35;margin-top:2px}
+.switch{position:relative;width:52px;height:32px;flex:none}
 .switch input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
-.switch span{position:absolute;inset:0;background:#3a3a3e;border-radius:14px;transition:.15s;pointer-events:none}
-.switch span:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
-.switch input:checked+span{background:var(--good)}
-.switch input:checked+span:before{transform:translateX(20px)}
-.switch input:focus-visible+span{outline:2px solid var(--acc);outline-offset:2px}
+.switch span{position:absolute;inset:0;background:var(--md-sys-color-surface-container-highest);border:2px solid var(--md-sys-color-outline);border-radius:999px;transition:.2s;pointer-events:none}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:6px;top:6px;background:var(--md-sys-color-outline);border-radius:50%;transition:.2s}
+.switch input:checked+span{background:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary)}
+.switch input:checked+span:before{width:24px;height:24px;left:2px;top:2px;transform:translateX(20px);background:var(--md-sys-color-on-primary)}
+.switch input:focus-visible+span{outline:2px solid var(--md-sys-color-primary);outline-offset:2px}
 
-/* flashing: three steps across, then the button and the bar */
+/* flashing */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s;margin:0;padding:0;list-style:none}
-.steps li{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;counter-increment:s}
-.steps li:before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--acc);color:#000;font:600 15px var(--mono);margin-bottom:10px}
-.steps b{display:block;margin-bottom:2px}
+.steps li{background:var(--md-sys-color-surface-container-low);border-radius:24px;padding:20px;counter-increment:s}
+.steps li:before{content:counter(s);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);font:700 15px var(--font-sans);margin-bottom:10px}
+.steps b{display:block;margin-bottom:4px}
 .flashbox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center}
-.bar{height:10px;background:#222225;border-radius:5px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
-details summary{cursor:pointer;color:var(--text)}
+.bar{height:10px;background:var(--md-sys-color-surface-container-highest);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--md-sys-color-primary);border-radius:999px;transition:width .2s}
+details summary{cursor:pointer;color:var(--md-sys-color-on-surface);font-weight:500}
 details p{margin:8px 0 0}
+code{font-family:var(--font-mono);background:var(--md-sys-color-surface-container-high);padding:2px 6px;border-radius:8px;font-size:13px}
 
 @media (max-width:1100px){.toggles{grid-template-columns:1fr}.link{grid-template-columns:28px 1fr 1fr}.link input[type=url]{grid-column:2/-1}.link.head-row{display:none}}
 @media (max-width:900px){
   .app{grid-template-columns:1fr;padding:16px}
   .rail{position:static}
   .device{flex-direction:row;flex-wrap:wrap;justify-content:space-between}
-  .screen{width:110px;border-width:4px}.eyes{gap:14px}.eyes i{width:18px;height:28px;border-radius:8px}
+  .screen{width:118px;border-width:5px}.eyes{gap:14px}.eyes i{width:22px;height:34px;border-radius:10px}
+  :root[data-pixel="obsidian"] .eyes i::after{width:7px;height:10px}
   .device .facts{flex:1;min-width:180px;width:auto}
   nav{flex-direction:row;overflow-x:auto}
   nav button{flex:none}
-  nav button.on{box-shadow:inset 0 -3px 0 var(--acc)}
   .cards,.steps{grid-template-columns:1fr}
 }
 @media (max-width:520px){.fields,.flashbox{grid-template-columns:1fr}.badge{grid-template-columns:1fr;justify-items:center}.badge>div{width:100%}}
@@ -131,105 +561,116 @@ details p{margin:8px 0 0}
 <body>
 <div class="app">
   <aside class="rail">
-    <div class="brand"><h1>Пип</h1><span>панель брелока</span></div>
+    <div class="brand"><h1>Піп</h1><span>панель брелока</span></div>
 
     <div class="device">
       <div class="screen" aria-hidden="true"><div class="eyes"><i></i><i></i></div></div>
-      <div class="status"><span class="dot"></span><span id="state">Не подключён</span></div>
+
+      <div class="swatches" id="swatches" role="group" aria-label="Колір очей і палітри Pixel">
+        <button type="button" class="swatch" data-set-pixel="obsidian" style="--sw:#101417" title="Обсидіан" aria-label="Обсидіан" aria-pressed="true"><span class="ico">check</span></button>
+        <button type="button" class="swatch" data-set-pixel="bay" style="--sw:#5b97e8" title="Затока" aria-label="Затока" aria-pressed="false"><span class="ico">check</span></button>
+        <button type="button" class="swatch" data-set-pixel="hazel" style="--sw:#5c8a6c" title="Шавлія" aria-label="Шавлія" aria-pressed="false"><span class="ico">check</span></button>
+        <button type="button" class="swatch" data-set-pixel="coral" style="--sw:#df6446" title="Корал" aria-label="Корал" aria-pressed="false"><span class="ico">check</span></button>
+        <button type="button" class="swatch" data-set-pixel="peony" style="--sw:#d15a85" title="Півонія" aria-label="Півонія" aria-pressed="false"><span class="ico">check</span></button>
+        <button type="button" class="swatch" data-set-pixel="porcelain" style="--sw:#d7c39c" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"><span class="ico">check</span></button>
+      </div>
+
+      <div class="status"><span class="dot"></span><span id="state">Не підключено</span></div>
       <dl class="facts">
-        <dt>Настроение</dt><dd id="mood">—</dd>
+        <dt>Настрій</dt><dd id="mood">—</dd>
         <dt>Батарея</dt><dd id="bat">—</dd>
         <dt>Прошивка</dt><dd id="ver">—</dd>
       </dl>
       <div class="connect">
-        <button class="main" id="usb">Подключить по кабелю</button>
-        <button id="ble">Без кабеля, по Bluetooth</button>
+        <button class="main" id="usb"><span class="ico">usb</span>Підключити по кабелю</button>
+        <button id="ble"><span class="ico">bluetooth</span>По Bluetooth</button>
       </div>
     </div>
 
     <nav id="tabs">
-      <button data-tab="settings" class="on">Настройки</button>
-      <button data-tab="flash">Прошить / обновить</button>
-      <button data-tab="dev">Для разработчиков</button>
+      <button data-tab="settings" class="on"><span class="ico">tune</span>Налаштування</button>
+      <button data-tab="flash"><span class="ico">system_update</span>Прошивка</button>
+      <button data-tab="dev"><span class="ico">terminal</span>Розробникам</button>
     </nav>
 
-    <footer>Работает в Chrome и Edge. Ничего не устанавливается: страница говорит с брелоком прямо из браузера.
-      <a href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener">Исходный код</a></footer>
+    <footer>Працює в Chrome та Edge. Нічого не встановлюється: сторінка спілкується з брелоком прямо з браузера.
+      <a href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener">Вихідний код</a></footer>
   </aside>
 
   <main>
     <div class="notice" id="nobrowser" hidden>
-      Этот браузер не умеет работать с брелоком. Открой эту страницу в <b>Google Chrome</b> или <b>Microsoft Edge</b> на компьютере.
+      <span class="ico">warning</span>
+      <span>Цей браузер не підтримує роботу з брелоком. Відкрий цю сторінку в <b>Google Chrome</b> або <b>Microsoft Edge</b> на комп'ютері.</span>
     </div>
 
     <section data-tab="settings">
       <div class="head"><div>
-        <h2>Настройки</h2>
-        <p id="needlink">Подключи Пипа кнопкой «Подключить по кабелю»: его текущие настройки загрузятся сюда. Изменения сохраняются в самом брелоке.</p>
+        <h2>Налаштування</h2>
+        <p id="needlink">Підключи Піпа кнопкою «Підключити по кабелю» — його поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
       </div></div>
 
       <div class="cards">
         <div class="card wide">
-          <h3>Бейдж</h3>
+          <h3><span class="ico">badge</span>Бейдж</h3>
           <div class="badge">
             <div>
               <div class="fields">
-                <div><label for="first">Первая строка (имя)</label><input type="text" id="first" maxlength="30" placeholder="Твоё"></div>
-                <div><label for="last">Вторая строка (фамилия)</label><input type="text" id="last" maxlength="30" placeholder="Имя"></div>
+                <div><label for="first">Перший рядок (ім'я)</label><input type="text" id="first" maxlength="30" placeholder="Твоє"></div>
+                <div><label for="last">Другий рядок (прізвище)</label><input type="text" id="last" maxlength="30" placeholder="Ім'я"></div>
               </div>
-              <div style="margin-top:12px"><label for="org">Подпись внизу (можно оставить пустой)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
-              <div class="row" style="margin-top:14px"><button class="main" id="saveName">Сохранить бейдж</button><span class="saved" id="savedName">Сохранено</span></div>
+              <div style="margin-top:12px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
+              <div class="row" style="margin-top:14px"><button class="main" id="saveName"><span class="ico">check</span>Зберегти бейдж</button><span class="saved" id="savedName">Збережено</span></div>
             </div>
-            <div class="preview" aria-label="Примерно так на брелоке">
+            <div class="preview" aria-label="Приблизно так на брелоку">
               <div class="mark"><i></i><i></i></div>
-              <b id="pvFirst">Твоё</b><b id="pvLast">Имя</b><small id="pvOrg">KeyPet</small>
+              <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg">KeyPet</small>
             </div>
           </div>
         </div>
 
         <div class="card wide">
-          <h3>Ссылки для Quick QR <b>· до четырёх</b></h3>
-          <p class="muted">Пип покажет их QR-кодами, листаются свайпом. Ссылки на Telegram и Instagram получат значок в центре кода.</p>
+          <h3><span class="ico">qr_code_2</span>Посилання для Quick QR <b>до чотирьох</b></h3>
+          <p class="muted">Піп показуватиме їх QR-кодами, гортаються свайпом. Посилання на Telegram та Instagram отримають значок у центрі коду.</p>
           <div class="links" id="links">
-            <div class="link head-row"><span></span><span>Название</span><span>Подпись</span><span>Ссылка</span></div>
+            <div class="link head-row"><span></span><span>Назва</span><span>Підпис</span><span>Посилання</span></div>
           </div>
-          <div class="row"><button class="main" id="saveLinks">Сохранить ссылки</button><span class="saved" id="savedLinks">Сохранено</span></div>
+          <div class="row"><button class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button><span class="saved" id="savedLinks">Збережено</span></div>
         </div>
 
         <div class="card">
-          <h3>Экран и батарея</h3>
-          <div class="toggle"><div>Режим энергосбережения<small>не больше 20 кадров в секунду, глаза не катаются от наклона, микрофон выключен, во сне выключается Bluetooth (уведомления придут, когда Пип проснётся)</small></div>
-            <label class="switch"><input type="checkbox" id="eco" aria-label="Режим энергосбережения"><span></span></label></div>
-          <div><label for="power">Засыпать, если Пипа не трогать</label>
+          <h3><span class="ico">battery_saver</span>Екран і батарея</h3>
+          <div class="toggle"><div>Режим енергозбереження<small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
+            <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label></div>
+          <div><label for="power">Засинати, якщо Піпа не чіпати</label>
             <select id="power">
-              <option value="15">через 15 секунд (дольше всего работает)</option>
+              <option value="15">через 15 секунд (найдовша робота)</option>
               <option value="30">через 30 секунд</option>
-              <option value="60">через 1 минуту</option>
-              <option value="120">через 2 минуты</option>
-              <option value="300">через 5 минут</option>
-              <option value="0">никогда (батарея сядет быстро)</option>
+              <option value="60">через 1 хвилину</option>
+              <option value="120">через 2 хвилини</option>
+              <option value="300">через 5 хвилин</option>
+              <option value="0">ніколи (батарея сяде швидко)</option>
             </select></div>
-          <p class="muted">Просыпается от касания, кнопки, если взять в руку, и при уведомлении. Бейдж, QR и фонарик не дают уснуть, пока открыты.</p>
-          <div><label for="bright">Яркость</label>
+          <p class="muted">Прокидається від дотику, кнопки, якщо взяти в руку, та при сповіщенні. Бейдж, QR і ліхтарик не дають заснути, поки відкриті.</p>
+          <div><label for="bright">Яскравість</label>
             <div class="range"><input type="range" id="bright" min="10" max="100" step="5" value="80"><output id="brightOut">80%</output></div></div>
-          <div><label for="theme">Оформление</label>
-            <select id="theme"><option value="1">Приборка — строгое, с оранжевым</option><option value="3">Диагностика — ретро-терминал</option></select></div>
+          <div><label for="theme">Оформлення на брелоку</label>
+            <select id="theme"><option value="1">Приборка — строге, з помаранчевим</option><option value="3">Діагностика — ретро-термінал</option></select></div>
         </div>
 
         <div class="card">
-          <h3>Уведомления с iPhone</h3>
-          <div><label for="privacy">Что видно на экране брелока</label>
+          <h3><span class="ico">notifications</span>Сповіщення з iPhone</h3>
+          <div><label for="privacy">Що видно на екрані брелока</label>
             <select id="privacy">
-              <option value="1">Скрыто: приложение и время, текст — когда откроешь</option>
-              <option value="0">Открыто: всё сразу</option>
-              <option value="2">Выключены: текст не приходит вообще</option>
+              <option value="1">Приховано: додаток і час, текст — коли відкриєш</option>
+              <option value="0">Відкрито: усе одразу</option>
+              <option value="2">Вимкнено: текст не приходить взагалі</option>
             </select></div>
-          <p class="muted">Коды, пароли и банки брелок не сохраняет ни в каком режиме.</p>
-          <p class="muted"><b style="color:var(--text)">Подключить iPhone:</b> Настройки → Bluetooth → Pip, затем подтверди код на брелоке верхней кнопкой.</p>
+          <p class="muted">Коди, паролі та банки брелок не зберігає в жодному режимі.</p>
+          <p class="muted"><b style="color:var(--md-sys-color-on-surface)">Підключити iPhone:</b> Налаштування → Bluetooth → Pip, далі підтвердь код на брелоку верхньою кнопкою.</p>
         </div>
 
         <div class="card wide">
-          <h3>Что Пип замечает</h3>
+          <h3><span class="ico">sensors</span>Що Піп помічає</h3>
           <div class="toggles" id="feats"></div>
         </div>
       </div>
@@ -237,49 +678,49 @@ details p{margin:8px 0 0}
 
     <section data-tab="flash" hidden>
       <div class="head"><div>
-        <h2>Прошить или обновить Пипа</h2>
+        <h2>Прошити або оновити Піпа</h2>
         <p id="fwinfo"></p>
       </div></div>
       <div class="cards">
         <ol class="steps wide">
-          <li><b>Подключи кабель</b><span class="muted">USB-C, который передаёт данные, а не «только зарядка».</span></li>
-          <li><b>Нажми «Прошить»</b><span class="muted">и выбери в списке <b>USB JTAG/serial</b>.</span></li>
-          <li><b>Подожди минуту</b><span class="muted">Не отключай кабель, пока полоска не дойдёт до конца.</span></li>
+          <li><b>Підключи кабель</b><span class="muted">USB-C з передачею даних, а не «лише для зарядки».</span></li>
+          <li><b>Натисни «Прошити»</b><span class="muted">і вибери у списку <b>USB JTAG/serial</b>.</span></li>
+          <li><b>Зачекай хвилину</b><span class="muted">Не відключай кабель, поки шкала не дійде до кінця.</span></li>
         </ol>
         <div class="card wide">
           <div class="flashbox">
-            <button class="main" id="flash">Прошить</button>
-            <div><div class="bar"><i id="prog"></i></div><p id="flashState" class="muted" style="margin-top:8px">Питомец, настройки и подключённый iPhone при обновлении сохраняются.</p></div>
+            <button class="main" id="flash"><span class="ico">download</span>Прошити</button>
+            <div><div class="bar"><i id="prog"></i></div><p id="flashState" class="muted" style="margin-top:8px">Улюбленець, налаштування та підключений iPhone при оновленні зберігаються.</p></div>
           </div>
-          <details class="muted"><summary>Не получается?</summary>
-            <p>Брелок не появляется в списке: попробуй другой кабель или другой USB-порт. На Linux один раз выполни
-              <code>sudo usermod -aG dialout $USER</code> и перезайди.</p>
-            <p>Прошивка не начинается: зажми нижнюю кнопку брелока, коротко нажми верхнюю и отпусти нижнюю. Брелок войдёт
-              в режим прошивки; снова нажми «Прошить».</p></details>
+          <details class="muted"><summary>Не виходить?</summary>
+            <p>Брелок не з'являється у списку: спробуй інший кабель або інший USB-порт. На Linux один раз виконай
+              <code>sudo usermod -aG dialout $USER</code> і перезайди.</p>
+            <p>Прошивка не починається: затисни нижню кнопку брелока, коротко натисни верхню й відпусти нижню. Брелок увійде
+              в режим прошивки — знову натисни «Прошити».</p></details>
         </div>
       </div>
     </section>
 
     <section data-tab="dev" hidden>
       <div class="head"><div>
-        <h2>Для разработчиков</h2>
-        <p>Почему у Пипа такое настроение (дерево эмоций), история за сутки, показ любой эмоции, ручки всех правил.</p>
+        <h2>Для розробників</h2>
+        <p>Чому в Піпа такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
       </div></div>
       <div class="cards">
         <div class="card">
-          <h3>Отладка</h3>
-          <p class="muted">Откроется в новой вкладке; кабель перейдёт к ней.</p>
-          <div class="row"><button id="openDebug">Открыть отладку</button></div>
+          <h3><span class="ico">bug_report</span>Відладка</h3>
+          <p class="muted">Відкриється в новій вкладці; кабель перейде до неї.</p>
+          <div class="row"><button id="openDebug"><span class="ico">open_in_new</span>Відкрити відладку</button></div>
         </div>
         <div class="card">
-          <h3>Режим разработчика</h3>
-          <p class="muted">Каркас глаз, взгляд, области перерисовки и цифры поверх Пипа, прямо на экране брелока.</p>
-          <div class="row"><button id="devOn">Включить</button><button id="devOff">Выключить</button></div>
+          <h3><span class="ico">developer_mode</span>Режим розробника</h3>
+          <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх Піпа прямо на екрані брелока.</p>
+          <div class="row"><button id="devOn"><span class="ico">visibility</span>Увімкнути</button><button id="devOff"><span class="ico">visibility_off</span>Вимкнути</button></div>
         </div>
         <div class="card">
-          <h3>Лог батареи</h3>
-          <p class="muted">Пип каждую минуту пишет заряд и напряжение в свою память (~17 часов). Зарядить до 100%, отключить кабель, дождаться, пока сядет, подключить и скачать.</p>
-          <div class="row"><button id="batGet">Скачать CSV</button><button id="batClear">Очистить</button><span class="saved" id="batState"></span></div>
+          <h3><span class="ico">monitoring</span>Лог батареї</h3>
+          <p class="muted">Піп щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
+          <div class="row"><button id="batGet"><span class="ico">file_download</span>Завантажити CSV</button><button id="batClear"><span class="ico">delete</span>Очистити</button><span class="saved" id="batState"></span></div>
         </div>
       </div>
     </section>
@@ -289,18 +730,34 @@ details p{margin:8px 0 0}
 <script src="firmware/firmware.js"></script>
 <script type="module">
 const $ = id => document.getElementById(id);
+
+/* ---------- Pixel seed palette + eye color sync ---------- */
+const PIXELS = ['obsidian', 'bay', 'hazel', 'coral', 'peony', 'porcelain'];
+function setPixel(name) {
+  if (!PIXELS.includes(name)) name = 'obsidian';
+  document.documentElement.dataset.pixel = name;
+  document.querySelectorAll('#swatches .swatch').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.setPixel === name)));
+  try { localStorage.setItem('pip-pixel', name); } catch (e) {}
+}
+try { setPixel(localStorage.getItem('pip-pixel') || 'obsidian'); } catch (e) { setPixel('obsidian'); }
+$('swatches').onclick = e => {
+  const btn = e.target.closest('[data-set-pixel]');
+  if (btn) setPixel(btn.dataset.setPixel);
+};
+
 const FEATS = [
-  [0, 'Тряска', 'встряхнёшь — закружится голова'],
-  [1, 'Подуть', 'подуешь в микрофон — зажмурится'],
-  [2, 'Сон экраном вниз', 'положишь экраном вниз — уснёт и погасит экран'],
-  [3, 'Звук', 'Пип пищит, мурчит и ворчит'],
-  [4, 'Зарядка = еда', 'на зарядке радуется и наедается'],
-  [6, 'Громкие звуки', 'хлопок рядом его пугает'],
+  [0, 'Тряска', 'струснеш — закрутиться голова'],
+  [1, 'Подмухати', 'дмухнеш у мікрофон — примружиться'],
+  [2, 'Сон екраном униз', 'покладеш екраном униз — засне і вимкне екран'],
+  [3, 'Звук', 'Піп пищить, муркоче й бурчить'],
+  [4, 'Зарядка = їжа', 'на зарядці радіє та наїдається'],
+  [6, 'Гучні звуки', 'плескіт поруч його лякає'],
 ];
 if (!('serial' in navigator)) $('nobrowser').hidden = false;
 if (!('bluetooth' in navigator)) $('ble').hidden = true;
 const fw = window.PIP_FIRMWARE;
-$('fwinfo').textContent = fw ? `В панели прошивка ${fw.version} от ${fw.built}.` : 'Файл прошивки не найден (docs/firmware/firmware.js).';
+$('fwinfo').textContent = fw ? `У панелі прошивка ${fw.version} від ${fw.built}.` : 'Файл прошивки не знайдено (docs/firmware/firmware.js).';
 
 /* ---------- the link: a USB serial port (Web Serial) or Bluetooth ---------- */
 let port = null, reader = null, ble = null, bleq = Promise.resolve(), alive = 0, cfg = null;
@@ -314,7 +771,7 @@ function onLine(l) {
     alive = Date.now();
     const s = JSON.parse(l.slice(3));
     $('mood').textContent = s.m;
-    $('bat').textContent = s.bat >= 0 ? `${s.bat}%${s.ch ? ' · заряжается' : ''}` : '—';
+    $('bat').textContent = s.bat >= 0 ? `${s.bat}%${s.ch ? ' · заряджається' : ''}` : '—';
   } else if (l.startsWith('@C ')) { cfg = JSON.parse(l.slice(3)); fill(); }
   else if (l.startsWith('@B ') && batRows) {
     if (l === '@B end') {
@@ -324,7 +781,7 @@ function onLine(l) {
       }).join('\n') + '\n';
       const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(new Blob([csv], {type: 'text/csv'})), download: 'pip-battery.csv'});
       a.click();
-      $('batState').textContent = `${batRows.length} строк`; $('batState').classList.add('show');
+      $('batState').textContent = `${batRows.length} рядків`; $('batState').classList.add('show');
       batRows = null;
     } else batRows.push(l.slice(3));
   }
@@ -369,7 +826,7 @@ async function closePort() {
 function state(text, on) { $('state').textContent = text; document.body.classList.toggle('linked', on); }
 $('usb').onclick = async () => {
   try { await openPort(await navigator.serial.requestPort({filters: [{usbVendorId: 0x303a}]})); }
-  catch (e) { if (e.name !== 'NotFoundError') state('Не вышло: ' + e.message, false); }
+  catch (e) { if (e.name !== 'NotFoundError') state('Не вдалося: ' + e.message, false); }
 };
 $('ble').onclick = async () => {
   const SVC = '50495044-4247-4b45-5950-455400000001', RX = '50495044-4247-4b45-5950-455400000002', TX = '50495044-4247-4b45-5950-455400000003';
@@ -385,18 +842,18 @@ $('ble').onclick = async () => {
       while ((i = acc.indexOf('\n')) >= 0) { onLine(acc.slice(0, i)); acc = acc.slice(i + 1); }
     });
     await tx.startNotifications();
-    dev.addEventListener('gattserverdisconnected', () => { ble = null; state('Bluetooth отключился', false); });
+    dev.addEventListener('gattserverdisconnected', () => { ble = null; state('Bluetooth відключився', false); });
     state('По Bluetooth', true);
     send('config');
   } catch (e) { if (e.name !== 'NotFoundError') state('Bluetooth: ' + e.message, false); }
 };
-setInterval(() => { if ((port || ble) && Date.now() - alive > 4000 && alive) state('Пип не отвечает — переподключи', false); }, 1000);
+setInterval(() => { if ((port || ble) && Date.now() - alive > 4000 && alive) state('Піп не відповідає — перепідключи', false); }, 1000);
 
 /* ---------- settings ---------- */
 for (let i = 0; i < 4; i++) $('links').insertAdjacentHTML('beforeend',
-  `<div class="link"><span class="n">${i + 1}</span><input type="text" placeholder="Telegram" maxlength="18" id="ls${i}" aria-label="Название ${i + 1}">` +
-  `<input type="text" placeholder="@ник" maxlength="46" id="lh${i}" aria-label="Подпись ${i + 1}">` +
-  `<input type="url" placeholder="https://t.me/ник" maxlength="198" id="lu${i}" aria-label="Ссылка ${i + 1}"></div>`);
+  `<div class="link"><span class="n">${i + 1}</span><input type="text" placeholder="Telegram" maxlength="18" id="ls${i}" aria-label="Назва ${i + 1}">` +
+  `<input type="text" placeholder="@нік" maxlength="46" id="lh${i}" aria-label="Підпис ${i + 1}">` +
+  `<input type="url" placeholder="https://t.me/нік" maxlength="198" id="lu${i}" aria-label="Посилання ${i + 1}"></div>`);
 for (const [f, name, note] of FEATS) $('feats').insertAdjacentHTML('beforeend',
   `<div class="toggle"><div>${name}<small>${note}</small></div><label class="switch"><input type="checkbox" id="f${f}" aria-label="${name}"><span></span></label></div>`);
 const clean = s => s.replace(/[|\n\r]/g, ' ').trim();
@@ -414,7 +871,7 @@ function fill() {
   $('theme').value = cfg.theme; $('privacy').value = cfg.privacy;
   for (const [f] of FEATS) $('f' + f).checked = !!cfg.feat[f];
   $('ver').textContent = cfg.ver || '—';
-  $('needlink').textContent = 'Изменения сохраняются в самом брелоке сразу.';
+  $('needlink').textContent = 'Зміни зберігаються в самому брелоку одразу.';
 }
 const flashSaved = id => { $(id).classList.add('show'); setTimeout(() => $(id).classList.remove('show'), 1500); };
 $('saveName').onclick = () => { send(`name ${clean($('first').value)}|${clean($('last').value)}|${clean($('org').value)}`); flashSaved('savedName'); };
@@ -431,16 +888,17 @@ $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked
 
 /* ---------- tabs ---------- */
 $('tabs').onclick = e => {
-  const t = e.target.dataset.tab;
-  if (!t) return;
+  const btn = e.target.closest('button[data-tab]');
+  if (!btn) return;
+  const t = btn.dataset.tab;
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   document.querySelectorAll('section[data-tab]').forEach(s => s.hidden = s.dataset.tab !== t);
 };
-$('openDebug').onclick = async () => { await closePort(); state('Отладка открыта в новой вкладке', false); window.open('debug.html', '_blank'); };
+$('openDebug').onclick = async () => { await closePort(); state('Відладка відкрита у новій вкладці', false); window.open('debug.html', '_blank'); };
 $('devOn').onclick = () => send('dev 1');
 let batRows = null;
 $('batGet').onclick = () => { batRows = []; send('bat'); };
-$('batClear').onclick = () => { if (confirm('Стереть лог батареи на брелоке?')) send('bat clear'); };
+$('batClear').onclick = () => { if (confirm('Стерти лог батареї на брелоку?')) send('bat clear'); };
 $('devOff').onclick = () => send('dev 0');
 
 /* ---------- flashing (esptool-js) ---------- */
@@ -449,18 +907,18 @@ $('flash').onclick = async () => {
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   $('flash').disabled = true;
   try {
-    $('flashState').textContent = 'Готовлюсь...';
+    $('flashState').textContent = 'Готуюся...';
     const {ESPLoader, Transport} = await import('https://unpkg.com/esptool-js@0.6.1/bundle.js');
     /* ask Pip to show "Обновление" first: the screen keeps that frame while the chip is in the flasher.
        Firmware that is not Pip's (a factory one, an empty chip) never answers: then just go on after a few seconds. */
     if (!port) await openPort(await navigator.serial.requestPort({filters: [{usbVendorId: 0x303a}]}));
-    $('flashState').textContent = 'Связываюсь с Пипом...';
+    $('flashState').textContent = "Зв'язуюся з Піпом...";
     for (let t = 0; !cfg && t < 60; t++) await new Promise(r => setTimeout(r, 100));
     if (cfg) { await send('update'); await new Promise(r => setTimeout(r, 600)); }
     const p = await closePort();
     const transport = new Transport(p, true);
     const loader = new ESPLoader({transport, baudrate: 921600, terminal: {clean() {}, writeLine() {}, write() {}}});
-    $('flashState').textContent = 'Связываюсь с брелоком...';
+    $('flashState').textContent = "Зв'язуюся з брелоком...";
     await loader.main();
     const total = fw.parts.reduce((n, x) => n + x.data.length * 0.75, 0);
     let done = 0, last = 0;
@@ -471,7 +929,7 @@ $('flash').onclick = async () => {
         if (written < last) done += last;
         last = written;
         $('prog').style.width = Math.min(100, (done + written) / total * 100) + '%';
-        $('flashState').textContent = 'Прошиваю... не отключай кабель';
+        $('flashState').textContent = 'Прошиваю... не відключай кабель';
       },
     });
     /* esptool-js 0.6.1 'hard_reset' only lets RTS go, it never pulls it: the chip stayed in the flasher with the last
@@ -482,10 +940,10 @@ $('flash').onclick = async () => {
     await transport.setRTS(false);
     await transport.disconnect();
     $('prog').style.width = '100%';
-    $('flashState').textContent = 'Готово! Пип перезагружается. Через несколько секунд нажми «Подключить по кабелю», чтобы настроить его.';
-    state('Не подключён', false);
+    $('flashState').textContent = 'Готово! Піп перезавантажується. За кілька секунд натисни «Підключити по кабелю», щоб налаштувати його.';
+    state('Не підключено', false);
   } catch (e) {
-    $('flashState').textContent = 'Не получилось: ' + (e.message || e) + '. Загляни в «Не получается?» ниже.';
+    $('flashState').textContent = 'Не вийшло: ' + (e.message || e) + '. Зазирни в «Не виходить?» нижче.';
   }
   $('flash').disabled = false;
 };
