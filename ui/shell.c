@@ -16,14 +16,14 @@
 #define HEX_ICON 118.0f    /* honeycomb: icon size in the middle */
 #define HEX_R 205.0f       /* honeycomb: icons shrink from here outward */
 #define ROW 76.0f          /* list: px between rows: a fingertip each */
-#define LENS_X 80          /* list: the focus plate, rows read through it */
-#define LENS_W 320
-#define LENS_H 56
+#define LENS_X 64          /* list: the focus plate, rows read through it */
+#define LENS_W 338
+#define LENS_H 60
 
 static struct {
     lv_obj_t *pip_scr, *menu_scr, *app_scr, *name;
     lv_obj_t *icons[24], *rows[24], *marker;
-    lv_obj_t *bat, *bat_fill; /* the battery at the top of the menu */
+    lv_obj_t *bat, *bat_dot, *bat_lbl; /* clean minimal battery pill at the top of the menu */
     bool updating;            /* shell_updating(): the screen stays lit until the reset */
     lv_obj_t *lens, *lens_rows[24], *lens_cursor, *chrome, *head, *scroll; /* the list's plate; the terminal's header and scroll cells */
     th_cell_t scroll_cells[24];
@@ -53,7 +53,8 @@ static void icons_build(void) /* the honeycomb's and carousel's sprites: SDF art
 {
     if (!icons_stale) return;
     icons_stale = false;
-    int style = th->icons == ICONS_GLASS ? ICON_STYLE_GLASS : th->icons == ICONS_BLOCKS ? ICON_STYLE_BLOCKS : ICON_STYLE_OUTLINE;
+    int style = th->icons == ICONS_GLASS ? ICON_STYLE_GLASS : th->icons == ICONS_BLOCKS ? ICON_STYLE_BLOCKS
+              : th->icons == ICONS_FLAT  ? ICON_STYLE_FLAT  : ICON_STYLE_OUTLINE;
     for (int i = 0; i < app_count; i++) {
         uint32_t disc = style == ICON_STYLE_GLASS ? apps[i].color : th->panel;
         doodle_icon(apps[i].icon, style, disc, th->text, th->faint, (uint32_t *)sh.sprites[apps[i].icon]->data, ICON, ICON);
@@ -71,11 +72,11 @@ static struct { int pct; bool charging; } bat = {-1, false};
 static void bat_show(void)
 {
     if (!sh.bat) return;
-    lv_obj_set_flag(sh.bat, LV_OBJ_FLAG_HIDDEN, bat.pct < 0);
+    lv_obj_set_flag(sh.bat, LV_OBJ_FLAG_HIDDEN, bat.pct < 0 || TH_TERMINAL);
     if (bat.pct < 0) return;
-    uint32_t c = bat.pct < 20 ? 0xFF453A : bat.pct < 50 ? 0xFF9F0A : 0x34C759;
-    lv_obj_set_width(sh.bat_fill, 2 + 26 * bat.pct / 100);
-    lv_obj_set_style_bg_color(sh.bat_fill, lv_color_hex(c), 0);
+    uint32_t c = bat.charging ? th->accent : bat.pct < 20 ? 0xFF5C5C : bat.pct < 50 ? 0xF2B84B : 0x46D178;
+    lv_obj_set_style_bg_color(sh.bat_dot, lv_color_hex(c), 0);
+    lv_label_set_text(sh.bat_lbl, shell_battery_text());
 }
 void shell_battery(int percent, bool charging)
 {
@@ -322,12 +323,13 @@ static void rows_build(void)
     lv_canvas_set_draw_buf(pen, base);
     for (int i = 0; i < app_total; i++) {
         char text[48];
-        if (apps[i].group) lv_snprintf(text, sizeof text, "%s", apps[i].name); /* a group's rows wear a small icon instead */
+        bool with_icon = TH_PIXEL || apps[i].group != NULL;
+        if (with_icon) lv_snprintf(text, sizeof text, "%s", apps[i].name); /* flat Pixel menu wears clean icons without 01/02 numbers */
         else lv_snprintf(text, sizeof text, "%02d  %s", i + 1, apps[i].name);
         const char *t = th_label(text);
         lv_point_t sz;
         lv_text_get_size(&sz, t, font, th->caps, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
-        int isz = apps[i].group ? h : 0, ix = isz ? isz + h / 4 : 0;
+        int isz = with_icon ? (h * 7 / 10) : 0, ix = isz ? isz + h / 3 : 0;
         int w = ix + sz.x + 2 < SCR ? ix + sz.x + 2 : SCR;
         lv_draw_buf_clear(base, NULL);
         lv_layer_t layer;
@@ -377,8 +379,8 @@ static void list_layout(void)
         /* the plate is see-through there: hand the row over to it; the terminal fades rows out before its key strip */
         float fade = terminal ? fminf(1, fmaxf(0, (1.9f - ad) * 2)) : fminf(1, ad);
         lv_obj_set_style_opa(r, (lv_opa_t)(255 * fade), 0);
-        lv_obj_align(r, LV_ALIGN_LEFT_MID, LENS_X + 16, (int32_t)roundf(d * ROW));
-        lv_obj_align(l, LV_ALIGN_LEFT_MID, 16, (int32_t)roundf(d * ROW));
+        lv_obj_align(r, LV_ALIGN_LEFT_MID, LENS_X + (TH_PIXEL ? 24 : 16), (int32_t)roundf(d * ROW));
+        lv_obj_align(l, LV_ALIGN_LEFT_MID, TH_PIXEL ? 24 : 16, (int32_t)roundf(d * ROW));
     }
     int mid = list_middle();
     if (mid != sh.tick_row) { /* a detent */
@@ -391,12 +393,12 @@ static void list_layout(void)
         lv_obj_align_to(sh.lens_cursor, sh.lens_rows[sh.lo + mid], LV_ALIGN_OUT_RIGHT_MID, 6, 0);
         for (int i = 0; i < sh.n; i++) th_cell_set(sh.scroll, &sh.scroll_cells[i], i == mid ? th->text : th->off);
         char t[48];
-        if (sh.group) lv_snprintf(t, sizeof t, "игры // %02d/%02d", mid + 1, sh.n);
+        if (sh.group) lv_snprintf(t, sizeof t, "ігри // %02d/%02d", mid + 1, sh.n);
         else lv_snprintf(t, sizeof t, "заряд %s // %02d/%02d", shell_battery_text(), mid + 1, sh.n);
         const char *u = th_label(t);
         if (strcmp(u, lv_label_get_text(sh.head))) lv_label_set_text(sh.head, u); /* also as the battery changes */
     } else lv_obj_add_flag(sh.lens_cursor, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_flag(sh.marker, LV_OBJ_FLAG_HIDDEN, terminal);
+    lv_obj_set_flag(sh.marker, LV_OBJ_FLAG_HIDDEN, terminal || TH_PIXEL);
 }
 
 /* a picker wheel: drag it, flick it and it coasts, slowing down to land exactly on a row */
@@ -524,17 +526,26 @@ static void restyle_menu(void)
 {
     th_screen(sh.menu_scr);
     icons_stale = true; /* drawn when a menu style that shows them comes up */
+    uint32_t lens_ink = TH_PIXEL ? th->on_accent : TH_TERMINAL ? th->bg : th->text;
     for (int i = 0; i < app_total; i++) {
-        lv_obj_set_style_image_recolor(sh.lens_rows[i], lv_color_hex(TH_TERMINAL ? th->bg : th->text), 0);
+        lv_obj_set_style_image_recolor(sh.lens_rows[i], lv_color_hex(lens_ink), 0);
         lv_image_set_src(sh.rows[i], NULL), lv_image_set_src(sh.lens_rows[i], NULL); /* the masks are about to change */
     }
     rows_build();
-    lv_obj_set_style_bg_opa(sh.lens, TH_TERMINAL ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
-    lv_obj_set_style_bg_color(sh.lens, lv_color_hex(th->text), 0);
+    lv_obj_set_style_radius(sh.lens, TH_PIXEL ? LV_RADIUS_CIRCLE : 0, 0);
+    lv_obj_set_style_clip_corner(sh.lens, TH_PIXEL, 0);
+    lv_obj_set_style_bg_opa(sh.lens, TH_TERMINAL || TH_PIXEL ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+    lv_obj_set_style_bg_color(sh.lens, lv_color_hex(TH_PIXEL ? th->accent : th->text), 0);
     lv_obj_set_style_bg_color(sh.lens_cursor, lv_color_hex(th->bg), 0);
     chrome_build();
     lv_obj_set_style_bg_color(sh.marker, lv_color_hex(th->accent), 0);
     lv_obj_set_style_text_color(sh.name, lv_color_hex(th->text), 0);
+    if (sh.bat) {
+        lv_obj_set_style_bg_color(sh.bat, lv_color_hex(th->panel), 0);
+        lv_obj_set_style_text_font(sh.bat_lbl, th->tiny, 0);
+        lv_obj_set_style_text_color(sh.bat_lbl, lv_color_hex(th->dim), 0);
+        bat_show();
+    }
     shell_set_menu_style(th->menu);
 }
 
@@ -663,8 +674,8 @@ void shell_updating(void)
     lv_obj_set_size(o, SCR, SCR);
     th_screen(o);
     lv_obj_add_flag(o, LV_OBJ_FLAG_CLICKABLE); /* swallows touches */
-    th_text_at(o, th->title ? th->title : th->body, th->text, th_label("Обновление"), -1, 176);
-    th_text_at(o, th->small, th->accent, th_label("Не отключай кабель"), -1, 252);
+    th_text_at(o, th->title ? th->title : th->body, th->text, th_label("Оновлення"), -1, 182);
+    th_text_at(o, th->small, th->accent, th_label("Не відключай кабель"), -1, 250);
 }
 
 void shell_home(void)
@@ -791,24 +802,26 @@ void shell_create(void)
     lv_obj_set_style_bg_opa(sh.marker, LV_OPA_COVER, 0);
     lv_obj_align(sh.marker, LV_ALIGN_LEFT_MID, 62, 0);
     sh.name = lv_label_create(sh.menu_scr);
-    sh.bat = lv_obj_create(sh.menu_scr); /* the body with the fill inside, the nub on the right */
+    sh.bat = lv_obj_create(sh.menu_scr); /* clean flat rounded battery pill at the top */
     lv_obj_remove_style_all(sh.bat);
-    lv_obj_set_size(sh.bat, 38, 16);
+    lv_obj_set_size(sh.bat, LV_SIZE_CONTENT, 26);
+    lv_obj_set_style_radius(sh.bat, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_opa(sh.bat, LV_OPA_COVER, 0);
+    lv_obj_set_style_bg_color(sh.bat, lv_color_hex(th->panel), 0);
+    lv_obj_set_style_pad_hor(sh.bat, 11, 0);
+    lv_obj_set_flex_flow(sh.bat, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(sh.bat, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(sh.bat, 6, 0);
     lv_obj_remove_flag(sh.bat, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(sh.bat, LV_ALIGN_TOP_MID, 0, 14);
-    lv_obj_t *body = lv_obj_create(sh.bat);
-    lv_obj_remove_style_all(body);
-    lv_obj_set_size(body, 34, 16);
-    lv_obj_set_style_radius(body, 4, 0);
-    lv_obj_set_style_border_width(body, 2, 0);
-    lv_obj_set_style_border_color(body, lv_color_hex(0x8E8E93), 0);
-    lv_obj_set_style_pad_all(body, 2, 0);
-    sh.bat_fill = lv_obj_create(body);
-    lv_obj_remove_style_all(sh.bat_fill);
-    lv_obj_set_size(sh.bat_fill, 2, 8);
-    lv_obj_set_style_radius(sh.bat_fill, 2, 0);
-    lv_obj_set_style_bg_opa(sh.bat_fill, LV_OPA_COVER, 0);
-    th_box(sh.bat, 35, 5, 3, 6, 1, 0x8E8E93);
+    lv_obj_align(sh.bat, LV_ALIGN_TOP_MID, 0, 18);
+    sh.bat_dot = lv_obj_create(sh.bat);
+    lv_obj_remove_style_all(sh.bat_dot);
+    lv_obj_set_size(sh.bat_dot, 7, 7);
+    lv_obj_set_style_radius(sh.bat_dot, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_opa(sh.bat_dot, LV_OPA_COVER, 0);
+    sh.bat_lbl = lv_label_create(sh.bat);
+    lv_obj_set_style_text_font(sh.bat_lbl, th->tiny, 0);
+    lv_obj_set_style_text_color(sh.bat_lbl, lv_color_hex(th->dim), 0);
     bat_show();
     lv_obj_add_flag(sh.menu_scr, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(sh.menu_scr, menu_input, LV_EVENT_PRESSED, NULL);

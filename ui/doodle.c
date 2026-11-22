@@ -254,6 +254,9 @@ void doodle_icon(int icon, int style, uint32_t color, uint32_t ink, uint32_t lin
                 over(p, 0xFFFFFFFF, 0.10f * clamp01(0.5f - gloss / 10) * clamp01(0.5f - disc));
                 over(p, 0xFFFFFFFF, 0.30f * clamp01(1.2f - fabsf(disc + 1.5f)) * clamp01(-dy / r + 0.1f));      /* thin bright rim on top */
                 over(p, 0xFFFFFFFF, clamp01(0.5f - glyph(icon, dx * k, dy * k) / k));
+            } else if (style == ICON_STYLE_FLAT) { /* flat matte circle + crisp solid symbol (Pixel theme) */
+                over(p, 0xFF000000u | color, clamp01(0.5f - disc));
+                over(p, 0xFF000000u | ink, clamp01(0.5f - glyph(icon, dx * k, dy * k) / k));
             } else if (style == ICON_STYLE_OUTLINE) { /* thin lines: the ring and the symbol's outline */
                 over(p, 0xFF000000u | line, clamp01(1.0f - fabsf(disc + 1.5f)));
                 over(p, 0xFF000000u | ink, clamp01(1.4f - fabsf(glyph(icon, dx * k, dy * k) / k)));
