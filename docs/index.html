@@ -362,9 +362,20 @@ a:hover{text-decoration:underline}
   padding:4px 9px;border-radius:999px;
   background:var(--surface-2);color:var(--text-2);
 }
-body:not([data-twin="eyes"]) .palette-bar{opacity:.52}
+body[data-twin="qr"] .palette-bar{opacity:.52}
 .palette-bar{transition:opacity 200ms var(--ease-std)}
 .palette-bar:hover{opacity:1}
+
+/* Minimalist Badge mini flat eyes (selected Pixel color, rare gentle blink) */
+.b-eye-lid{transform-origin:233px 124px;transition:transform 115ms var(--ease-std)}
+.b-eye-lid.blinking{transform:scaleY(.08)}
+.b-sclera{fill:var(--eye-sclera);stroke:var(--eye-stroke);stroke-width:5.5;transition:fill 260ms var(--ease-std),stroke 260ms var(--ease-std)}
+.b-pupil{fill:var(--eye-pupil);transition:fill 260ms var(--ease-std),rx 260ms var(--spring-fast),ry 260ms var(--spring-fast)}
+:root[data-pixel="obsidian"] .b-pupil{rx:28px;ry:58px}
+:root[data-pixel="bay"] .b-pupil{rx:44px;ry:74px}
+:root[data-pixel="hazel"] .b-pupil{rx:46px;ry:64px}
+:root[data-pixel="coral"] .b-pupil{rx:37px;ry:80px}
+:root[data-pixel="porcelain"] .b-pupil{rx:42px;ry:42px}
 
 .pip-svg{
   width:94%;height:94%;overflow:visible;
@@ -1233,7 +1244,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
                 <ellipse class="mini-sclera" cx="85" cy="38" rx="22" ry="28" transform="rotate(13 85 38)"/>
                 <g clip-path="url(#mClipR)"><ellipse class="mini-pupil" cx="83" cy="38" rx="12" ry="24" transform="rotate(7 83 38)"/></g>
               </svg>
-              <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg">KeyPet</small>
+              <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg"></small>
             </div>
           </div>
         </div>
@@ -1402,12 +1413,16 @@ const urlPixel = new URLSearchParams(location.search).get('pixel');
 try { setPixel(urlPixel || localStorage.getItem('pip-pixel') || 'peony'); } catch (e) { setPixel(urlPixel || 'peony'); }
 $('swatches').onclick = e => {
   const btn = e.target.closest('[data-set-pixel]');
-  if (btn) { setTwinMode('eyes'); setPixel(btn.dataset.setPixel, true); }
+  if (btn) {
+    if (twinMode === 'qr') setTwinMode('eyes');
+    setPixel(btn.dataset.setPixel, twinMode === 'eyes');
+  }
 };
 $('pipOrb').onclick = e => {
   if (twinMode === 'eyes') boopEyes();
-  else if (twinMode === 'badge') { badgeLook = (badgeLook + 1) % 3; renderTwinBadge(); updateTwinHint(); }
   else if (twinMode === 'qr') {
+    const list = getActiveLinks();
+    if (!list.length) { openSheet('settings'); setTimeout(() => $('lu0')?.focus(), 220); return; }
     const r = $('pipOrb').getBoundingClientRect();
     stepQr(e.clientX < r.left + r.width / 2 ? -1 : 1);
   }
@@ -1459,83 +1474,63 @@ if ($('simpleFx')) {
   $('simpleFx').onchange = e => setSimpleFx(e.target.checked, true);
 }
 
-/* ---------- Digital Twin of 466x466 Keychain Screen (exact firmware themes, Badge, real QR, Brightness, Eco) ---------- */
-const FW_THEMES = {
-  1: { name: 'Приборка', terminal: false, bg: '#000000', text: '#E8E6E1', dim: '#A3A09A', faint: '#2A2A2A', accent: '#FF5A1F', font: '"IBM Plex Mono",ui-monospace,monospace' },
-  3: { name: 'Діагностика', terminal: true, bg: '#3A1F1B', text: '#E6D8C3', dim: '#B9A592', faint: '#5A3530', mute: '#8A6A60', off: '#4F2B26', accent: '#E6D8C3', grid: '#5A3530', font: '"JetBrains Mono",ui-monospace,monospace' },
-};
-let twinMode = 'eyes', badgeLook = 0, qrIndex = 0, diagBlinkOn = true;
+/* ---------- Digital Twin of 466x466 Keychain Screen (Minimalist Badge, Clean QR, Brightness, Eco) ---------- */
+let twinMode = 'eyes', qrIndex = 0;
 
-function fwTheme() { return FW_THEMES[Number($('theme')?.value)] || FW_THEMES[1]; }
 function escXml(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function fitFont(text, base, maxChars) {
   const n = (text || '').length;
-  return n <= maxChars ? base : Math.max(22, Math.round(base * maxChars / n));
-}
-
-/* Exact ICON_PIP mark from ui/doodle.c:107-110 (two vertical ovals with cut-out pupils looking right) */
-function pipMarkSvg(size, cx, cy, color, uid) {
-  const s = size / 100;
-  return `<g transform="translate(${cx} ${cy}) scale(${s.toFixed(3)})">
-    <defs><mask id="${uid}">
-      <rect x="-55" y="-55" width="110" height="110" fill="#fff"/>
-      <circle cx="-12" cy="2" r="6" fill="#000"/><circle cx="22" cy="2" r="6" fill="#000"/>
-    </mask></defs>
-    <g mask="url(#${uid})" fill="${color}">
-      <ellipse cx="-17" cy="0" rx="13" ry="17"/><ellipse cx="17" cy="0" rx="13" ry="17"/>
-    </g></g>`;
+  return n <= maxChars ? base : Math.max(24, Math.round(base * maxChars / n));
 }
 
 function renderTwinBadge() {
-  const th = fwTheme();
-  const first = ($('first').value || $('first').placeholder || 'Твоє').toUpperCase();
-  const last = ($('last').value || $('last').placeholder || 'Ім\'я').toUpperCase();
-  const org = ($('org').value || '').trim().toUpperCase();
+  const first = ($('first').value || $('first').placeholder || 'Твоє').trim();
+  const last = ($('last').value || $('last').placeholder || 'Ім\'я').trim();
+  const org = ($('org').value || '').trim();
+  const sans = '"Google Sans Flex","Roboto Flex",system-ui,-apple-system,sans-serif';
   const f1 = fitFont(first, 50, 9), f2 = fitFont(last, 50, 9);
-  const gridDef = th.terminal ? `<defs><pattern id="diagDotGrid" width="11" height="11" patternUnits="userSpaceOnUse">
-    <rect width="11" height="11" fill="${th.bg}"/><rect x="7" y="7" width="2" height="2" fill="${th.grid}"/></pattern></defs>
-    <rect width="466" height="466" fill="url(#diagDotGrid)"/>` : `<rect width="466" height="466" fill="${th.bg}"/>`;
 
-  let body = '';
-  if (badgeLook === 0) {
-    /* Look 0: Name on a dial (60 ticks in Приборка / 72 cells in Діагностика, exact ui/apps.c:1313-1340) */
-    if (th.terminal) {
-      let cells = '';
-      for (let i = 0; i < 72; i++) {
-        const a = (i / 72) * Math.PI * 2 - Math.PI / 2;
-        const x = 233 + Math.cos(a) * 214 - 2.5, y = 233 + Math.sin(a) * 214 - 2.5;
-        cells += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="5" height="5" fill="${i % 6 === 0 ? th.mute : th.off}"/>`;
-      }
-      body += cells;
-    } else {
-      let ticks = '';
-      for (let i = 0; i < 60; i++) {
-        const maj = i % 5 === 0, a = (i / 60) * Math.PI * 2 - Math.PI / 2;
-        const r1 = 222, r2 = r1 - (maj ? 14 : 7);
-        ticks += `<line x1="${(233 + Math.cos(a)*r1).toFixed(1)}" y1="${(233 + Math.sin(a)*r1).toFixed(1)}" x2="${(233 + Math.cos(a)*r2).toFixed(1)}" y2="${(233 + Math.sin(a)*r2).toFixed(1)}" stroke="${maj ? th.dim : th.faint}" stroke-width="2"/>`;
-      }
-      body += ticks;
-    }
-    body += `<text x="233" y="196" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f1}" font-weight="700" letter-spacing="2">${escXml(first)}</text>`;
-    body += `<text x="233" y="264" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f2}" font-weight="700" letter-spacing="2">${escXml(last)}</text>`;
-    body += `<rect x="193" y="308" width="80" height="4" fill="${th.accent}"/>`;
-    if (org) body += `<text x="233" y="352" text-anchor="middle" fill="${th.dim}" font-family='${th.font}' font-size="16" font-weight="700" letter-spacing="6">${escXml(org)}</text>`;
-  } else if (badgeLook === 1) {
-    /* Look 1: Pip mark small on top, name underneath (exact ui/apps.c:1341-1346) */
-    body += pipMarkSvg(118, 233, 112, th.text, 'pipM1');
-    body += `<text x="233" y="246" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f1}" font-weight="700" letter-spacing="1">${escXml(first)}</text>`;
-    body += `<text x="233" y="308" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f2}" font-weight="700" letter-spacing="1">${escXml(last)}</text>`;
-    body += `<rect x="153" y="350" width="160" height="2" fill="${th.faint}"/>`;
-    if (org) body += `<text x="233" y="382" text-anchor="middle" fill="${th.accent}" font-family='${th.font}' font-size="16" font-weight="700" letter-spacing="6">${escXml(org)}</text>`;
+  const miniEyes = `<defs>
+    <clipPath id="bClipL"><ellipse cx="118" cy="200" rx="70" ry="94" transform="rotate(-13 118 200)"/></clipPath>
+    <clipPath id="bClipR"><ellipse cx="282" cy="200" rx="70" ry="94" transform="rotate(13 282 200)"/></clipPath>
+  </defs>
+  <g id="badgeEyesLid" class="b-eye-lid">
+    <g transform="translate(233 124) scale(0.30) translate(-200 -200)">
+      <ellipse class="b-sclera" cx="118" cy="200" rx="70" ry="94" transform="rotate(-13 118 200)"/>
+      <g clip-path="url(#bClipL)"><ellipse class="b-pupil" cx="124" cy="202" rx="40" ry="82" transform="rotate(-7 124 202)"/></g>
+      <ellipse class="b-sclera" cx="282" cy="200" rx="70" ry="94" transform="rotate(13 282 200)"/>
+      <g clip-path="url(#bClipR)"><ellipse class="b-pupil" cx="276" cy="202" rx="40" ry="82" transform="rotate(7 276 202)"/></g>
+    </g>
+  </g>`;
+
+  let body = `<rect width="466" height="466" fill="#000000"/>` + miniEyes;
+  if (first && last) {
+    body += `<text x="233" y="232" text-anchor="middle" fill="#FFFFFF" font-family='${sans}' font-size="${f1}" font-weight="700" letter-spacing="-0.02em">${escXml(first)}</text>`;
+    body += `<text x="233" y="294" text-anchor="middle" fill="#FFFFFF" font-family='${sans}' font-size="${f2}" font-weight="700" letter-spacing="-0.02em">${escXml(last)}</text>`;
   } else {
-    /* Look 2: Faint large Pip mark behind name (exact ui/apps.c:1347-1352) */
-    body += pipMarkSvg(420, 233, 233, th.faint, 'pipM2');
-    body += `<text x="233" y="208" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f1}" font-weight="700" letter-spacing="2">${escXml(first)}</text>`;
-    body += `<text x="233" y="276" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f2}" font-weight="700" letter-spacing="2">${escXml(last)}</text>`;
-    body += `<rect x="213" y="320" width="40" height="4" fill="${th.accent}"/>`;
+    const single = first || last;
+    body += `<text x="233" y="264" text-anchor="middle" fill="#FFFFFF" font-family='${sans}' font-size="${fitFont(single, 54, 9)}" font-weight="700" letter-spacing="-0.02em">${escXml(single)}</text>`;
   }
-  $('badgeSvg').innerHTML = gridDef + body;
+  if (org) {
+    body += `<text x="233" y="360" text-anchor="middle" fill="#8E8E8E" font-family='${sans}' font-size="16" font-weight="500" letter-spacing="0.06em">${escXml(org)}</text>`;
+  }
+  $('badgeSvg').innerHTML = body;
 }
+
+/* Rare calm blink for mini flat Pip eyes on the Badge */
+function scheduleBadgeBlink() {
+  setTimeout(() => {
+    if (twinMode === 'badge' && !document.hidden && !reducedMotion()) {
+      const lid = $('badgeEyesLid');
+      if (lid) {
+        lid.classList.add('blinking');
+        setTimeout(() => lid.classList.remove('blinking'), 140);
+      }
+    }
+    scheduleBadgeBlink();
+  }, 6500 + Math.random() * 5500);
+}
+scheduleBadgeBlink();
 
 /* ---------- Compact ISO/IEC 18004 QR encoder (Byte mode, v1..10, ECC H/M) ---------- */
 const QR_EXP = new Uint8Array(512), QR_LOG = new Uint8Array(256);
@@ -1568,7 +1563,8 @@ const QR_MASKS = [
   (x,y)=>(((x*y)%2+(x*y)%3)%2)===0, (x,y)=>(((x+y)%2+(x*y)%3)%2)===0,
 ];
 function qrEncode(text) {
-  const bytes = new TextEncoder().encode(text || 'https://github.com/NovikovVisuals/Pip-KeyPet');
+  if (!text) return null;
+  const bytes = new TextEncoder().encode(text);
   let ver = 0, ecl = 'H';
   for (const tryEcl of ['H', 'M']) {
     for (let v = 1; v <= 10; v++) {
@@ -1656,7 +1652,6 @@ function getActiveLinks() {
     const s = $('ls' + i)?.value.trim() || '', h = $('lh' + i)?.value.trim() || '', u = $('lu' + i)?.value.trim() || '';
     if (u) list.push({ slot: i, service: s || 'Посилання', handle: h, url: u });
   }
-  if (!list.length) list.push({ slot: 0, service: 'GitHub', handle: 'Pip-KeyPet', url: 'https://github.com/NovikovVisuals/Pip-KeyPet' });
   return list;
 }
 function qrBrand(url) {
@@ -1702,113 +1697,56 @@ function drawBrandMark(ctx, brand, cx, cy, size, terminal, ink, paper) {
 
 function renderTwinQr() {
   const cv = $('qrCanvas'), ctx = cv.getContext('2d');
-  const th = fwTheme();
   const list = getActiveLinks();
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, 466, 466);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  if (!list.length) {
+    /* Minimalist empty state — no fallback QR to NovikovVisuals */
+    ctx.fillStyle = '#141414';
+    ctx.beginPath(); ctx.roundRect(179, 114, 108, 108, 28); ctx.fill();
+    ctx.strokeStyle = '#6E6E6E'; ctx.lineWidth = 4;
+    const drawFinder = (x, y) => {
+      ctx.beginPath(); ctx.roundRect(x, y, 22, 22, 5); ctx.stroke();
+      ctx.fillStyle = '#6E6E6E'; ctx.fillRect(x + 7, y + 7, 8, 8);
+    };
+    drawFinder(205, 140); drawFinder(239, 140); drawFinder(205, 174);
+    ctx.fillStyle = '#6E6E6E';
+    ctx.fillRect(239, 174, 8, 8); ctx.fillRect(253, 174, 8, 8);
+    ctx.fillRect(239, 188, 8, 8); ctx.fillRect(253, 188, 8, 8);
+
+    ctx.font = '700 22px "Google Sans Flex","Roboto Flex",system-ui,sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText('Посилань ще немає', 233, 272);
+    ctx.font = '500 15px "Google Sans Flex","Roboto Flex",system-ui,sans-serif';
+    ctx.fillStyle = '#9E9E9E';
+    ctx.fillText('Додай посилання в Налаштуваннях', 233, 304);
+    return;
+  }
+
   qrIndex = ((qrIndex % list.length) + list.length) % list.length;
   const item = list[qrIndex];
   const qr = qrEncode(item.url);
-
-  /* Background (pure black for Приборка, #3A1F1B + 11x11 dot grid for Діагностика) */
-  ctx.fillStyle = th.bg;
-  ctx.fillRect(0, 0, 466, 466);
-  if (th.terminal) {
-    ctx.fillStyle = th.grid;
-    for (let y = 7; y < 466; y += 11)
-      for (let x = 7; x < 466; x += 11) ctx.fillRect(x, y, 2, 2);
-  }
-
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const brand = qrBrand(item.url);
 
-  if (th.terminal) {
-    /* Exact Діагностика layout (ui/apps.c:587-608) */
-    const hdr = `ПИП-01 // QR ${qrIndex + 1}/${list.length}`;
-    ctx.font = '700 16px "JetBrains Mono",ui-monospace,monospace';
-    ctx.fillStyle = th.text;
-    const hw = ctx.measureText(hdr).width;
-    ctx.fillText(hdr, 233 - 6, 48);
-    if (diagBlinkOn) ctx.fillRect(233 + hw / 2, 40, 9, 16);
-    ctx.fillRect(145, 66, 176, 2);
+  const card = 276, cx0 = 95, cy0 = 86;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath(); ctx.roundRect(cx0, cy0, card, card, 28); ctx.fill();
+  if (qr) {
+    const m = Math.floor(244 / (qr.size + 4)), off = Math.floor((card - m * qr.size) / 2);
+    ctx.fillStyle = '#000000';
+    for (let y = 0; y < qr.size; y++)
+      for (let x = 0; x < qr.size; x++)
+        if (qr.grid[y][x]) ctx.fillRect(cx0 + off + x * m, cy0 + off + y * m, m, m);
+    if (brand) drawBrandMark(ctx, brand, 233, cy0 + card / 2, Math.round(m * qr.size * 0.26), false, '#000', '#FFF');
+  }
 
-    const plate = 252, px = 107, py = 78;
-    ctx.fillStyle = th.text;
-    ctx.fillRect(px, py, plate, plate);
-    if (qr) {
-      const m = Math.floor((plate - 20) / qr.size), off = Math.floor((plate - m * qr.size) / 2);
-      ctx.fillStyle = th.bg;
-      for (let y = 0; y < qr.size; y++)
-        for (let x = 0; x < qr.size; x++)
-          if (qr.grid[y][x]) ctx.fillRect(px + off + x * m, py + off + y * m, m, m);
-      if (brand) drawBrandMark(ctx, brand, px + plate / 2, py + plate / 2, Math.round(m * qr.size * 0.26), true, th.bg, th.text);
-    }
-
-    ctx.font = '700 16px "JetBrains Mono",ui-monospace,monospace';
-    const svc = item.service.toUpperCase(), hdl = item.handle ? ` // ${item.handle.toUpperCase()}` : '';
-    const fullW = ctx.measureText(svc + hdl).width;
-    const startX = 233 - fullW / 2;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = th.text; ctx.fillText(svc, startX, 355);
-    if (hdl) { ctx.fillStyle = th.dim; ctx.fillText(hdl, startX + ctx.measureText(svc).width, 355); }
-    ctx.textAlign = 'center';
-
-    const rowW = list.length * 11 - 2;
-    for (let k = 0; k < list.length; k++) {
-      ctx.fillStyle = k === qrIndex ? th.text : th.off;
-      ctx.fillRect(Math.round(233 - rowW / 2 + k * 11), 376, 9, 9);
-    }
-    ctx.font = '500 14px "JetBrains Mono",ui-monospace,monospace';
-    ctx.fillStyle = th.dim;
-    const wSwipe = ctx.measureText('СВАЙП').width, wBack = ctx.measureText('НАЗАД').width;
-    const footW = 7 + 5 + 7 + 7 + wSwipe + 18 + 9 + 7 + wBack;
-    let fx = Math.round(233 - footW / 2), fy = 412;
-    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx + 7, fy - 4.5); ctx.lineTo(fx + 7, fy + 4.5); ctx.closePath(); ctx.fill();
-    fx += 12;
-    ctx.beginPath(); ctx.moveTo(fx + 7, fy); ctx.lineTo(fx, fy - 4.5); ctx.lineTo(fx, fy + 4.5); ctx.closePath(); ctx.fill();
-    fx += 14;
-    ctx.textAlign = 'left';
-    ctx.fillText('СВАЙП', fx, fy);
-    fx += wSwipe + 18;
-    ctx.beginPath(); ctx.moveTo(fx, fy - 3.5); ctx.lineTo(fx + 9, fy - 3.5); ctx.lineTo(fx + 4.5, fy + 4); ctx.closePath(); ctx.fill();
-    fx += 16;
-    ctx.fillText('НАЗАД', fx, fy);
-    ctx.textAlign = 'center';
-  } else {
-    /* Exact Приборка layout (ui/apps.c:594-610) */
-    ctx.font = '600 19px "IBM Plex Mono",ui-monospace,monospace';
-    ctx.fillStyle = th.dim;
-    ctx.fillText(item.service.toUpperCase(), 233, 46);
-    if (item.handle) {
-      ctx.font = '600 25px "IBM Plex Mono",ui-monospace,monospace';
-      ctx.fillStyle = th.text;
-      ctx.fillText(item.handle, 233, 78);
-    }
-
-    const card = 270, cx0 = 98, cy0 = 116;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath(); ctx.roundRect(cx0, cy0, card, card, 22); ctx.fill();
-    if (qr) {
-      const m = Math.floor(240 / (qr.size + 4)), off = Math.floor((card - m * qr.size) / 2);
-      ctx.fillStyle = '#000000';
-      for (let y = 0; y < qr.size; y++)
-        for (let x = 0; x < qr.size; x++)
-          if (qr.grid[y][x]) ctx.fillRect(cx0 + off + x * m, cy0 + off + y * m, m, m);
-      if (brand) drawBrandMark(ctx, brand, 233, cy0 + card / 2, Math.round(m * qr.size * 0.26), false, '#000', '#FFF');
-    }
-
-    for (let k = 0; k < list.length; k++) {
-      ctx.fillStyle = k === qrIndex ? th.text : 'rgba(232,230,225,0.3)';
-      ctx.beginPath(); ctx.arc(233 + (k - (list.length - 1) / 2) * 18, 412, 4, 0, Math.PI * 2); ctx.fill();
-    }
+  for (let k = 0; k < list.length; k++) {
+    ctx.fillStyle = k === qrIndex ? '#FFFFFF' : 'rgba(255,255,255,0.28)';
+    ctx.beginPath(); ctx.arc(233 + (k - (list.length - 1) / 2) * 18, 398, k === qrIndex ? 4.5 : 4, 0, Math.PI * 2); ctx.fill();
   }
 }
-
-/* Blinking block cursor in Діагностика QR header (500ms, exact theme.c:197) */
-setInterval(() => {
-  if (twinMode === 'qr' && fwTheme().terminal && !reducedMotion() && !document.hidden) {
-    diagBlinkOn = !diagBlinkOn;
-    renderTwinQr();
-  }
-}, 500);
 
 function stepQr(dir) {
   const list = getActiveLinks();
@@ -1820,23 +1758,21 @@ function stepQr(dir) {
 
 function updateTwinHint() {
   const hint = $('twinHint');
-  const th = fwTheme();
   if (twinMode === 'eyes') {
     if ($('eco')?.checked) {
       hint.innerHTML = '<span class="eco-pill">ECO · ≤20 FPS</span><span>погляд зафіксовано</span>';
       hint.hidden = false;
     } else hint.hidden = true;
   } else if (twinMode === 'badge') {
-    hint.innerHTML = `<span>${th.name} · макет ${badgeLook + 1}/3 · натисни на екран</span>`;
-    hint.hidden = false;
+    hint.hidden = true;
   } else {
     const n = getActiveLinks().length;
-    hint.innerHTML = n > 1
-      ? `<button type="button" id="qrPrev" aria-label="Попередній QR"><span class="ico">chevron_left</span></button><span>${th.name} · QR ${qrIndex + 1}/${n}</span><button type="button" id="qrNext" aria-label="Наступний QR"><span class="ico">chevron_right</span></button>`
-      : `<span>${th.name} · реальний QR-код</span>`;
-    hint.hidden = false;
-    $('qrPrev')?.addEventListener('click', () => stepQr(-1));
-    $('qrNext')?.addEventListener('click', () => stepQr(1));
+    if (n > 1) {
+      hint.innerHTML = `<button type="button" id="qrPrev" aria-label="Попередній QR"><span class="ico">chevron_left</span></button><span>QR ${qrIndex + 1}/${n}</span><button type="button" id="qrNext" aria-label="Наступний QR"><span class="ico">chevron_right</span></button>`;
+      hint.hidden = false;
+      $('qrPrev')?.addEventListener('click', () => stepQr(-1));
+      $('qrNext')?.addEventListener('click', () => stepQr(1));
+    } else hint.hidden = true;
   }
 }
 
@@ -2232,7 +2168,9 @@ for (const [f, name, note] of FEATS) $('feats').insertAdjacentHTML('beforeend',
   `<div class="toggle"><div><div class="toggle-title">${name}</div><small>${note}</small></div><label class="switch"><input type="checkbox" id="f${f}" aria-label="${name}"><span></span></label></div>`);
 const clean = s => s.replace(/[|\n\r]/g, ' ').trim();
 const preview = () => {
-  for (const id of ['first', 'last', 'org']) $('pv' + id[0].toUpperCase() + id.slice(1)).textContent = $(id).value || $(id).placeholder;
+  $('pvFirst').textContent = $('first').value || $('first').placeholder;
+  $('pvLast').textContent = $('last').value || $('last').placeholder;
+  $('pvOrg').textContent = $('org').value.trim();
   renderTwinBadge();
 };
 ['first', 'last', 'org'].forEach(id => {
@@ -2275,11 +2213,7 @@ $('saveLinks').onclick = async () => {
 $('power').onchange = e => send('power ' + e.target.value);
 $('bright').onchange = e => send('bright ' + e.target.value);
 $('eco').onchange = e => { send('eco ' + (e.target.checked ? 1 : 0)); updateTwinHint(); };
-$('theme').onchange = e => {
-  send('theme ' + e.target.value);
-  if (twinMode === 'eyes' && document.body.classList.contains('sheet-open')) setTwinMode('badge');
-  else { renderTwinBadge(); renderTwinQr(); updateTwinHint(); }
-};
+$('theme').onchange = e => send('theme ' + e.target.value);
 $('privacy').onchange = e => send('privacy ' + e.target.value);
 $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked ? 1 : 0}`);
 
@@ -2287,7 +2221,6 @@ $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked
 if (params.get('theme') === '1' || params.get('theme') === '3') $('theme').value = params.get('theme');
 if (params.has('bright')) { $('bright').value = params.get('bright'); syncBright($('bright').value); }
 if (params.get('eco') === '1') $('eco').checked = true;
-if (params.has('look')) badgeLook = ((Number(params.get('look')) || 0) % 3 + 3) % 3;
 if (params.get('demoqr') === 'tg') {
   $('ls0').value = 'Telegram'; $('lh0').value = '@pip_keypet'; $('lu0').value = 'https://t.me/pip_keypet';
   $('ls1').value = 'GitHub'; $('lh1').value = 'Pip-KeyPet'; $('lu1').value = 'https://github.com/NovikovVisuals/Pip-KeyPet';
