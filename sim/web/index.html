@@ -233,6 +233,28 @@ function blitScreen() {
   sctx.fill('evenodd');
 }
 
+const simQ = new URLSearchParams(location.search);
+function writeSimStr(s) {
+  const bytes = new TextEncoder().encode(s);
+  const p = M._sim_str_buf(), n = Math.min(bytes.length, 510);
+  M.HEAPU8.set(bytes.subarray(0, n), p);
+  M.HEAPU8[p + n] = 0;
+}
+if (simQ.get('shot') === '1') {
+  const thId = +(simQ.get('theme') || 4);
+  M._sim_set_theme(thId);
+  if (simQ.has('name')) { writeSimStr(simQ.get('name')); M._sim_set_badge_buf(); }
+  if (simQ.has('qr')) simQ.getAll('qr').forEach((v, i) => { writeSimStr(v); M._sim_set_link_buf(i); });
+  if (simQ.get('screen')) { writeSimStr(simQ.get('screen')); M._sim_open_buf(); }
+  for (let k = 0; k < 45; k++) M._sim_frame(16);
+  blitScreen();
+  document.getElementById('panel').style.display = 'none';
+  document.getElementById('hint').style.display = 'none';
+  document.getElementById('view').style.display = 'none';
+  screenCanvas.style.cssText = 'position:fixed;inset:0;margin:auto;width:476px;height:476px;border-radius:50%;box-shadow:0 0 0 1px #242424';
+  document.body.style.background = '#000';
+  document.body.append(screenCanvas);
+} else {
 /* ---------- 3D device ---------- */
 const view = document.getElementById('view');
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -426,7 +448,7 @@ const MENU_STYLES = ['Меню: соты', 'Меню: карусель', 'Мен
 const showStyle = () => { styleBtn.textContent = MENU_STYLES[M._sim_menu_style()]; };
 styleBtn.onclick = () => { M._sim_set_menu_style((M._sim_menu_style() + 1) % 3); showStyle(); };
 showStyle();
-const THEMES = [[1, 'Приборка'], [3, 'Диагностика']]; /* Тишина (0) and Apple (2) are hidden for now: they lag on the board */
+const THEMES = [[4, 'Півонія'], [5, 'Обсидіан'], [6, 'Затока'], [7, 'Шавлія'], [8, 'Корал'], [9, 'Порцеляна']];
 const themesEl = document.getElementById('themes');
 const showTheme = () => { [...themesEl.children].forEach((b, k) => b.classList.toggle('on', THEMES[k][0] === M._sim_theme())); showStyle(); };
 THEMES.forEach(([i, name]) => {
@@ -435,9 +457,16 @@ THEMES.forEach(([i, name]) => {
   b.onclick = () => { M._sim_set_theme(i); store.set('keypet.theme', String(i)); showTheme(); };
   themesEl.append(b);
 });
-const savedTheme = +(store.get('keypet.theme') || 1);
-M._sim_set_theme(THEMES.some(([i]) => i === savedTheme) ? savedTheme : 1); /* Приборка by default */
+const savedTheme = +(simQ.get('theme') || store.get('keypet.theme') || 4);
+M._sim_set_theme(THEMES.some(([i]) => i === savedTheme) ? savedTheme : 4);
 showTheme();
+if (simQ.has('name')) { writeSimStr(simQ.get('name')); M._sim_set_badge_buf(); }
+if (simQ.has('qr')) simQ.getAll('qr').forEach((v, i) => { writeSimStr(v); M._sim_set_link_buf(i); });
+if (simQ.get('screen')) {
+  writeSimStr(simQ.get('screen'));
+  M._sim_open_buf();
+  for (let k = 0; k < 45; k++) M._sim_frame(16);
+}
 
 document.querySelectorAll('#phone button, #host button').forEach((b) => (b.onclick = () => M._sim_phone(b.dataset.k.charCodeAt(0), +b.dataset.a)));
 const phoneLog = document.getElementById('phonelog');
@@ -601,6 +630,7 @@ requestAnimationFrame(frame);
 // console/testing hook: run the sim for `secs` without waiting for the browser (works in a hidden tab)
 const advance = secs => { for (let t = 0; t < secs; t += 1 / 60) tick(last + 1000 / 60); };
 window.sim = { M, tgt, cur, dev, advance };
+}
 </script>
 </body>
 </html>

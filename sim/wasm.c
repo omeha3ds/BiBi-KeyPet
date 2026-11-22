@@ -2,6 +2,7 @@
 #include "fakephone.h"
 #include "lvgl.h"
 #include "pip.h"
+#include "profile.h"
 #include "shell.h"
 #include "theme.h"
 #include "voice.h"
@@ -78,6 +79,41 @@ EMSCRIPTEN_KEEPALIVE int sim_theme(void) { return theme_index(); }
 EMSCRIPTEN_KEEPALIVE int sim_mood_count(void) { return PIP_MOOD_COUNT; }
 EMSCRIPTEN_KEEPALIVE void sim_set_mood(int i) { pip_set_mood(i); }
 EMSCRIPTEN_KEEPALIVE const char *sim_mood_name(int i) { return i >= 0 && i < PIP_MOOD_COUNT ? pip_mood_name(i) : ""; }
+
+/* Simulator-only helpers to jump straight to any screen and test Badge/QR UTF-8 strings */
+static char str_buf[512];
+EMSCRIPTEN_KEEPALIVE char *sim_str_buf(void) { return str_buf; }
+EMSCRIPTEN_KEEPALIVE int sim_open_buf(void)
+{
+    if (!strcmp(str_buf, "home") || !strcmp(str_buf, "pip")) { shell_home(); return 1; }
+    if (!strcmp(str_buf, "menu")) { shell_home(); shell_button(PIP_BTN_PWR); return 1; }
+    if (!strcmp(str_buf, "updating")) { shell_updating(); return 1; }
+    return shell_open(str_buf) ? 1 : 0;
+}
+static void sim_field(char *dst, size_t n, char **s)
+{
+    char *e = strchr(*s, '|');
+    if (e) *e = 0;
+    snprintf(dst, n, "%s", *s);
+    *s = e ? e + 1 : *s + strlen(*s);
+}
+EMSCRIPTEN_KEEPALIVE void sim_set_badge_buf(void)
+{
+    char *s = str_buf;
+    sim_field(profile.first, sizeof profile.first, &s);
+    sim_field(profile.last, sizeof profile.last, &s);
+    sim_field(profile.org, sizeof profile.org, &s);
+    profile_changed();
+}
+EMSCRIPTEN_KEEPALIVE void sim_set_link_buf(int i)
+{
+    if (i < 0 || i >= PROFILE_LINKS) return;
+    char *s = str_buf;
+    sim_field(profile.link[i].service, sizeof profile.link[i].service, &s);
+    sim_field(profile.link[i].handle, sizeof profile.link[i].handle, &s);
+    sim_field(profile.link[i].url, sizeof profile.link[i].url, &s);
+    profile_changed();
+}
 
 /* the fake iPhone: 'L' link 0/1/2, 'N' notification, 'C' call 1/0, 'M' music 1/0; 'X' the fake computer 0/1/2 */
 EMSCRIPTEN_KEEPALIVE void sim_phone(int kind, int arg)

@@ -5,7 +5,13 @@ set(LV_BUILD_CONF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lv_conf.h CACHE PATH "" FORCE
 set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
 set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(CONFIG_LV_USE_THORVG_INTERNAL OFF CACHE BOOL "" FORCE)
-add_subdirectory(../third_party/lvgl lvgl)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/lvgl/CMakeLists.txt)
+    add_subdirectory(../third_party/lvgl lvgl)
+elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../firmware/managed_components/lvgl__lvgl/CMakeLists.txt)
+    add_subdirectory(../firmware/managed_components/lvgl__lvgl lvgl)
+else()
+    message(FATAL_ERROR "LVGL not found in third_party/lvgl or firmware/managed_components/lvgl__lvgl")
+endif()
 
 file(GLOB THEME_FONTS ../ui/fonts/font_*_*.c)
 set(UI ../ui/face.c ../ui/imu.c ../ui/pip.c ../ui/doodle.c ../ui/pet.c ../ui/shell.c ../ui/apps.c ../ui/voice.c ../ui/profile.c
