@@ -1,360 +1,108 @@
 <!doctype html>
-<html lang="uk" data-pixel="obsidian">
+<html lang="uk" data-pixel="peony">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Піп — панель керування</title>
+<script>
+try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getItem('pip-pixel');if(['peony','obsidian','bay','hazel','coral','porcelain'].includes(p))document.documentElement.dataset.pixel=p;}catch(e){}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
 <style>
-/* Material 3 / Material You Expressive design system for Pip keychain panel.
-   Seed-driven Google Pixel tonal palettes, automatic light/dark theme, flat surfaces only. */
+/* Pure-black editorial stage for Pip keychain.
+   Flat matte dark surfaces (#0d0d0d-#161616), zero borders, zero gradients, zero UI glow.
+   Pixel colorways smoothly recolor both Pip's expressive eyes and UI accent controls. */
 :root{
   --font-sans:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  color-scheme:light dark;
+  color-scheme:dark;
 
-  --shape-card:28px;
-  --shape-inner:20px;
-  --shape-field:16px;
-  --shape-pill:9999px;
-  --spring-fast:cubic-bezier(.34,1.42,.64,1);
-  --spring-spatial:cubic-bezier(.22,1.18,.36,1);
+  --bg:#000000;
+  --surface-1:#0e0e0e;
+  --surface-2:#121212;
+  --surface-3:#161616;
+  --surface-4:#202020;
+  --text:#ffffff;
+  --text-2:#a4a4a4;
+  --text-3:#787878;
+  --line:#444444;
+  --good:#46d178;
+  --warn:#f2b84b;
+
+  --spring-fast:cubic-bezier(.34,1.38,.64,1);
+  --spring-spatial:cubic-bezier(.22,1.15,.36,1);
   --ease-std:cubic-bezier(.2,0,0,1);
 
-  /* Default seed: Obsidian (neutral slate surfaces + sky-cyan accent synced with eyes) */
-  --md-sys-color-surface:#f7f9fb;
-  --md-sys-color-surface-container-lowest:#ffffff;
-  --md-sys-color-surface-container-low:#f1f4f7;
-  --md-sys-color-surface-container:#ebeef2;
-  --md-sys-color-surface-container-high:#e5e8ec;
-  --md-sys-color-surface-container-highest:#dfe3e8;
-  --md-sys-color-on-surface:#181c1f;
-  --md-sys-color-on-surface-variant:#41484d;
-  --md-sys-color-outline:#71787e;
-  --md-sys-color-outline-variant:#c1c7ce;
-  --md-sys-color-primary:#00668a;
-  --md-sys-color-on-primary:#ffffff;
-  --md-sys-color-primary-container:#c3e8ff;
-  --md-sys-color-on-primary-container:#001e2c;
-  --md-sys-color-secondary:#4e616d;
-  --md-sys-color-on-secondary:#ffffff;
-  --md-sys-color-secondary-container:#d1e5f4;
-  --md-sys-color-on-secondary-container:#0a1e28;
-  --md-sys-color-tertiary:#2d6a5b;
-  --md-sys-color-on-tertiary:#ffffff;
-  --md-sys-color-tertiary-container:#b2f1df;
-  --md-sys-color-on-tertiary-container:#002019;
-  --md-sys-color-error:#ba1a1a;
-  --md-sys-color-error-container:#ffdad6;
-  --md-sys-color-on-error-container:#410002;
-  --md-sys-color-success:#1e6e3e;
-  --md-sys-color-success-container:#b9f2ca;
-  --md-sys-color-on-success-container:#00210e;
+  /* Default: Pixel Peony (flat vivid pink sclera + bold teal pupil, inspired by reference) */
+  --accent:#f5b4c8;
+  --on-accent:#0a0a0a;
+  --accent-soft:#24191d;
+  --eye-sclera:#f5b4c8;
+  --eye-pupil:#00999e;
+  --eye-stroke:transparent;
+  --eye-stroke-w:0;
+}
 
-  --pip-eye-bg:#070b10;
-  --pip-eye-border:#4dd0ff;
-  --pip-eye-pupil:#7ce8ff;
-  --pip-eye-accent:#4dd0ff;
+/* Pixel Obsidian: pure jet-black eyes + luminous sky-blue outline & pupil */
+:root[data-pixel="obsidian"]{
+  --accent:#66d4ff;
+  --on-accent:#041016;
+  --accent-soft:#101d24;
+  --eye-sclera:#000000;
+  --eye-pupil:#7ce8ff;
+  --eye-stroke:#4dd0ff;
+  --eye-stroke-w:5.5;
 }
 
 /* Pixel Bay (blue) */
 :root[data-pixel="bay"]{
-  --md-sys-color-surface:#f8f9ff;
-  --md-sys-color-surface-container-lowest:#ffffff;
-  --md-sys-color-surface-container-low:#f1f3fa;
-  --md-sys-color-surface-container:#eceef5;
-  --md-sys-color-surface-container-high:#e6e8ef;
-  --md-sys-color-surface-container-highest:#e0e2ea;
-  --md-sys-color-on-surface:#191c20;
-  --md-sys-color-on-surface-variant:#43474e;
-  --md-sys-color-outline:#74777f;
-  --md-sys-color-outline-variant:#c4c6cf;
-  --md-sys-color-primary:#1f5fa9;
-  --md-sys-color-on-primary:#ffffff;
-  --md-sys-color-primary-container:#d5e3ff;
-  --md-sys-color-on-primary-container:#001c3b;
-  --md-sys-color-secondary:#555f71;
-  --md-sys-color-on-secondary:#ffffff;
-  --md-sys-color-secondary-container:#d9e3f8;
-  --md-sys-color-on-secondary-container:#121c2b;
-  --md-sys-color-tertiary:#296b52;
-  --md-sys-color-on-tertiary:#ffffff;
-  --md-sys-color-tertiary-container:#aef2d3;
-  --md-sys-color-on-tertiary-container:#002115;
-  --pip-eye-bg:#7cb6ff;
-  --pip-eye-accent:#7cb6ff;
+  --accent:#8ec2ff;
+  --on-accent:#071324;
+  --accent-soft:#131b26;
+  --eye-sclera:#9bc9ff;
+  --eye-pupil:#154ec4;
+  --eye-stroke:transparent;
+  --eye-stroke-w:0;
 }
 
 /* Pixel Hazel / Sage (green) */
 :root[data-pixel="hazel"]{
-  --md-sys-color-surface:#f6fbf5;
-  --md-sys-color-surface-container-lowest:#ffffff;
-  --md-sys-color-surface-container-low:#f0f5ef;
-  --md-sys-color-surface-container:#eaefe9;
-  --md-sys-color-surface-container-high:#e4eae4;
-  --md-sys-color-surface-container-highest:#dee4de;
-  --md-sys-color-on-surface:#181d19;
-  --md-sys-color-on-surface-variant:#414942;
-  --md-sys-color-outline:#717972;
-  --md-sys-color-outline-variant:#c1c9c0;
-  --md-sys-color-primary:#2d6a4a;
-  --md-sys-color-on-primary:#ffffff;
-  --md-sys-color-primary-container:#b1f1c8;
-  --md-sys-color-on-primary-container:#002112;
-  --md-sys-color-secondary:#4e6355;
-  --md-sys-color-on-secondary:#ffffff;
-  --md-sys-color-secondary-container:#d1e8d7;
-  --md-sys-color-on-secondary-container:#0c1f15;
-  --md-sys-color-tertiary:#3c6472;
-  --md-sys-color-on-tertiary:#ffffff;
-  --md-sys-color-tertiary-container:#c0e9fa;
-  --md-sys-color-on-tertiary-container:#001f29;
-  --pip-eye-bg:#9ed3ae;
-  --pip-eye-accent:#9ed3ae;
+  --accent:#9fd9a8;
+  --on-accent:#08170b;
+  --accent-soft:#131e15;
+  --eye-sclera:#b9e4bc;
+  --eye-pupil:#167a42;
+  --eye-stroke:transparent;
+  --eye-stroke-w:0;
 }
 
 /* Pixel Coral (warm orange-coral) */
 :root[data-pixel="coral"]{
-  --md-sys-color-surface:#fff8f6;
-  --md-sys-color-surface-container-lowest:#ffffff;
-  --md-sys-color-surface-container-low:#fef1ed;
-  --md-sys-color-surface-container:#f8ebe7;
-  --md-sys-color-surface-container-high:#f2e5e1;
-  --md-sys-color-surface-container-highest:#ecdfdb;
-  --md-sys-color-on-surface:#231917;
-  --md-sys-color-on-surface-variant:#53433f;
-  --md-sys-color-outline:#85736e;
-  --md-sys-color-outline-variant:#d8c2bc;
-  --md-sys-color-primary:#a53b22;
-  --md-sys-color-on-primary:#ffffff;
-  --md-sys-color-primary-container:#ffdbd1;
-  --md-sys-color-on-primary-container:#3c0800;
-  --md-sys-color-secondary:#77574e;
-  --md-sys-color-on-secondary:#ffffff;
-  --md-sys-color-secondary-container:#ffdbd1;
-  --md-sys-color-on-secondary-container:#2c150f;
-  --md-sys-color-tertiary:#6c5d2f;
-  --md-sys-color-on-tertiary:#ffffff;
-  --md-sys-color-tertiary-container:#f6e1a7;
-  --md-sys-color-on-tertiary-container:#231b00;
-  --pip-eye-bg:#ff8e72;
-  --pip-eye-accent:#ff8e72;
-}
-
-/* Pixel Peony (pink) */
-:root[data-pixel="peony"]{
-  --md-sys-color-surface:#fff8f8;
-  --md-sys-color-surface-container-lowest:#ffffff;
-  --md-sys-color-surface-container-low:#fdf0f2;
-  --md-sys-color-surface-container:#f7eaed;
-  --md-sys-color-surface-container-high:#f1e5e7;
-  --md-sys-color-surface-container-highest:#ebdfe2;
-  --md-sys-color-on-surface:#22191c;
-  --md-sys-color-on-surface-variant:#514347;
-  --md-sys-color-outline:#847377;
-  --md-sys-color-outline-variant:#d6c2c6;
-  --md-sys-color-primary:#9b355c;
-  --md-sys-color-on-primary:#ffffff;
-  --md-sys-color-primary-container:#ffd9e3;
-  --md-sys-color-on-primary-container:#3e001d;
-  --md-sys-color-secondary:#75565f;
-  --md-sys-color-on-secondary:#ffffff;
-  --md-sys-color-secondary-container:#ffd9e3;
-  --md-sys-color-on-secondary-container:#2b151c;
-  --md-sys-color-tertiary:#7c5635;
-  --md-sys-color-on-tertiary:#ffffff;
-  --md-sys-color-tertiary-container:#ffdcc1;
-  --md-sys-color-on-tertiary-container:#2e1500;
-  --pip-eye-bg:#ff9ec1;
-  --pip-eye-accent:#ff9ec1;
+  --accent:#ff9b7d;
+  --on-accent:#1c0904;
+  --accent-soft:#241612;
+  --eye-sclera:#ffb096;
+  --eye-pupil:#d93c16;
+  --eye-stroke:transparent;
+  --eye-stroke-w:0;
 }
 
 /* Pixel Porcelain (warm cream-gold) */
 :root[data-pixel="porcelain"]{
-  --md-sys-color-surface:#fcf9f1;
-  --md-sys-color-surface-container-lowest:#ffffff;
-  --md-sys-color-surface-container-low:#f6f3eb;
-  --md-sys-color-surface-container:#f0ede5;
-  --md-sys-color-surface-container-high:#eae8e0;
-  --md-sys-color-surface-container-highest:#e5e2da;
-  --md-sys-color-on-surface:#1e1b16;
-  --md-sys-color-on-surface-variant:#4c463b;
-  --md-sys-color-outline:#7e7669;
-  --md-sys-color-outline-variant:#cfc5b6;
-  --md-sys-color-primary:#755b27;
-  --md-sys-color-on-primary:#ffffff;
-  --md-sys-color-primary-container:#ffdf9e;
-  --md-sys-color-on-primary-container:#261a00;
-  --md-sys-color-secondary:#695d44;
-  --md-sys-color-on-secondary:#ffffff;
-  --md-sys-color-secondary-container:#f2e1c1;
-  --md-sys-color-on-secondary-container:#231a07;
-  --md-sys-color-tertiary:#48664b;
-  --md-sys-color-on-tertiary:#ffffff;
-  --md-sys-color-tertiary-container:#c9ecc9;
-  --md-sys-color-on-tertiary-container:#04210c;
-  --pip-eye-bg:#f6ecda;
-  --pip-eye-accent:#f6ecda;
-}
-
-@media (prefers-color-scheme:dark){
-  :root{
-    --md-sys-color-surface:#101417;
-    --md-sys-color-surface-container-lowest:#0b0e11;
-    --md-sys-color-surface-container-low:#181c1f;
-    --md-sys-color-surface-container:#1c2024;
-    --md-sys-color-surface-container-high:#262b2e;
-    --md-sys-color-surface-container-highest:#313539;
-    --md-sys-color-on-surface:#e0e3e7;
-    --md-sys-color-on-surface-variant:#c1c7ce;
-    --md-sys-color-outline:#8b9198;
-    --md-sys-color-outline-variant:#41484d;
-    --md-sys-color-primary:#7ad0ff;
-    --md-sys-color-on-primary:#003549;
-    --md-sys-color-primary-container:#004c68;
-    --md-sys-color-on-primary-container:#c3e8ff;
-    --md-sys-color-secondary:#b5c9d7;
-    --md-sys-color-on-secondary:#20333e;
-    --md-sys-color-secondary-container:#364955;
-    --md-sys-color-on-secondary-container:#d1e5f4;
-    --md-sys-color-tertiary:#96d4c3;
-    --md-sys-color-on-tertiary:#00382d;
-    --md-sys-color-tertiary-container:#0f5144;
-    --md-sys-color-on-tertiary-container:#b2f1df;
-    --md-sys-color-error:#ffb4ab;
-    --md-sys-color-error-container:#93000a;
-    --md-sys-color-on-error-container:#ffdad6;
-    --md-sys-color-success:#7dda9c;
-    --md-sys-color-success-container:#00522a;
-    --md-sys-color-on-success-container:#b9f2ca;
-  }
-  :root[data-pixel="bay"]{
-    --md-sys-color-surface:#111318;
-    --md-sys-color-surface-container-lowest:#0c0e13;
-    --md-sys-color-surface-container-low:#191c20;
-    --md-sys-color-surface-container:#1d2024;
-    --md-sys-color-surface-container-high:#282a2f;
-    --md-sys-color-surface-container-highest:#33353a;
-    --md-sys-color-on-surface:#e2e2e9;
-    --md-sys-color-on-surface-variant:#c4c6cf;
-    --md-sys-color-outline:#8e9099;
-    --md-sys-color-outline-variant:#43474e;
-    --md-sys-color-primary:#a7c8ff;
-    --md-sys-color-on-primary:#003062;
-    --md-sys-color-primary-container:#00468b;
-    --md-sys-color-on-primary-container:#d5e3ff;
-    --md-sys-color-secondary:#bdc7dc;
-    --md-sys-color-on-secondary:#273141;
-    --md-sys-color-secondary-container:#3d4758;
-    --md-sys-color-on-secondary-container:#d9e3f8;
-    --md-sys-color-tertiary:#93d5b7;
-    --md-sys-color-on-tertiary:#003827;
-    --md-sys-color-tertiary-container:#07523b;
-    --md-sys-color-on-tertiary-container:#aef2d3;
-  }
-  :root[data-pixel="hazel"]{
-    --md-sys-color-surface:#101511;
-    --md-sys-color-surface-container-lowest:#0b0f0c;
-    --md-sys-color-surface-container-low:#181d19;
-    --md-sys-color-surface-container:#1c211d;
-    --md-sys-color-surface-container-high:#262b27;
-    --md-sys-color-surface-container-highest:#313632;
-    --md-sys-color-on-surface:#dfe4dd;
-    --md-sys-color-on-surface-variant:#c1c9c0;
-    --md-sys-color-outline:#8b938b;
-    --md-sys-color-outline-variant:#414942;
-    --md-sys-color-primary:#95d5ad;
-    --md-sys-color-on-primary:#003920;
-    --md-sys-color-primary-container:#0f5234;
-    --md-sys-color-on-primary-container:#b1f1c8;
-    --md-sys-color-secondary:#b5ccbb;
-    --md-sys-color-on-secondary:#213528;
-    --md-sys-color-secondary-container:#374b3e;
-    --md-sys-color-on-secondary-container:#d1e8d7;
-    --md-sys-color-tertiary:#a4cddd;
-    --md-sys-color-on-tertiary:#063542;
-    --md-sys-color-tertiary-container:#234c5a;
-    --md-sys-color-on-tertiary-container:#c0e9fa;
-  }
-  :root[data-pixel="coral"]{
-    --md-sys-color-surface:#1a110f;
-    --md-sys-color-surface-container-lowest:#140c0a;
-    --md-sys-color-surface-container-low:#231917;
-    --md-sys-color-surface-container:#271d1b;
-    --md-sys-color-surface-container-high:#322825;
-    --md-sys-color-surface-container-highest:#3d3230;
-    --md-sys-color-on-surface:#f1dfda;
-    --md-sys-color-on-surface-variant:#d8c2bc;
-    --md-sys-color-outline:#a08c87;
-    --md-sys-color-outline-variant:#53433f;
-    --md-sys-color-primary:#ffb4a0;
-    --md-sys-color-on-primary:#631503;
-    --md-sys-color-primary-container:#85250e;
-    --md-sys-color-on-primary-container:#ffdbd1;
-    --md-sys-color-secondary:#e7bdb2;
-    --md-sys-color-on-secondary:#442a22;
-    --md-sys-color-secondary-container:#5d4038;
-    --md-sys-color-on-secondary-container:#ffdbd1;
-    --md-sys-color-tertiary:#d9c58d;
-    --md-sys-color-on-tertiary:#3b2f05;
-    --md-sys-color-tertiary-container:#53461a;
-    --md-sys-color-on-tertiary-container:#f6e1a7;
-  }
-  :root[data-pixel="peony"]{
-    --md-sys-color-surface:#191113;
-    --md-sys-color-surface-container-lowest:#140c0e;
-    --md-sys-color-surface-container-low:#22191c;
-    --md-sys-color-surface-container:#261d20;
-    --md-sys-color-surface-container-high:#31282a;
-    --md-sys-color-surface-container-highest:#3c3235;
-    --md-sys-color-on-surface:#efdfe2;
-    --md-sys-color-on-surface-variant:#d6c2c6;
-    --md-sys-color-outline:#9e8c91;
-    --md-sys-color-outline-variant:#514347;
-    --md-sys-color-primary:#ffb0c9;
-    --md-sys-color-on-primary:#5f0f30;
-    --md-sys-color-primary-container:#7d1e45;
-    --md-sys-color-on-primary-container:#ffd9e3;
-    --md-sys-color-secondary:#e3bdc7;
-    --md-sys-color-on-secondary:#422931;
-    --md-sys-color-secondary-container:#5b3f47;
-    --md-sys-color-on-secondary-container:#ffd9e3;
-    --md-sys-color-tertiary:#eebd94;
-    --md-sys-color-on-tertiary:#472a0b;
-    --md-sys-color-tertiary-container:#613f20;
-    --md-sys-color-on-tertiary-container:#ffdcc1;
-  }
-  :root[data-pixel="porcelain"]{
-    --md-sys-color-surface:#16130e;
-    --md-sys-color-surface-container-lowest:#100e09;
-    --md-sys-color-surface-container-low:#1e1b16;
-    --md-sys-color-surface-container:#221f1a;
-    --md-sys-color-surface-container-high:#2d2a24;
-    --md-sys-color-surface-container-highest:#38342e;
-    --md-sys-color-on-surface:#e9e2d8;
-    --md-sys-color-on-surface-variant:#cfc5b6;
-    --md-sys-color-outline:#989082;
-    --md-sys-color-outline-variant:#4c463b;
-    --md-sys-color-primary:#e5c384;
-    --md-sys-color-on-primary:#412d00;
-    --md-sys-color-primary-container:#5b4311;
-    --md-sys-color-on-primary-container:#ffdf9e;
-    --md-sys-color-secondary:#d5c5a6;
-    --md-sys-color-on-secondary:#392f19;
-    --md-sys-color-secondary-container:#51462e;
-    --md-sys-color-on-secondary-container:#f2e1c1;
-    --md-sys-color-tertiary:#aecfae;
-    --md-sys-color-on-tertiary:#1b361f;
-    --md-sys-color-tertiary-container:#314e34;
-    --md-sys-color-on-tertiary-container:#c9ecc9;
-  }
+  --accent:#f0dca6;
+  --on-accent:#1a1508;
+  --accent-soft:#201d15;
+  --eye-sclera:#f3e3b8;
+  --eye-pupil:#bd4c16;
+  --eye-stroke:transparent;
+  --eye-stroke-w:0;
 }
 
 .ico{
   font-family:"Material Symbols Rounded";
-  font-weight:normal;font-style:normal;font-size:22px;line-height:1;
+  font-weight:normal;font-style:normal;font-size:20px;line-height:1;
   display:inline-flex;align-items:center;justify-content:center;
   letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;
   user-select:none;flex:none;
@@ -362,856 +110,976 @@
 }
 
 *{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;height:100%;background:var(--bg)}
 body{
-  background:var(--md-sys-color-surface);
-  color:var(--md-sys-color-on-surface);
-  font:400 16px/1.5 var(--font-sans);
+  background:var(--bg);
+  color:var(--text);
+  font:400 15px/1.5 var(--font-sans);
   -webkit-font-smoothing:antialiased;
-  min-height:100vh;
+  overflow-x:hidden;
 }
-body,.nav-rail,.device,.card,.steps li,.fact,.toggle,.tip-box,.status,.card-ico,.rail-mark,.pill-tag,.palette-head b,.range output{
-  transition:background-color 260ms var(--ease-std),color 220ms var(--ease-std),border-color 240ms var(--ease-std);
-}
-a{color:var(--md-sys-color-primary);text-decoration:none;font-weight:500}
+a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 
-/* ---- View Transitions API + CSS spring keyframes ---- */
-main{min-width:0;view-transition-name:tab-content}
-::view-transition-old(tab-content){animation:vtOut 160ms var(--ease-std) both}
-::view-transition-new(tab-content){animation:vtIn 200ms var(--ease-std) both}
-@keyframes vtOut{to{opacity:0;transform:translateY(-6px)}}
-@keyframes vtIn{from{opacity:0}to{opacity:1}}
-@keyframes pillPop{0%{transform:scaleX(.62)}100%{transform:scaleX(1)}}
-@keyframes cardEnter{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes m3Ripple{to{transform:scale(2.5);opacity:0}}
-@keyframes connPulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.4);opacity:0}}
-@keyframes eyeBoop{0%{transform:scale(1)}35%{transform:scaleX(1.12) scaleY(.76)}70%{transform:scaleX(.96) scaleY(1.06)}100%{transform:scale(1)}}
+/* ---- Keyframes ---- */
+@keyframes calloutIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes lineDraw{
+  from{stroke-dashoffset:100;opacity:0}
+  to{stroke-dashoffset:0;opacity:1}
+}
+@keyframes m3Ripple{
+  to{transform:scale(2.5);opacity:0}
+}
+@keyframes dotPulse{
+  0%{transform:scale(1);opacity:.6}
+  100%{transform:scale(2.5);opacity:0}
+}
+@keyframes eyeSquish{
+  0%{transform:scale(1,1)}
+  35%{transform:scale(1.07,.82)}
+  72%{transform:scale(.97,1.04)}
+  100%{transform:scale(1,1)}
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
 .m3-ripple{
   position:absolute;border-radius:50%;
-  background:currentColor;opacity:.18;
+  background:currentColor;opacity:.16;
   pointer-events:none;transform:scale(0);
   animation:m3Ripple 360ms var(--ease-std) forwards;
 }
 
-/* ---- Material 3 Navigation Rail (desktop) + Bottom Navigation Bar (mobile) ---- */
-.nav-rail{
-  position:fixed;top:0;left:0;bottom:0;width:96px;z-index:20;
-  background:var(--md-sys-color-surface-container);
-  display:flex;flex-direction:column;align-items:center;
-  padding:20px 8px 24px;gap:20px;
+/* ---- Full-viewport Pure Black Stage ---- */
+.stage{
+  min-height:100dvh;
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto 1fr auto;
+  padding:22px 32px calc(26px + env(safe-area-inset-bottom));
+  position:relative;
 }
-.rail-mark{
-  width:52px;height:52px;border-radius:18px;
-  background:var(--md-sys-color-primary-container);
-  color:var(--md-sys-color-on-primary-container);
-  display:grid;place-items:center;
+.stage-center{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:1fr auto;
+  width:100%;min-width:0;
+  transition:padding-right 340ms var(--spring-spatial);
 }
-.rail-eyes{display:flex;gap:6px}
-.rail-eyes i{width:7px;height:13px;border-radius:4px;background:currentColor}
-
-#tabs{
-  display:flex;flex-direction:column;gap:14px;width:100%;align-items:center;
-  margin-top:8px;
-}
-.nav-btn{
-  background:transparent;border:none;padding:4px 0;margin:0;
-  min-height:auto;width:100%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  color:var(--md-sys-color-on-surface-variant);
-  cursor:pointer;border-radius:16px;
-}
-.nav-btn .nav-pill{
-  width:56px;height:32px;border-radius:var(--shape-pill);
-  display:grid;place-items:center;
-  background:transparent;
-  color:inherit;
-  position:relative;overflow:hidden;
-  transition:background-color 220ms var(--ease-std),color 200ms var(--ease-std),transform 200ms var(--spring-fast);
-}
-.nav-btn:hover .nav-pill{
-  background:color-mix(in srgb,var(--md-sys-color-on-surface) 8%,transparent);
-  color:var(--md-sys-color-on-surface);
-}
-.nav-btn:active .nav-pill{transform:scale(.92)}
-.nav-btn .nav-label{
-  font:600 12px/1.15 var(--font-sans);
-  letter-spacing:.01em;
-  text-align:center;
-}
-.nav-btn.on{color:var(--md-sys-color-on-surface)}
-.nav-btn.on .nav-pill{
-  background:var(--md-sys-color-secondary-container);
-  color:var(--md-sys-color-on-secondary-container);
-  animation:pillPop 280ms var(--spring-fast);
-}
-.nav-btn .ico{transition:transform 240ms var(--spring-fast)}
-.nav-btn.on .ico{
-  font-variation-settings:"FILL" 1,"wght" 500,"GRAD" 0,"opsz" 24;
-  transform:scale(1.06);
+@media (min-width:1080px){
+  body.sheet-open .stage-center{padding-right:520px}
 }
 
-.rail-link{
-  margin-top:auto;
-  width:44px;height:44px;border-radius:var(--shape-pill);
-  display:grid;place-items:center;
-  color:var(--md-sys-color-on-surface-variant);
-  background:transparent;
+/* ---- Minimal Top Bar ---- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  max-width:1360px;width:100%;margin:0 auto;
+  z-index:5;
 }
-.rail-link:hover{
-  background:color-mix(in srgb,var(--md-sys-color-on-surface) 8%,transparent);
-  color:var(--md-sys-color-on-surface);
-  text-decoration:none;
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{
+  margin:0;
+  font:700 26px/1 var(--font-sans);
+  letter-spacing:-.03em;color:var(--text);
 }
-
-/* ---- Main shell next to the Navigation Rail ---- */
-.shell{
-  margin-left:96px;
-  min-height:100vh;
-}
-.app{
-  max-width:1200px;margin:0 auto;
-  padding:28px 32px 64px;
-  display:grid;grid-template-columns:316px minmax(0,1fr);
-  gap:28px;align-items:start;
-}
-
-/* ---- Pip device column ---- */
-.sidebar{position:sticky;top:28px;display:flex;flex-direction:column;gap:16px}
-.brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 6px}
-.brand h1{font:700 30px/1.1 var(--font-sans);margin:0;letter-spacing:-.025em}
 .brand span{
-  font:600 12px/1 var(--font-sans);
-  background:var(--md-sys-color-tertiary-container);
-  color:var(--md-sys-color-on-tertiary-container);
-  padding:6px 12px;border-radius:var(--shape-pill);
+  font:500 13px/1 var(--font-sans);
+  color:var(--text-3);
 }
+.top-right{display:flex;align-items:center;gap:10px}
 
-.device{
-  background:var(--md-sys-color-surface-container-low);
-  border-radius:var(--shape-card);
-  padding:24px;
-  display:flex;flex-direction:column;align-items:center;gap:18px;
+/* Subtle non-intrusive browser notice pill */
+.notice{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface-3);
+  color:var(--text-2);
+  padding:7px 14px;border-radius:999px;
+  font:500 12px/1.2 var(--font-sans);
 }
+.notice[hidden]{display:none}
+.notice .ico{font-size:16px;color:var(--warn)}
+.notice b{color:var(--text);font-weight:600}
 
-/* Keychain AMOLED round screen & Pixel eyes */
-.screen-wrap{
-  width:196px;aspect-ratio:1;border-radius:50%;
-  background:var(--md-sys-color-surface-container-highest);
-  padding:8px;
+.icon-link{
+  width:38px;height:38px;border-radius:999px;
   display:grid;place-items:center;
+  background:var(--surface-2);color:var(--text-2);
+  transition:background-color 200ms var(--ease-std),color 200ms var(--ease-std);
 }
-.screen{
-  width:100%;height:100%;border-radius:50%;
-  background:#000;
-  border:6px solid #1e2125;
+.icon-link:hover{background:var(--surface-4);color:var(--text);text-decoration:none}
+
+/* ---- Centerpiece Hero: Big Live Pip Eyes + Editorial Callout Lines ---- */
+.hero-wrap{
   display:grid;place-items:center;
+  width:100%;max-width:980px;margin:0 auto;
+  padding:8px 0;min-width:0;
+}
+.hero{
   position:relative;
+  width:min(860px,100%);
+  height:min(460px,54dvh);
+  min-height:360px;
+  display:grid;place-items:center;
+}
+
+/* SVG hairline leader lines pointing radially to the center black circle */
+.leaders{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;overflow:visible;z-index:3;
+}
+.leaders polyline{
+  fill:none;stroke:var(--line);stroke-width:1.25;
+  animation:calloutIn 240ms var(--ease-std) backwards;
+  animation-delay:calc(var(--i,0) * 35ms);
+  transition:stroke 260ms var(--ease-std);
+}
+.leaders circle{
+  fill:var(--text-2);
+  animation:calloutIn 220ms var(--ease-std) backwards;
+  animation-delay:calc(var(--i,0) * 35ms);
+  transition:fill 260ms var(--ease-std);
+}
+.linked .leaders .l-state{stroke:var(--good)}
+.linked .leaders .d-state{fill:var(--good)}
+.leaders,.callout{transition:opacity 220ms var(--ease-std)}
+@media (min-width:1080px){
+  body.sheet-open .leaders,body.sheet-open .callout{opacity:0;animation:none;pointer-events:none}
+}
+
+/* The central black circle & big expressive eyes (reference proportions) */
+.pip-orb{
+  position:relative;z-index:2;
+  width:clamp(264px,39vmin,356px);
+  aspect-ratio:1;border-radius:50%;
+  background:#000000;
+  display:grid;place-items:center;
   cursor:pointer;
-  transition:transform 200ms var(--spring-fast);
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
-.screen:active{transform:scale(.96)}
-.eyes{display:flex;gap:22px;align-items:center}
-.eyes.boop{animation:eyeBoop 300ms var(--spring-fast)}
-.eyes i{
-  position:relative;
-  width:34px;height:50px;
-  background:var(--pip-eye-bg);
-  border-radius:15px;
-  display:grid;place-items:center;
-  transition:background-color 260ms var(--ease-std),border-color 260ms var(--ease-std),box-shadow 260ms var(--ease-std),height 280ms var(--spring-fast),transform 260ms var(--spring-fast),opacity 260ms var(--ease-std);
-  animation:blink 5.2s infinite;
+/* Barely-there circle ring to anchor the radial callouts on pure black */
+.pip-orb::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:1px solid #1e1e1e;pointer-events:none;
+  transition:border-color 280ms var(--ease-std);
 }
-body:not(.linked) .eyes i{height:40px;opacity:.9}
-@keyframes blink{0%,93%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.08)}}
+.linked .pip-orb::before{border-color:#2e2e2e}
 
-/* Obsidian special: black eye body + glowing sky-blue rim + glowing sky-blue pupil */
-:root[data-pixel="obsidian"] .eyes i{
-  background:#060a10;
-  border:2.5px solid var(--pip-eye-border);
-  box-shadow:0 0 12px rgba(77,208,255,.72),inset 0 0 8px rgba(77,208,255,.35);
+.pip-svg{
+  width:94%;height:94%;overflow:visible;
+  transform-origin:center;
 }
-:root[data-pixel="obsidian"] .eyes i::after{
-  content:"";
-  width:11px;height:15px;border-radius:var(--shape-pill);
-  background:var(--pip-eye-pupil);
-  box-shadow:0 0 10px 2px rgba(77,208,255,.95),0 0 20px rgba(77,208,255,.65);
+.pip-svg.squish{animation:eyeSquish 300ms var(--spring-fast)}
+.eye-sclera{
+  fill:var(--eye-sclera);
+  transition:fill 320ms var(--ease-std);
 }
+.eye-rim{
+  fill:none;
+  stroke:var(--eye-stroke);
+  stroke-width:var(--eye-stroke-w);
+  transition:stroke 320ms var(--ease-std),stroke-width 260ms var(--ease-std);
+}
+.eye-pupil{
+  fill:var(--eye-pupil);
+  transition:fill 320ms var(--ease-std),rx 320ms var(--spring-fast),ry 320ms var(--spring-fast);
+}
+/* Luminous rim & pupil ONLY on Obsidian main SVG eyes, never on UI */
+:root[data-pixel="obsidian"] #pipSvg .eye-rim{filter:url(#obs-rim)}
+:root[data-pixel="obsidian"] #pipSvg .eye-pupil{filter:url(#obs-pupil)}
 
-/* Pixel color picker */
-.palette-box{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
-.palette-head{
-  display:flex;align-items:center;gap:6px;
-  font:500 12px/1 var(--font-sans);
-  color:var(--md-sys-color-on-surface-variant);
-}
-.palette-head b{
-  color:var(--md-sys-color-on-primary-container);
-  background:var(--md-sys-color-primary-container);
-  padding:4px 10px;border-radius:var(--shape-pill);
-  font-weight:600;
-}
-.swatches{display:flex;gap:9px;align-items:center;justify-content:center;flex-wrap:wrap}
-.swatch{
-  width:34px;height:34px;min-height:34px;padding:0;border-radius:17px;
-  border:2px solid var(--md-sys-color-outline-variant);
-  background:var(--sw);
-  cursor:pointer;position:relative;
-  display:grid;place-items:center;
-  transition:transform 220ms var(--spring-fast),border-radius 180ms var(--spring-fast),border-color 200ms var(--ease-std),outline-color 200ms var(--ease-std);
-}
-.swatch:hover{transform:scale(1.1)}
-.swatch:active{transform:scale(.9);border-radius:10px}
-.swatch[data-set-pixel="obsidian"]{
-  background:#0c1118;
-  border-color:#4dd0ff;
-}
-.swatch .ico{font-size:18px;color:#fff;opacity:0;transform:scale(.5);transition:opacity 180ms var(--ease-std),transform 240ms var(--spring-fast)}
-.swatch[data-set-pixel="porcelain"] .ico{color:#261a00}
-.swatch[aria-pressed="true"]{
-  border-color:var(--md-sys-color-surface-container-low);
-  outline:2.5px solid var(--md-sys-color-primary);
-  outline-offset:2px;
-}
-.swatch[aria-pressed="true"] .ico{opacity:1;transform:scale(1)}
+/* Pupil shapes morph smoothly per Pixel colorway (scoped strictly to #pipSvg) */
+:root[data-pixel="peony"] #pipSvg .eye-pupil{rx:42px;ry:86px}
+:root[data-pixel="obsidian"] #pipSvg .eye-pupil{rx:28px;ry:58px}
+:root[data-pixel="bay"] #pipSvg .eye-pupil{rx:44px;ry:74px}
+:root[data-pixel="hazel"] #pipSvg .eye-pupil{rx:46px;ry:64px}
+:root[data-pixel="coral"] #pipSvg .eye-pupil{rx:37px;ry:80px}
+:root[data-pixel="porcelain"] #pipSvg .eye-pupil{rx:42px;ry:42px}
 
-/* Connection status pill */
-.status{
-  display:inline-flex;gap:10px;align-items:center;
-  padding:8px 16px;border-radius:var(--shape-pill);
-  background:var(--md-sys-color-surface-container-high);
-  color:var(--md-sys-color-on-surface-variant);
-  font:600 14px/1.2 var(--font-sans);
-  max-width:100%;
+/* Eyelid blink & sleep/charging expression */
+.eye-lid{
+  transform-origin:200px 200px;
+  transition:transform 260ms var(--spring-fast);
 }
-.linking .status{
-  background:var(--md-sys-color-primary-container);
-  color:var(--md-sys-color-on-primary-container);
+.eye-lid.blinking{transform:scaleY(.05);transition:transform 90ms ease-in}
+.eye-lid.sleepy{transform:scaleY(.78)}
+.eye-lid.alert{transform:scaleY(1.03)}
+
+/* Charging happy lower-lid cheek cover */
+.charge-cheek{
+  fill:#000000;
+  opacity:0;transform:translateY(38px);
+  transition:opacity 280ms var(--ease-std),transform 320ms var(--spring-spatial);
 }
-.linked .status{
-  background:var(--md-sys-color-success-container);
-  color:var(--md-sys-color-on-success-container);
+body.charging .charge-cheek{opacity:1;transform:translateY(0)}
+
+/* ---- 4 Radial Editorial Callouts (aligned directly to leader shelves) ---- */
+.callout{
+  position:absolute;z-index:3;
+  display:flex;flex-direction:column;gap:4px;
+  max-width:210px;
+  animation:calloutIn 260ms var(--spring-spatial) backwards;
+  animation-delay:calc(var(--i,0) * 40ms);
 }
+.callout .k{
+  font:600 11px/1 var(--font-sans);
+  letter-spacing:.13em;text-transform:uppercase;
+  color:var(--text-3);
+}
+.callout .v{
+  font:600 17px/1.2 var(--font-sans);
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.c-tl{top:64px;left:18px;text-align:left;align-items:flex-start}
+.c-tr{top:64px;right:18px;text-align:right;align-items:flex-end}
+.c-bl{bottom:64px;left:18px;text-align:left;align-items:flex-start}
+.c-br{bottom:64px;right:18px;text-align:right;align-items:flex-end}
+
 .dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--md-sys-color-outline);
-  flex:none;position:relative;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--text-3);flex:none;position:relative;
   transition:background-color 240ms var(--ease-std);
 }
 .dot::after{
   content:"";position:absolute;inset:0;border-radius:50%;
   background:currentColor;opacity:0;pointer-events:none;
 }
-.linking .dot{background:var(--md-sys-color-primary)}
-.linking .dot::after{background:var(--md-sys-color-primary);animation:connPulse 1.1s var(--ease-std) infinite}
-.linked .dot{background:var(--md-sys-color-success)}
-.linked .dot::after{background:var(--md-sys-color-success);animation:connPulse 1.8s var(--ease-std) infinite}
+.linking .dot{background:var(--accent)}
+.linking .dot::after{background:var(--accent);animation:dotPulse 1.1s var(--ease-std) infinite}
+.linked .dot{background:var(--good)}
+.linked .dot::after{background:var(--good);animation:dotPulse 1.8s var(--ease-std) infinite}
 
-/* Device telemetry tiles */
-.facts{
-  width:100%;margin:0;
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
-}
-.fact{
-  background:var(--md-sys-color-surface-container);
-  border-radius:18px;padding:10px 8px;
-  display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
-  min-width:0;
-}
-.fact dt{
-  font:500 11px/1.2 var(--font-sans);
-  color:var(--md-sys-color-on-surface-variant);
-}
-.fact dd{
-  margin:0;font:600 13px/1.25 var(--font-sans);
-  font-variant-numeric:tabular-nums;
-  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+/* ---- Bottom Floating Dock: Swatches + Connect + 3-Section Nav Pill ---- */
+.dock{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  max-width:640px;width:100%;margin:0 auto;
+  z-index:5;min-width:0;
 }
 
-.connect{width:100%;display:grid;gap:10px}
-.sidebar footer{
-  color:var(--md-sys-color-on-surface-variant);
-  font-size:13px;line-height:1.5;
-  padding:4px 8px;
+.palette-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;
 }
-
-/* ---- Main content area ---- */
-.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:2px 0 22px}
-.head h2{font:700 clamp(26px,2.8vw,34px)/1.15 var(--font-sans);margin:0;letter-spacing:-.02em;text-wrap:balance}
-.head p{margin:8px 0 0;color:var(--md-sys-color-on-surface-variant);max-width:62ch;font-size:15px}
-
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.wide{grid-column:1/-1}
-.card{
-  background:var(--md-sys-color-surface-container-low);
-  border-radius:var(--shape-card);
-  padding:24px;
-  display:flex;flex-direction:column;gap:16px;min-width:0;
+.pixel-tag{
+  font:600 11.5px/1 var(--font-sans);
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);
+  min-width:86px;text-align:right;
 }
-section.animating .card,section.animating .steps li{
-  animation:cardEnter 320ms var(--spring-spatial) backwards;
-  animation-delay:calc(var(--i,0) * 40ms);
+.swatches{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface-2);
+  padding:7px 10px;border-radius:999px;
 }
-.card-title{
-  display:flex;align-items:center;gap:12px;margin:0;
-}
-.card-ico{
-  width:40px;height:40px;border-radius:14px;flex:none;
-  background:var(--md-sys-color-primary-container);
-  color:var(--md-sys-color-on-primary-container);
+.swatch{
+  width:28px;height:28px;min-height:28px;padding:0;
+  border-radius:14px;border:none;cursor:pointer;
+  background:var(--sw);
+  position:relative;overflow:hidden;
   display:grid;place-items:center;
+  transition:transform 220ms var(--spring-fast),border-radius 180ms var(--spring-fast),outline-color 200ms var(--ease-std);
 }
-.card h3{
-  font:600 18px/1.2 var(--font-sans);margin:0;
-  color:var(--md-sys-color-on-surface);
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+.swatch::after{
+  content:"";width:11px;height:15px;border-radius:999px;
+  background:var(--sw-p);
+  transition:transform 220ms var(--spring-fast),opacity 180ms var(--ease-std);
 }
-.pill-tag{
-  font:600 12px/1 var(--font-sans);
-  padding:5px 10px;border-radius:var(--shape-pill);
-  background:var(--md-sys-color-tertiary-container);
-  color:var(--md-sys-color-on-tertiary-container);
+.swatch[data-set-pixel="obsidian"]{
+  background:#020508;
+  box-shadow:inset 0 0 0 2px #4dd0ff;
 }
-.muted{color:var(--md-sys-color-on-surface-variant);font-size:14px;margin:0;line-height:1.5}
-.notice{
-  background:var(--md-sys-color-error-container);
-  color:var(--md-sys-color-on-error-container);
-  border-radius:var(--shape-inner);padding:16px 20px;margin:0 0 20px;
-  display:flex;align-items:center;gap:12px;font-size:15px;
+.swatch[data-set-pixel="obsidian"]::after{width:8px;height:12px}
+.swatch:hover{transform:scale(1.14)}
+.swatch:active{transform:scale(.9);border-radius:8px}
+.swatch[aria-pressed="true"]{
+  outline:2px solid var(--text);
+  outline-offset:3px;
+  transform:scale(1.06);
 }
 
-/* ---- Material 3 Expressive buttons (pill -> squircle morph on press) ---- */
+.actions{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  width:100%;
+}
+
+/* Flat matte pill buttons with Expressive morph on press */
 button{
-  font:600 15px/1.2 var(--font-sans);
-  border-radius:26px;
-  padding:12px 22px;
+  font:600 14px/1.2 var(--font-sans);
+  border-radius:24px;
+  padding:12px 22px;min-height:46px;
   border:none;
-  background:var(--md-sys-color-secondary-container);
-  color:var(--md-sys-color-on-secondary-container);
-  cursor:pointer;min-height:48px;
+  background:var(--surface-3);
+  color:var(--text);
+  cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   position:relative;overflow:hidden;
-  transition:border-radius 180ms var(--spring-fast),transform 160ms var(--spring-fast),background-color 200ms var(--ease-std),color 200ms var(--ease-std),border-color 200ms var(--ease-std);
+  transition:border-radius 180ms var(--spring-fast),transform 160ms var(--spring-fast),background-color 220ms var(--ease-std),color 220ms var(--ease-std);
 }
-button:hover{
-  background:color-mix(in srgb,var(--md-sys-color-on-secondary-container) 8%,var(--md-sys-color-secondary-container));
-}
-button:not(:disabled):not(.nav-btn):not(.swatch):active{
-  border-radius:13px;
-  transform:scale(.97);
-}
-button.main{
-  background:var(--md-sys-color-primary);
-  color:var(--md-sys-color-on-primary);
-}
-button.main:hover{
-  background:color-mix(in srgb,var(--md-sys-color-on-primary) 10%,var(--md-sys-color-primary));
-}
-button.outline{
-  background:transparent;
-  color:var(--md-sys-color-on-surface);
-  border:1.5px solid var(--md-sys-color-outline-variant);
-}
-button.outline:hover{
-  background:color-mix(in srgb,var(--md-sys-color-on-surface) 8%,transparent);
-}
-button:disabled{opacity:.42;cursor:default}
-button.nav-btn,button.swatch{min-height:auto}
-button.nav-btn:hover{background:transparent}
+button:hover{background:var(--surface-4)}
+button:not(:disabled):not(.swatch):not(.nav-btn):active{border-radius:12px;transform:scale(.97)}
+button.main{background:var(--accent);color:var(--on-accent)}
+button.main:hover{background:color-mix(in srgb,#ffffff 12%,var(--accent))}
+button.ghost{background:var(--surface-2);color:var(--text-2)}
+button.ghost:hover{background:var(--surface-3);color:var(--text)}
+button:disabled{opacity:.38;cursor:default}
+button.swatch{min-height:28px}
 button.swatch:hover{background:var(--sw)}
-button.swatch[data-set-pixel="obsidian"]:hover{background:#0c1118}
-:focus-visible{outline:2.5px solid var(--md-sys-color-primary);outline-offset:2px}
+button.swatch[data-set-pixel="obsidian"]:hover{background:#020508}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+/* 3-section pill navigation bar */
+#tabs{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--surface-2);
+  padding:5px;border-radius:999px;
+  max-width:100%;
+}
+.nav-btn{
+  background:transparent;color:var(--text-2);
+  min-height:42px;padding:9px 18px;border-radius:999px;
+  font:600 14px/1 var(--font-sans);
+}
+.nav-btn:hover{background:var(--surface-3);color:var(--text)}
+.nav-btn:active{transform:scale(.95)}
+.nav-btn.on{
+  background:var(--accent);
+  color:var(--on-accent);
+}
+.nav-btn.on .ico{font-variation-settings:"FILL" 1,"wght" 500,"GRAD" 0,"opsz" 24}
+
+/* ---- Side Sheet (Desktop) / Bottom Sheet (Mobile) ---- */
+.scrim{
+  position:fixed;inset:0;z-index:30;
+  background:rgba(0,0,0,.58);
+  opacity:0;pointer-events:none;
+  transition:opacity 240ms var(--ease-std);
+}
+@media (min-width:1080px){
+  /* On wide desktop keep Pip crystal-clear beside the sheet, click anywhere on black to close */
+  .scrim{background:transparent}
+}
+body.sheet-open .scrim{opacity:1;pointer-events:auto}
+
+.sheet{
+  position:fixed;z-index:40;
+  top:16px;right:16px;bottom:16px;
+  width:min(504px,calc(100vw - 32px));
+  background:var(--surface-1);
+  border-radius:30px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transform:translateX(calc(100% + 28px));
+  opacity:.4;pointer-events:none;
+  transition:transform 340ms var(--spring-spatial),opacity 220ms var(--ease-std);
+}
+body.sheet-open .sheet{
+  transform:translateX(0);
+  opacity:1;pointer-events:auto;
+}
+.sheet-handle{display:none}
+
+.sheet-top{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:20px 22px 14px;
+  background:var(--surface-1);
+  flex:none;
+}
+.sheet-tabs{
+  display:inline-flex;gap:4px;
+  background:var(--surface-3);
+  padding:4px;border-radius:999px;
+}
+.sheet-tabs button{
+  min-height:36px;padding:7px 14px;border-radius:999px;
+  font:600 13px/1 var(--font-sans);
+  background:transparent;color:var(--text-2);
+}
+.sheet-tabs button:hover{color:var(--text);background:var(--surface-4)}
+.sheet-tabs button.on{background:var(--accent);color:var(--on-accent)}
+
+.sheet-close{
+  width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;
+  background:var(--surface-3);color:var(--text-2);flex:none;
+}
+.sheet-close:hover{background:var(--surface-4);color:var(--text)}
+
+.sheet-body{
+  flex:1;overflow-y:auto;overscroll-behavior:contain;
+  padding:4px 22px 28px;
+}
+.sheet-body::-webkit-scrollbar{width:6px}
+.sheet-body::-webkit-scrollbar-thumb{background:#262626;border-radius:999px}
+
+.sec-head{margin:6px 0 18px}
+.sec-head h2{
+  margin:0;font:700 26px/1.15 var(--font-sans);
+  letter-spacing:-.025em;color:var(--text);
+}
+.sec-head p{margin:6px 0 0;font-size:14px;color:var(--text-2)}
+
+.stack{display:flex;flex-direction:column;gap:14px}
+.group{
+  background:var(--surface-3);
+  border-radius:24px;
+  padding:20px;
+  display:flex;flex-direction:column;gap:14px;
+}
+section.animating .group,section.animating .steps li{
+  animation:cardIn 300ms var(--spring-spatial) backwards;
+  animation-delay:calc(var(--i,0) * 40ms);
+}
+.group-title{display:flex;align-items:center;gap:10px}
+.group-ico{
+  width:34px;height:34px;border-radius:12px;flex:none;
+  background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;
+  transition:background-color 260ms var(--ease-std),color 260ms var(--ease-std);
+}
+.group h3{
+  margin:0;font:600 16px/1.2 var(--font-sans);color:var(--text);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.tag{
+  font:600 11px/1 var(--font-sans);
+  padding:4px 9px;border-radius:999px;
+  background:var(--surface-4);color:var(--text-2);
+}
+.muted{margin:0;color:var(--text-2);font-size:13.5px;line-height:1.5}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-label,.lbl{display:block;font-size:13px;font-weight:600;color:var(--md-sys-color-on-surface-variant);margin:0 0 6px}
 
-/* ---- Fields & Selects ---- */
+label{display:block;font:600 12px/1.2 var(--font-sans);color:var(--text-2);margin:0 0 7px}
 input[type=text],input[type=url],select{
-  width:100%;font:inherit;font-size:15px;
-  color:var(--md-sys-color-on-surface);
-  background:var(--md-sys-color-surface-container-highest);
-  border:2px solid transparent;border-radius:var(--shape-field);
-  padding:11px 14px;min-height:48px;
-  transition:border-color 180ms var(--ease-std),background-color 180ms var(--ease-std);
+  width:100%;font:inherit;font-size:14.5px;
+  color:var(--text);
+  background:var(--surface-1);
+  border:none;border-radius:14px;
+  padding:11px 14px;min-height:44px;
+  outline:2px solid transparent;
+  transition:outline-color 180ms var(--ease-std),background-color 180ms var(--ease-std);
 }
-input[type=text]::placeholder,input[type=url]::placeholder{color:var(--md-sys-color-outline)}
-input:focus,select:focus{
-  border-color:var(--md-sys-color-primary);
-  outline:none;
-  background:var(--md-sys-color-surface-container-lowest);
-}
-.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input::placeholder{color:var(--text-3)}
+input:focus,select:focus{outline-color:var(--accent);background:#080808}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
 .saved{
   display:inline-flex;align-items:center;gap:4px;
-  color:var(--md-sys-color-success);
-  font-size:14px;font-weight:600;
+  color:var(--good);font:600 13.5px/1 var(--font-sans);
   opacity:0;transform:translateX(-6px);pointer-events:none;
-  transition:opacity 220ms var(--ease-std),transform 260ms var(--spring-fast);
+  transition:opacity 200ms var(--ease-std),transform 240ms var(--spring-fast);
 }
 .saved.show{opacity:1;transform:translateX(0)}
 
-/* ---- Badge preview ---- */
-.badge{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:24px;align-items:center}
-.preview-wrap{
-  width:168px;aspect-ratio:1;border-radius:50%;
-  background:var(--md-sys-color-surface-container-highest);
-  padding:6px;display:grid;place-items:center;
-}
+/* Badge preview inside sheet */
+.badge{display:grid;grid-template-columns:minmax(0,1fr) 136px;gap:16px;align-items:center}
 .preview{
-  width:100%;height:100%;border-radius:50%;
-  background:#000;border:5px solid #1e2125;color:#fff;
+  width:136px;aspect-ratio:1;border-radius:50%;
+  background:#000000;color:#ffffff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:16px;overflow:hidden;
+  padding:14px;overflow:hidden;
 }
-.preview .mark{display:flex;gap:6px;margin-bottom:8px}
-.preview .mark i{width:9px;height:13px;background:var(--pip-eye-bg);border-radius:4px}
-:root[data-pixel="obsidian"] .preview .mark i{
-  background:#060a10;border:1.5px solid var(--pip-eye-border);
-  box-shadow:0 0 6px rgba(77,208,255,.78);
-}
-.preview b{font:600 17px/1.12 var(--font-sans);max-width:100%;overflow-wrap:anywhere}
-.preview small{font:600 10px var(--font-mono);color:var(--pip-eye-accent);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+.preview .mini-eyes{width:46px;height:28px;margin-bottom:6px;flex:none}
+.preview .mini-sclera{fill:var(--eye-sclera);stroke:var(--eye-stroke);stroke-width:2.2}
+.preview .mini-pupil{fill:var(--eye-pupil)}
+.preview b{font:600 15px/1.12 var(--font-sans);max-width:100%;overflow-wrap:anywhere}
+.preview small{font:600 9px var(--font-mono);color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
 
-/* ---- QR links ---- */
-.links{display:grid;gap:10px}
-.link{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) minmax(0,2.2fr);gap:10px;align-items:center}
+/* QR links inside sheet */
+.links{display:grid;gap:8px}
+.link{display:grid;grid-template-columns:24px 1fr 1fr;gap:8px;align-items:center}
+.link input[type=url]{grid-column:2/-1}
 .link .n{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--md-sys-color-surface-container-highest);
-  color:var(--md-sys-color-on-surface-variant);
-  font:600 12px/1 var(--font-sans);
+  width:24px;height:24px;border-radius:50%;
+  background:var(--surface-1);color:var(--text-3);
+  font:600 11px/1 var(--font-mono);
   display:grid;place-items:center;
 }
-.link.head-row span{font-size:12px;font-weight:600;color:var(--md-sys-color-on-surface-variant)}
 
-/* ---- Material 3 Expressive Slider (zero gradients: real tonal fill track) ---- */
-.range{display:flex;align-items:center;gap:14px}
-.slider-wrap{
-  position:relative;flex:1;height:40px;
-  display:flex;align-items:center;
-}
+/* Flat expressive slider (zero gradients) */
+.range{display:flex;align-items:center;gap:12px}
+.slider-wrap{position:relative;flex:1;height:36px;display:flex;align-items:center}
 .slider-track{
-  position:absolute;left:0;right:0;height:14px;border-radius:var(--shape-pill);
-  background:var(--md-sys-color-surface-container-highest);
-  overflow:hidden;pointer-events:none;
+  position:absolute;left:0;right:0;height:12px;border-radius:999px;
+  background:var(--surface-1);overflow:hidden;pointer-events:none;
 }
 .slider-fill{
-  height:100%;width:78%;
-  background:var(--md-sys-color-primary);
-  border-radius:var(--shape-pill);
+  height:100%;width:78%;background:var(--accent);border-radius:999px;
   transition:width 160ms var(--spring-fast),background-color 220ms var(--ease-std);
 }
 .slider-wrap input[type=range]{
-  position:relative;z-index:2;width:100%;height:40px;margin:0;
+  position:relative;z-index:2;width:100%;height:36px;margin:0;
   appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;
 }
 .slider-wrap input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;appearance:none;
-  width:10px;height:32px;border-radius:var(--shape-pill);
-  background:var(--md-sys-color-primary);
-  border:3px solid var(--md-sys-color-surface-container-low);
+  width:9px;height:28px;border-radius:999px;
+  background:var(--accent);border:3px solid var(--surface-3);
   transition:width 160ms var(--spring-fast),transform 160ms var(--spring-fast),background-color 220ms var(--ease-std);
 }
-.slider-wrap input[type=range]:active::-webkit-slider-thumb{width:7px;transform:scaleY(1.12)}
+.slider-wrap input[type=range]:active::-webkit-slider-thumb{width:6px;transform:scaleY(1.12)}
 .slider-wrap input[type=range]::-moz-range-thumb{
-  width:10px;height:32px;border-radius:var(--shape-pill);
-  background:var(--md-sys-color-primary);
-  border:3px solid var(--md-sys-color-surface-container-low);
+  width:9px;height:28px;border-radius:999px;
+  background:var(--accent);border:3px solid var(--surface-3);
   transition:width 160ms var(--spring-fast),transform 160ms var(--spring-fast),background-color 220ms var(--ease-std);
 }
-.slider-wrap input[type=range]:active::-moz-range-thumb{width:7px;transform:scaleY(1.12)}
 .range output{
-  font:600 14px/1 var(--font-sans);
-  min-width:52px;text-align:center;
-  font-variant-numeric:tabular-nums;
-  background:var(--md-sys-color-primary-container);
-  color:var(--md-sys-color-on-primary-container);
-  padding:8px 10px;border-radius:var(--shape-pill);
+  font:600 13px/1 var(--font-mono);min-width:46px;text-align:center;
+  background:var(--surface-1);color:var(--text);
+  padding:7px 9px;border-radius:999px;font-variant-numeric:tabular-nums;
 }
 
-/* ---- Material 3 Expressive Switches ---- */
-.toggles{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
+/* Smooth switches */
+.toggles{display:flex;flex-direction:column;gap:8px}
 .toggle{
-  display:flex;justify-content:space-between;align-items:center;gap:14px;
-  padding:14px 16px;
-  background:var(--md-sys-color-surface-container);
-  border-radius:var(--shape-inner);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:18px;
+  background:var(--surface-2);
 }
-.toggle-title{font:600 15px/1.3 var(--font-sans)}
-.toggle small{display:block;color:var(--md-sys-color-on-surface-variant);font-size:13px;line-height:1.4;margin-top:2px;font-weight:400}
-.switch{position:relative;width:54px;height:32px;flex:none;margin:0}
+.toggle-title{font:600 14.5px/1.3 var(--font-sans);color:var(--text)}
+.toggle small{display:block;color:var(--text-2);font-size:12.5px;line-height:1.4;margin-top:2px}
+.switch{position:relative;width:50px;height:30px;flex:none;margin:0}
 .switch input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
 .switch span{
-  position:absolute;inset:0;
-  background:var(--md-sys-color-surface-container-highest);
-  border:2px solid var(--md-sys-color-outline);
-  border-radius:var(--shape-pill);
-  pointer-events:none;
-  transition:background-color 220ms var(--ease-std),border-color 220ms var(--ease-std);
+  position:absolute;inset:0;border-radius:999px;
+  background:#2a2a2a;pointer-events:none;
+  transition:background-color 220ms var(--ease-std);
 }
-.switch span:before{
+.switch span::before{
   content:"";position:absolute;
-  width:16px;height:16px;left:6px;top:6px;
-  background:var(--md-sys-color-outline);
-  border-radius:50%;
-  transition:transform 240ms var(--spring-fast),width 200ms var(--spring-fast),height 200ms var(--spring-fast),left 200ms var(--spring-fast),top 200ms var(--spring-fast),background-color 200ms var(--ease-std);
+  width:18px;height:18px;left:6px;top:6px;border-radius:50%;
+  background:#8a8a8a;
+  transition:transform 240ms var(--spring-fast),width 180ms var(--spring-fast),height 180ms var(--spring-fast),left 180ms var(--spring-fast),top 180ms var(--spring-fast),background-color 200ms var(--ease-std);
 }
-.switch:active span:before{width:22px;left:3px}
-.switch input:checked+span{
-  background:var(--md-sys-color-primary);
-  border-color:var(--md-sys-color-primary);
+.switch:active span::before{width:22px;left:4px}
+.switch input:checked+span{background:var(--accent)}
+.switch input:checked+span::before{
+  width:22px;height:22px;left:4px;top:4px;
+  transform:translateX(20px);background:var(--on-accent);
 }
-.switch input:checked+span:before{
-  width:24px;height:24px;left:2px;top:2px;
-  transform:translateX(22px);
-  background:var(--md-sys-color-on-primary);
-}
-.switch:active input:checked+span:before{width:27px;transform:translateX(19px)}
-.switch input:focus-visible+span{outline:2.5px solid var(--md-sys-color-primary);outline-offset:2px}
+.switch:active input:checked+span::before{width:25px;transform:translateX(17px)}
+.switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
 
-/* ---- Info tip pill ---- */
-.tip-box{
-  background:var(--md-sys-color-surface-container);
-  border-radius:var(--shape-inner);
-  padding:14px 16px;
-  display:flex;gap:12px;align-items:flex-start;
+.tip{
+  display:flex;gap:10px;align-items:flex-start;
+  background:var(--surface-2);border-radius:16px;padding:12px 14px;
 }
-.tip-box .ico{color:var(--md-sys-color-primary);margin-top:1px}
+.tip .ico{font-size:18px;color:var(--accent);margin-top:1px}
 
-/* ---- Flashing ---- */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s;margin:0;padding:0;list-style:none}
+/* Flashing */
+.steps{display:grid;grid-template-columns:1fr;gap:10px;counter-reset:s;margin:0;padding:0;list-style:none}
 .steps li{
-  background:var(--md-sys-color-surface-container-low);
-  border-radius:var(--shape-card);
-  padding:22px;counter-increment:s;
-  display:flex;flex-direction:column;gap:6px;
+  background:var(--surface-3);border-radius:20px;padding:16px 18px;
+  counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:4px 12px;align-items:start;
 }
-.steps li:before{
-  content:counter(s);
-  display:grid;place-items:center;
-  width:36px;height:36px;border-radius:14px;
-  background:var(--md-sys-color-tertiary-container);
-  color:var(--md-sys-color-on-tertiary-container);
-  font:700 16px var(--font-sans);
-  margin-bottom:6px;
+.steps li::before{
+  content:counter(s);grid-row:1/3;
+  width:30px;height:30px;border-radius:10px;
+  background:var(--accent-soft);color:var(--accent);
+  font:700 14px var(--font-sans);display:grid;place-items:center;
 }
-.steps b{display:block;font-size:16px}
-.flashbox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
-.bar{height:12px;background:var(--md-sys-color-surface-container-highest);border-radius:var(--shape-pill);overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--md-sys-color-primary);border-radius:var(--shape-pill);transition:width 240ms var(--ease-std)}
-details{
-  background:var(--md-sys-color-surface-container);
-  border-radius:var(--shape-inner);
-  padding:14px 18px;
-}
+.steps b{font-size:15px}
+.bar{height:10px;background:var(--surface-1);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width 240ms var(--ease-std)}
+details{background:var(--surface-2);border-radius:18px;padding:13px 16px}
 details summary{
-  cursor:pointer;color:var(--md-sys-color-on-surface);
-  font-weight:600;list-style:none;
+  cursor:pointer;color:var(--text);font-weight:600;list-style:none;
   display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 details summary::-webkit-details-marker{display:none}
 details summary .chev{transition:transform 240ms var(--spring-fast)}
 details[open] summary .chev{transform:rotate(180deg)}
 details p{margin:10px 0 0}
-code{font-family:var(--font-mono);background:var(--md-sys-color-surface-container-highest);padding:2px 7px;border-radius:8px;font-size:13px}
+code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;border-radius:7px;font-size:12.5px}
 
-/* ---- Responsive breakpoints ---- */
-@media (max-width:1180px){
-  .app{grid-template-columns:284px minmax(0,1fr);gap:22px;padding:24px}
-  .toggles{grid-template-columns:1fr}
-  .link{grid-template-columns:30px 1fr 1fr}
-  .link input[type=url]{grid-column:2/-1}
-  .link.head-row{display:none}
+.sheet-foot{
+  margin-top:18px;padding-top:14px;
+  color:var(--text-3);font-size:12.5px;line-height:1.5;
 }
-@media (max-width:900px){
-  /* Convert Navigation Rail into Pixel Bottom Navigation Bar */
-  .nav-rail{
-    top:auto;left:0;right:0;bottom:0;width:auto;height:auto;
-    flex-direction:row;justify-content:center;
-    padding:8px 12px calc(10px + env(safe-area-inset-bottom));
-    gap:0;
-    border-top:1px solid var(--md-sys-color-outline-variant);
-  }
-  .rail-mark,.rail-link{display:none}
-  #tabs{
-    flex-direction:row;justify-content:space-around;
-    max-width:520px;margin:0;gap:4px;
-  }
-  .nav-btn{flex:1;padding:4px 6px}
-  .nav-btn .nav-pill{width:64px;height:32px}
 
-  .shell{margin-left:0}
-  .app{
-    grid-template-columns:1fr;
-    padding:16px 16px calc(96px + env(safe-area-inset-bottom));
-    gap:20px;
+/* ---- Mobile / Narrow Screens: Bottom Sheet + Clean 2x2 Callouts + Zero Overflow ---- */
+@media (max-width:780px){
+  .stage{padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
+  .hero{
+    width:100%;height:auto;min-height:0;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px 16px;
+    padding:4px 0 8px;
   }
-  .sidebar{position:static}
-  .device{padding:20px}
-  .screen-wrap{width:144px;padding:6px}
-  .screen{border-width:5px}
-  .eyes{gap:16px}
-  .eyes i{width:25px;height:38px;border-radius:11px}
-  body:not(.linked) .eyes i{height:32px}
-  :root[data-pixel="obsidian"] .eyes i::after{width:8px;height:11px}
-  .cards,.steps{grid-template-columns:1fr}
-}
-@media (max-width:520px){
-  .fields,.flashbox{grid-template-columns:1fr}
+  .leaders{display:none}
+  .pip-orb{
+    grid-column:1/-1;grid-row:1;justify-self:center;
+    width:clamp(210px,62vw,268px);margin:6px 0 12px;
+  }
+  .callout{
+    position:static;max-width:none;width:100%;
+    padding-top:10px;border-top:1px solid #222222;
+  }
+  .c-tl,.c-bl{text-align:left;align-items:flex-start}
+  .c-tr,.c-br{text-align:right;align-items:flex-end}
+  .callout .v{font-size:15px}
+  .pixel-tag{display:none}
+
+  .actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .actions button{width:100%;padding:12px 16px}
+
+  #tabs{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;border-radius:26px}
+  .nav-btn{
+    flex-direction:column;gap:4px;
+    padding:9px 4px;min-height:54px;border-radius:22px;
+    font-size:11.5px;
+  }
+
+  .sheet{
+    top:auto;left:0;right:0;bottom:0;
+    width:100%;max-height:86dvh;
+    border-radius:30px 30px 0 0;
+    transform:translateY(104%);
+  }
+  body.sheet-open .sheet{transform:translateY(0)}
+  .sheet-handle{
+    display:block;width:40px;height:4px;border-radius:999px;
+    background:#333333;margin:10px auto 0;flex:none;
+  }
+  .sheet-top{padding:12px 16px 10px}
+  .sheet-tabs button{padding:7px 10px;font-size:12px}
+  .sheet-body{padding:4px 16px calc(24px + env(safe-area-inset-bottom))}
   .badge{grid-template-columns:1fr;justify-items:center}
   .badge>div{width:100%}
-  .connect{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr}
 }
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}
-  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
 }
 </style>
 </head>
 <body>
-<aside class="nav-rail" aria-label="Розділи панелі">
-  <div class="rail-mark" aria-hidden="true"><div class="rail-eyes"><i></i><i></i></div></div>
-  <nav id="tabs">
-    <button type="button" class="nav-btn on" data-tab="settings" aria-current="page">
-      <span class="nav-pill"><span class="ico">tune</span></span>
-      <span class="nav-label">Налаштування</span>
-    </button>
-    <button type="button" class="nav-btn" data-tab="flash">
-      <span class="nav-pill"><span class="ico">system_update</span></span>
-      <span class="nav-label">Прошивка</span>
-    </button>
-    <button type="button" class="nav-btn" data-tab="dev">
-      <span class="nav-pill"><span class="ico">terminal</span></span>
-      <span class="nav-label">Розробникам</span>
-    </button>
-  </nav>
-  <a class="rail-link" href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener" title="Вихідний код на GitHub" aria-label="Вихідний код на GitHub">
-    <span class="ico">code</span>
-  </a>
-</aside>
-
-<div class="shell">
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand"><h1>Піп</h1><span>панель брелока</span></div>
-
-      <div class="device">
-        <div class="screen-wrap" aria-hidden="true">
-          <div class="screen"><div class="eyes"><i></i><i></i></div></div>
-        </div>
-
-        <div class="palette-box">
-          <div class="palette-head"><span>Колір Pixel</span><b id="pixelName">Обсидіан</b></div>
-          <div class="swatches" id="swatches" role="group" aria-label="Колір очей і палітри Pixel">
-            <button type="button" class="swatch" data-set-pixel="obsidian" data-label="Обсидіан" style="--sw:#101417" title="Обсидіан" aria-label="Обсидіан" aria-pressed="true"><span class="ico">check</span></button>
-            <button type="button" class="swatch" data-set-pixel="bay" data-label="Затока" style="--sw:#5b97e8" title="Затока" aria-label="Затока" aria-pressed="false"><span class="ico">check</span></button>
-            <button type="button" class="swatch" data-set-pixel="hazel" data-label="Шавлія" style="--sw:#5c8a6c" title="Шавлія" aria-label="Шавлія" aria-pressed="false"><span class="ico">check</span></button>
-            <button type="button" class="swatch" data-set-pixel="coral" data-label="Корал" style="--sw:#df6446" title="Корал" aria-label="Корал" aria-pressed="false"><span class="ico">check</span></button>
-            <button type="button" class="swatch" data-set-pixel="peony" data-label="Півонія" style="--sw:#d15a85" title="Півонія" aria-label="Півонія" aria-pressed="false"><span class="ico">check</span></button>
-            <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Порцеляна" style="--sw:#d7c39c" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"><span class="ico">check</span></button>
-          </div>
-        </div>
-
-        <div class="status"><span class="dot"></span><span id="state">Не підключено</span></div>
-
-        <dl class="facts">
-          <div class="fact"><dt>Настрій</dt><dd id="mood">—</dd></div>
-          <div class="fact"><dt>Батарея</dt><dd id="bat">—</dd></div>
-          <div class="fact"><dt>Прошивка</dt><dd id="ver">—</dd></div>
-        </dl>
-
-        <div class="connect">
-          <button type="button" class="main" id="usb"><span class="ico">usb</span>Підключити по кабелю</button>
-          <button type="button" id="ble"><span class="ico">bluetooth</span>По Bluetooth</button>
-        </div>
-      </div>
-
-      <footer>Працює в Chrome та Edge. Нічого не встановлюється: сторінка спілкується з брелоком прямо з браузера.
-        <a href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener">Вихідний код</a></footer>
-    </aside>
-
-    <main>
+<div class="stage">
+  <header class="topbar">
+    <div class="brand"><h1>Піп</h1><span>панель брелока</span></div>
+    <div class="top-right">
       <div class="notice" id="nobrowser" hidden>
-        <span class="ico">warning</span>
-        <span>Цей браузер не підтримує роботу з брелоком. Відкрий цю сторінку в <b>Google Chrome</b> або <b>Microsoft Edge</b> на комп'ютері.</span>
+        <span class="ico">info</span>
+        <span>Для USB потрібен <b>Chrome</b> або <b>Edge</b></span>
+      </div>
+      <a class="icon-link" href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener" title="Вихідний код на GitHub" aria-label="Вихідний код на GitHub">
+        <span class="ico">code</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="stage-center">
+    <main class="hero-wrap">
+      <div class="hero" id="hero">
+        <!-- Thin radial editorial callout lines leading from each label straight to the central circle -->
+        <svg class="leaders" viewBox="0 0 860 460" preserveAspectRatio="none" aria-hidden="true">
+          <!-- Top-left: Настрій -->
+          <polyline pathLength="100" style="--i:0" points="18,118 204,118 262,168"/>
+          <circle style="--i:0" cx="262" cy="168" r="3"/>
+          <!-- Top-right: Батарея -->
+          <polyline pathLength="100" style="--i:1" points="842,118 656,118 598,168"/>
+          <circle style="--i:1" cx="598" cy="168" r="3"/>
+          <!-- Bottom-left: Прошивка -->
+          <polyline pathLength="100" style="--i:2" points="18,342 204,342 262,292"/>
+          <circle style="--i:2" cx="262" cy="292" r="3"/>
+          <!-- Bottom-right: Зв'язок -->
+          <polyline class="l-state" pathLength="100" style="--i:3" points="842,342 656,342 598,292"/>
+          <circle class="d-state" style="--i:3" cx="598" cy="292" r="3"/>
+        </svg>
+
+        <!-- Editorial callout labels seated directly above/below the leader shelves -->
+        <div class="callout c-tl" style="--i:0">
+          <span class="k">Настрій</span>
+          <span class="v" id="mood">—</span>
+        </div>
+        <div class="callout c-tr" style="--i:1">
+          <span class="k">Батарея</span>
+          <span class="v" id="bat">—</span>
+        </div>
+        <div class="callout c-bl" style="--i:2">
+          <span class="k">Прошивка</span>
+          <span class="v" id="ver">—</span>
+        </div>
+        <div class="callout c-br" style="--i:3">
+          <span class="k">Зв'язок</span>
+          <span class="v"><span class="dot"></span><span id="state">Не підключено</span></span>
+        </div>
+
+        <!-- Centerpiece: Big Expressive Pip Eyes inside pure black circle -->
+        <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Очі Піпа — натисни, щоб моргнув">
+          <svg class="pip-svg" id="pipSvg" viewBox="0 0 400 400" aria-hidden="true">
+            <defs>
+              <clipPath id="clipL">
+                <ellipse cx="120" cy="200" rx="74" ry="96" transform="rotate(-13 120 200)"/>
+              </clipPath>
+              <clipPath id="clipR">
+                <ellipse cx="280" cy="200" rx="74" ry="96" transform="rotate(13 280 200)"/>
+              </clipPath>
+              <filter id="obs-rim" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="6.5" flood-color="#4dd0ff" flood-opacity="0.9"/>
+              </filter>
+              <filter id="obs-pupil" x="-45%" y="-45%" width="190%" height="190%">
+                <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#4dd0ff" flood-opacity="0.95"/>
+              </filter>
+            </defs>
+
+            <g id="eyeShift">
+              <g class="eye-lid" id="eyeLid">
+                <!-- Left eye -->
+                <g>
+                  <ellipse class="eye-sclera" cx="120" cy="200" rx="74" ry="96" transform="rotate(-13 120 200)"/>
+                  <g clip-path="url(#clipL)">
+                    <g id="pupilL">
+                      <ellipse class="eye-pupil" cx="126" cy="202" rx="42" ry="86" transform="rotate(-7 126 202)"/>
+                    </g>
+                  </g>
+                  <ellipse class="eye-rim" cx="120" cy="200" rx="74" ry="96" transform="rotate(-13 120 200)"/>
+                </g>
+                <!-- Right eye -->
+                <g>
+                  <ellipse class="eye-sclera" cx="280" cy="200" rx="74" ry="96" transform="rotate(13 280 200)"/>
+                  <g clip-path="url(#clipR)">
+                    <g id="pupilR">
+                      <ellipse class="eye-pupil" cx="274" cy="202" rx="42" ry="86" transform="rotate(7 274 202)"/>
+                    </g>
+                  </g>
+                  <ellipse class="eye-rim" cx="280" cy="200" rx="74" ry="96" transform="rotate(13 280 200)"/>
+                </g>
+                <!-- Happy charging cheek cover -->
+                <path class="charge-cheek" d="M 30 258 Q 120 220 200 258 Q 280 220 370 258 L 370 340 L 30 340 Z"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </main>
+
+    <footer class="dock">
+      <div class="palette-bar">
+        <span class="pixel-tag" id="pixelName">Півонія</span>
+        <div class="swatches" id="swatches" role="group" aria-label="Колір очей і теми Pixel">
+          <button type="button" class="swatch" data-set-pixel="peony" data-label="Півонія" style="--sw:#f5b4c8;--sw-p:#00999e" title="Півонія" aria-label="Півонія" aria-pressed="true"></button>
+          <button type="button" class="swatch" data-set-pixel="obsidian" data-label="Обсидіан" style="--sw:#020508;--sw-p:#7ce8ff" title="Обсидіан" aria-label="Обсидіан" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="bay" data-label="Затока" style="--sw:#9bc9ff;--sw-p:#154ec4" title="Затока" aria-label="Затока" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="hazel" data-label="Шавлія" style="--sw:#b9e4bc;--sw-p:#167a42" title="Шавлія" aria-label="Шавлія" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="coral" data-label="Корал" style="--sw:#ffb096;--sw-p:#d93c16" title="Корал" aria-label="Корал" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Порцеляна" style="--sw:#f3e3b8;--sw-p:#bd4c16" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"></button>
+        </div>
       </div>
 
-      <section data-tab="settings">
-        <div class="head"><div>
-          <h2>Налаштування</h2>
-          <p id="needlink">Підключи Піпа кнопкою «Підключити по кабелю» — його поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
-        </div></div>
+      <div class="actions">
+        <button type="button" class="main" id="usb"><span class="ico">usb</span>Підключити по кабелю</button>
+        <button type="button" id="ble"><span class="ico">bluetooth</span>По Bluetooth</button>
+      </div>
 
-        <div class="cards">
-          <div class="card wide">
-            <div class="card-title"><span class="card-ico"><span class="ico">badge</span></span><h3>Бейдж</h3></div>
-            <div class="badge">
-              <div>
-                <div class="fields">
-                  <div><label for="first">Перший рядок (ім'я)</label><input type="text" id="first" maxlength="30" placeholder="Твоє"></div>
-                  <div><label for="last">Другий рядок (прізвище)</label><input type="text" id="last" maxlength="30" placeholder="Ім'я"></div>
-                </div>
-                <div style="margin-top:12px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
-                <div class="row" style="margin-top:16px">
-                  <button type="button" class="main" id="saveName"><span class="ico">check</span>Зберегти бейдж</button>
-                  <span class="saved" id="savedName"><span class="ico">check_circle</span>Збережено</span>
-                </div>
-              </div>
-              <div class="preview-wrap">
-                <div class="preview" aria-label="Приблизно так на брелоку">
-                  <div class="mark"><i></i><i></i></div>
-                  <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg">KeyPet</small>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card wide">
-            <div class="card-title"><span class="card-ico"><span class="ico">qr_code_2</span></span><h3>Посилання для Quick QR <span class="pill-tag">до чотирьох</span></h3></div>
-            <p class="muted">Піп показуватиме їх QR-кодами, гортаються свайпом. Посилання на Telegram та Instagram отримають значок у центрі коду.</p>
-            <div class="links" id="links">
-              <div class="link head-row"><span></span><span>Назва</span><span>Підпис</span><span>Посилання</span></div>
-            </div>
-            <div class="row">
-              <button type="button" class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button>
-              <span class="saved" id="savedLinks"><span class="ico">check_circle</span>Збережено</span>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title"><span class="card-ico"><span class="ico">battery_saver</span></span><h3>Екран і батарея</h3></div>
-            <div class="toggle">
-              <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
-              <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
-            </div>
-            <div><label for="power">Засинати, якщо Піпа не чіпати</label>
-              <select id="power">
-                <option value="15">через 15 секунд (найдовша робота)</option>
-                <option value="30">через 30 секунд</option>
-                <option value="60">через 1 хвилину</option>
-                <option value="120">через 2 хвилини</option>
-                <option value="300">через 5 хвилин</option>
-                <option value="0">ніколи (батарея сяде швидко)</option>
-              </select></div>
-            <p class="muted">Прокидається від дотику, кнопки, якщо взяти в руку, та при сповіщенні. Бейдж, QR і ліхтарик не дають заснути, поки відкриті.</p>
-            <div><label for="bright">Яскравість</label>
-              <div class="range">
-                <div class="slider-wrap">
-                  <div class="slider-track"><div class="slider-fill" id="brightFill"></div></div>
-                  <input type="range" id="bright" min="10" max="100" step="5" value="80">
-                </div>
-                <output id="brightOut">80%</output>
-              </div>
-            </div>
-            <div><label for="theme">Оформлення на брелоку</label>
-              <select id="theme"><option value="1">Приборка — строге, з помаранчевим</option><option value="3">Діагностика — ретро-термінал</option></select></div>
-          </div>
-
-          <div class="card">
-            <div class="card-title"><span class="card-ico"><span class="ico">notifications</span></span><h3>Сповіщення з iPhone</h3></div>
-            <div><label for="privacy">Що видно на екрані брелока</label>
-              <select id="privacy">
-                <option value="1">Приховано: додаток і час, текст — коли відкриєш</option>
-                <option value="0">Відкрито: усе одразу</option>
-                <option value="2">Вимкнено: текст не приходить взагалі</option>
-              </select></div>
-            <div class="tip-box">
-              <span class="ico">shield_lock</span>
-              <p class="muted">Коди, паролі та банки брелок не зберігає в жодному режимі.</p>
-            </div>
-            <div class="tip-box">
-              <span class="ico">smartphone</span>
-              <p class="muted"><b style="color:var(--md-sys-color-on-surface)">Підключити iPhone:</b> Налаштування → Bluetooth → Pip, далі підтвердь код на брелоку верхньою кнопкою.</p>
-            </div>
-          </div>
-
-          <div class="card wide">
-            <div class="card-title"><span class="card-ico"><span class="ico">sensors</span></span><h3>Що Піп помічає</h3></div>
-            <div class="toggles" id="feats"></div>
-          </div>
-        </div>
-      </section>
-
-      <section data-tab="flash" hidden>
-        <div class="head"><div>
-          <h2>Прошити або оновити Піпа</h2>
-          <p id="fwinfo"></p>
-        </div></div>
-        <div class="cards">
-          <ol class="steps wide">
-            <li><b>Підключи кабель</b><span class="muted">USB-C з передачею даних, а не «лише для зарядки».</span></li>
-            <li><b>Натисни «Прошити»</b><span class="muted">і вибери у списку <b>USB JTAG/serial</b>.</span></li>
-            <li><b>Зачекай хвилину</b><span class="muted">Не відключай кабель, поки шкала не дійде до кінця.</span></li>
-          </ol>
-          <div class="card wide">
-            <div class="flashbox">
-              <button type="button" class="main" id="flash"><span class="ico">download</span>Прошити</button>
-              <div>
-                <div class="bar"><i id="prog"></i></div>
-                <p id="flashState" class="muted" style="margin-top:10px">Улюбленець, налаштування та підключений iPhone при оновленні зберігаються.</p>
-              </div>
-            </div>
-            <details class="muted"><summary><span>Не виходить?</span><span class="ico chev">expand_more</span></summary>
-              <p>Брелок не з'являється у списку: спробуй інший кабель або інший USB-порт. На Linux один раз виконай
-                <code>sudo usermod -aG dialout $USER</code> і перезайди.</p>
-              <p>Прошивка не починається: затисни нижню кнопку брелока, коротко натисни верхню й відпусти нижню. Брелок увійде
-                в режим прошивки — знову натисни «Прошити».</p></details>
-          </div>
-        </div>
-      </section>
-
-      <section data-tab="dev" hidden>
-        <div class="head"><div>
-          <h2>Для розробників</h2>
-          <p>Чому в Піпа такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
-        </div></div>
-        <div class="cards">
-          <div class="card">
-            <div class="card-title"><span class="card-ico"><span class="ico">bug_report</span></span><h3>Відладка</h3></div>
-            <p class="muted">Відкриється в новій вкладці; кабель перейде до неї.</p>
-            <div class="row"><button type="button" class="main" id="openDebug"><span class="ico">open_in_new</span>Відкрити відладку</button></div>
-          </div>
-          <div class="card">
-            <div class="card-title"><span class="card-ico"><span class="ico">developer_mode</span></span><h3>Режим розробника</h3></div>
-            <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх Піпа прямо на екрані брелока.</p>
-            <div class="row">
-              <button type="button" id="devOn"><span class="ico">visibility</span>Увімкнути</button>
-              <button type="button" class="outline" id="devOff"><span class="ico">visibility_off</span>Вимкнути</button>
-            </div>
-          </div>
-          <div class="card wide">
-            <div class="card-title"><span class="card-ico"><span class="ico">monitoring</span></span><h3>Лог батареї</h3></div>
-            <p class="muted">Піп щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
-            <div class="row">
-              <button type="button" id="batGet"><span class="ico">file_download</span>Завантажити CSV</button>
-              <button type="button" class="outline" id="batClear"><span class="ico">delete</span>Очистити</button>
-              <span class="saved" id="batState"></span>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+      <nav id="tabs" aria-label="Розділи">
+        <button type="button" class="nav-btn" data-tab="settings"><span class="ico">tune</span><span>Налаштування</span></button>
+        <button type="button" class="nav-btn" data-tab="flash"><span class="ico">system_update</span><span>Прошивка</span></button>
+        <button type="button" class="nav-btn" data-tab="dev"><span class="ico">terminal</span><span>Розробникам</span></button>
+      </nav>
+    </footer>
   </div>
 </div>
+
+<!-- Overlay Sheet (Right Side Sheet on desktop, Bottom Sheet on mobile) -->
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Панель керування Піпом">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <div class="sheet-top">
+    <div class="sheet-tabs" id="sheetTabs">
+      <button type="button" data-tab="settings">Налаштування</button>
+      <button type="button" data-tab="flash">Прошивка</button>
+      <button type="button" data-tab="dev">Розробникам</button>
+    </div>
+    <button type="button" class="sheet-close" id="closeSheet" aria-label="Закрити панель">
+      <span class="ico">close</span>
+    </button>
+  </div>
+
+  <div class="sheet-body">
+    <section data-tab="settings">
+      <div class="sec-head">
+        <h2>Налаштування</h2>
+        <p id="needlink">Підключи Піпа кнопкою «Підключити по кабелю» — його поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
+      </div>
+
+      <div class="stack">
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">badge</span></span><h3>Бейдж</h3></div>
+          <div class="badge">
+            <div>
+              <div class="fields">
+                <div><label for="first">Ім'я (1-й рядок)</label><input type="text" id="first" maxlength="30" placeholder="Твоє"></div>
+                <div><label for="last">Прізвище (2-й рядок)</label><input type="text" id="last" maxlength="30" placeholder="Ім'я"></div>
+              </div>
+              <div style="margin-top:10px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
+              <div class="row" style="margin-top:12px">
+                <button type="button" class="main" id="saveName"><span class="ico">check</span>Зберегти бейдж</button>
+                <span class="saved" id="savedName"><span class="ico">check_circle</span>Збережено</span>
+              </div>
+            </div>
+            <div class="preview" aria-label="Приблизно так на брелоку">
+              <svg class="mini-eyes" viewBox="0 0 120 76" aria-hidden="true">
+                <defs>
+                  <clipPath id="mClipL"><ellipse cx="35" cy="38" rx="22" ry="28" transform="rotate(-13 35 38)"/></clipPath>
+                  <clipPath id="mClipR"><ellipse cx="85" cy="38" rx="22" ry="28" transform="rotate(13 85 38)"/></clipPath>
+                </defs>
+                <ellipse class="mini-sclera" cx="35" cy="38" rx="22" ry="28" transform="rotate(-13 35 38)"/>
+                <g clip-path="url(#mClipL)"><ellipse class="mini-pupil" cx="37" cy="38" rx="12" ry="24" transform="rotate(-7 37 38)"/></g>
+                <ellipse class="mini-sclera" cx="85" cy="38" rx="22" ry="28" transform="rotate(13 85 38)"/>
+                <g clip-path="url(#mClipR)"><ellipse class="mini-pupil" cx="83" cy="38" rx="12" ry="24" transform="rotate(7 83 38)"/></g>
+              </svg>
+              <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg">KeyPet</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">qr_code_2</span></span><h3>Посилання для Quick QR <span class="tag">до чотирьох</span></h3></div>
+          <p class="muted">Піп показуватиме їх QR-кодами, гортаються свайпом. Посилання на Telegram та Instagram отримають значок у центрі коду.</p>
+          <div class="links" id="links"></div>
+          <div class="row">
+            <button type="button" class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button>
+            <span class="saved" id="savedLinks"><span class="ico">check_circle</span>Збережено</span>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">battery_saver</span></span><h3>Екран і батарея</h3></div>
+          <div class="toggle">
+            <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
+            <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
+          </div>
+          <div><label for="power">Засинати, якщо Піпа не чіпати</label>
+            <select id="power">
+              <option value="15">через 15 секунд (найдовша робота)</option>
+              <option value="30">через 30 секунд</option>
+              <option value="60">через 1 хвилину</option>
+              <option value="120">через 2 хвилини</option>
+              <option value="300">через 5 хвилин</option>
+              <option value="0">ніколи (батарея сяде швидко)</option>
+            </select></div>
+          <p class="muted">Прокидається від дотику, кнопки, якщо взяти в руку, та при сповіщенні. Бейдж, QR і ліхтарик не дають заснути, поки відкриті.</p>
+          <div><label for="bright">Яскравість</label>
+            <div class="range">
+              <div class="slider-wrap">
+                <div class="slider-track"><div class="slider-fill" id="brightFill"></div></div>
+                <input type="range" id="bright" min="10" max="100" step="5" value="80">
+              </div>
+              <output id="brightOut">80%</output>
+            </div>
+          </div>
+          <div><label for="theme">Оформлення на брелоку</label>
+            <select id="theme"><option value="1">Приборка — строге, з помаранчевим</option><option value="3">Діагностика — ретро-термінал</option></select></div>
+        </div>
+
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">notifications</span></span><h3>Сповіщення з iPhone</h3></div>
+          <div><label for="privacy">Що видно на екрані брелока</label>
+            <select id="privacy">
+              <option value="1">Приховано: додаток і час, текст — коли відкриєш</option>
+              <option value="0">Відкрито: усе одразу</option>
+              <option value="2">Вимкнено: текст не приходить взагалі</option>
+            </select></div>
+          <div class="tip">
+            <span class="ico">shield_lock</span>
+            <p class="muted">Коди, паролі та банки брелок не зберігає в жодному режимі.</p>
+          </div>
+          <div class="tip">
+            <span class="ico">smartphone</span>
+            <p class="muted"><b style="color:#fff">Підключити iPhone:</b> Налаштування → Bluetooth → Pip, далі підтвердь код на брелоку верхньою кнопкою.</p>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">sensors</span></span><h3>Що Піп помічає</h3></div>
+          <div class="toggles" id="feats"></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-tab="flash" hidden>
+      <div class="sec-head">
+        <h2>Прошити або оновити Піпа</h2>
+        <p id="fwinfo"></p>
+      </div>
+      <div class="stack">
+        <ol class="steps">
+          <li><b>Підключи кабель</b><span class="muted">USB-C з передачею даних, а не «лише для зарядки».</span></li>
+          <li><b>Натисни «Прошити»</b><span class="muted">і вибери у списку <b>USB JTAG/serial</b>.</span></li>
+          <li><b>Зачекай хвилину</b><span class="muted">Не відключай кабель, поки шкала не дійде до кінця.</span></li>
+        </ol>
+        <div class="group">
+          <button type="button" class="main" id="flash"><span class="ico">download</span>Прошити</button>
+          <div class="bar"><i id="prog"></i></div>
+          <p id="flashState" class="muted">Улюбленець, налаштування та підключений iPhone при оновленні зберігаються.</p>
+          <details class="muted"><summary><span>Не виходить?</span><span class="ico chev">expand_more</span></summary>
+            <p>Брелок не з'являється у списку: спробуй інший кабель або інший USB-порт. На Linux один раз виконай
+              <code>sudo usermod -aG dialout $USER</code> і перезайди.</p>
+            <p>Прошивка не починається: затисни нижню кнопку брелока, коротко натисни верхню й відпусти нижню. Брелок увійде
+              в режим прошивки — знову натисни «Прошити».</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section data-tab="dev" hidden>
+      <div class="sec-head">
+        <h2>Для розробників</h2>
+        <p>Чому в Піпа такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
+      </div>
+      <div class="stack">
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">bug_report</span></span><h3>Відладка</h3></div>
+          <p class="muted">Відкриється в новій вкладці; кабель перейде до неї.</p>
+          <div class="row"><button type="button" class="main" id="openDebug"><span class="ico">open_in_new</span>Відкрити відладку</button></div>
+        </div>
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">developer_mode</span></span><h3>Режим розробника</h3></div>
+          <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх Піпа прямо на екрані брелока.</p>
+          <div class="row">
+            <button type="button" id="devOn"><span class="ico">visibility</span>Увімкнути</button>
+            <button type="button" class="ghost" id="devOff"><span class="ico">visibility_off</span>Вимкнути</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">monitoring</span></span><h3>Лог батареї</h3></div>
+          <p class="muted">Піп щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
+          <div class="row">
+            <button type="button" id="batGet"><span class="ico">file_download</span>Завантажити CSV</button>
+            <button type="button" class="ghost" id="batClear"><span class="ico">delete</span>Очистити</button>
+            <span class="saved" id="batState"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="sheet-foot">Працює в Chrome та Edge. Нічого не встановлюється: сторінка спілкується з брелоком прямо з браузера.</div>
+  </div>
+</aside>
 
 <script src="firmware/firmware.js"></script>
 <script type="module">
 const $ = id => document.getElementById(id);
-
-/* ---------- Pixel seed palette + eye color sync ---------- */
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-const PIXELS = ['obsidian', 'bay', 'hazel', 'coral', 'peony', 'porcelain'];
+
+/* ---------- Pixel seed palette + expressive eye sync ---------- */
+const PIXELS = ['peony', 'obsidian', 'bay', 'hazel', 'coral', 'porcelain'];
 function boopEyes() {
   if (reducedMotion()) return;
-  const eyes = document.querySelector('.screen .eyes');
-  if (!eyes) return;
-  eyes.classList.remove('boop');
-  void eyes.offsetWidth;
-  eyes.classList.add('boop');
+  const svg = $('pipSvg');
+  svg.classList.remove('squish');
+  void svg.offsetWidth;
+  svg.classList.add('squish');
+  blinkOnce();
 }
 function setPixel(name, animate = false) {
-  if (!PIXELS.includes(name)) name = 'obsidian';
+  if (!PIXELS.includes(name)) name = 'peony';
   document.documentElement.dataset.pixel = name;
   document.querySelectorAll('#swatches .swatch').forEach(b => {
     const active = b.dataset.setPixel === name;
@@ -1221,42 +1089,126 @@ function setPixel(name, animate = false) {
   if (animate) boopEyes();
   try { localStorage.setItem('pip-pixel', name); } catch (e) {}
 }
-try { setPixel(localStorage.getItem('pip-pixel') || 'obsidian'); } catch (e) { setPixel('obsidian'); }
+const urlPixel = new URLSearchParams(location.search).get('pixel');
+try { setPixel(urlPixel || localStorage.getItem('pip-pixel') || 'peony'); } catch (e) { setPixel(urlPixel || 'peony'); }
 $('swatches').onclick = e => {
   const btn = e.target.closest('[data-set-pixel]');
   if (btn) setPixel(btn.dataset.setPixel, true);
 };
-document.querySelector('.screen')?.addEventListener('click', boopEyes);
+$('pipOrb').onclick = boopEyes;
+$('pipOrb').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); boopEyes(); } };
 
-/* ---------- Material 3 ripple on press ---------- */
+/* ---------- Living eyes: smooth pointer/touch tracking, natural blinking, state reactions ---------- */
+let targetX = 0, targetY = 0, curX = 0, curY = 0, lastPointer = 0;
+function aimAt(clientX, clientY) {
+  const r = $('pipOrb').getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const dx = (clientX - cx) / Math.max(window.innerWidth * 0.42, 220);
+  const dy = (clientY - cy) / Math.max(window.innerHeight * 0.42, 220);
+  const len = Math.hypot(dx, dy);
+  const clamp = len > 1 ? 1 / len : 1;
+  targetX = dx * clamp;
+  targetY = dy * clamp;
+  lastPointer = performance.now();
+}
+window.addEventListener('pointermove', e => aimAt(e.clientX, e.clientY), {passive: true});
+window.addEventListener('touchmove', e => {
+  if (e.touches[0]) aimAt(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive: true});
+
+function blinkOnce() {
+  if (reducedMotion()) return;
+  const lid = $('eyeLid');
+  lid.classList.add('blinking');
+  setTimeout(() => lid.classList.remove('blinking'), 135);
+}
+function scheduleBlink() {
+  setTimeout(() => {
+    if (!document.hidden) blinkOnce();
+    scheduleBlink();
+  }, 4000 + Math.random() * 3400);
+}
+scheduleBlink();
+
+function updateEyeMood(moodText, charging) {
+  document.body.classList.toggle('charging', !!charging);
+  const lid = $('eyeLid');
+  const sleepy = /asleep|sleepy|tired/i.test(moodText || '');
+  lid.classList.toggle('sleepy', sleepy);
+  lid.classList.toggle('alert', document.body.classList.contains('linked') && !sleepy);
+}
+
+function animateEyes(now) {
+  if (!reducedMotion()) {
+    if (document.body.classList.contains('linking')) {
+      targetX = Math.sin(now / 360) * 0.72;
+      targetY = -0.1;
+    } else if (now - lastPointer > 3600) {
+      targetX = Math.sin(now / 2600) * 0.24;
+      targetY = Math.cos(now / 3400) * 0.12;
+    }
+    curX += (targetX - curX) * 0.14;
+    curY += (targetY - curY) * 0.14;
+    const px = (curX * 20).toFixed(2), py = (curY * 15).toFixed(2);
+    const ex = (curX * 6).toFixed(2), ey = (curY * 4.5).toFixed(2);
+    $('pupilL').setAttribute('transform', `translate(${px} ${py})`);
+    $('pupilR').setAttribute('transform', `translate(${px} ${py})`);
+    $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
+  }
+  requestAnimationFrame(animateEyes);
+}
+requestAnimationFrame(animateEyes);
+
+/* ---------- Material ripple on button press ---------- */
 document.addEventListener('pointerdown', e => {
   if (reducedMotion() || e.button > 0) return;
   const btn = e.target.closest('button:not(:disabled)');
   if (!btn) return;
-  const host = btn.classList.contains('nav-btn') ? btn.querySelector('.nav-pill') : btn;
-  if (!host) return;
-  const r = host.getBoundingClientRect();
+  const r = btn.getBoundingClientRect();
   const size = Math.max(r.width, r.height);
   const wave = document.createElement('span');
   wave.className = 'm3-ripple';
   wave.style.width = wave.style.height = size + 'px';
   wave.style.left = (e.clientX - r.left - size / 2) + 'px';
   wave.style.top = (e.clientY - r.top - size / 2) + 'px';
-  host.appendChild(wave);
+  btn.appendChild(wave);
   wave.addEventListener('animationend', () => wave.remove(), {once: true});
 });
 
-/* ---------- Staggered card reveal ---------- */
+/* ---------- Overlay Side/Bottom Sheet & 3 sections ---------- */
+let openTab = null;
 function staggerSection(sec) {
   if (!sec || reducedMotion()) return;
   sec.classList.remove('animating');
-  sec.querySelectorAll('.card, .steps li').forEach((el, idx) => {
-    el.style.setProperty('--i', String(Math.min(idx, 4)));
-  });
+  sec.querySelectorAll('.group, .steps li').forEach((el, idx) => el.style.setProperty('--i', String(Math.min(idx, 4))));
   void sec.offsetWidth;
   sec.classList.add('animating');
 }
-staggerSection(document.querySelector('section[data-tab]:not([hidden])'));
+function openSheet(t) {
+  if (openTab === t && document.body.classList.contains('sheet-open')) { closeSheet(); return; }
+  openTab = t;
+  document.body.classList.add('sheet-open');
+  document.querySelectorAll('#tabs button, #sheetTabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  let activeSec = null;
+  document.querySelectorAll('.sheet-body section[data-tab]').forEach(s => {
+    const hide = s.dataset.tab !== t;
+    s.hidden = hide;
+    if (!hide) activeSec = s;
+  });
+  staggerSection(activeSec);
+}
+function closeSheet() {
+  openTab = null;
+  document.body.classList.remove('sheet-open');
+  document.querySelectorAll('#tabs button, #sheetTabs button').forEach(b => b.classList.remove('on'));
+}
+$('tabs').onclick = e => { const b = e.target.closest('button[data-tab]'); if (b) openSheet(b.dataset.tab); };
+$('sheetTabs').onclick = e => { const b = e.target.closest('button[data-tab]'); if (b && b.dataset.tab !== openTab) openSheet(b.dataset.tab); };
+$('closeSheet').onclick = closeSheet;
+$('scrim').onclick = closeSheet;
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('sheet-open')) closeSheet(); });
+const urlSheet = new URLSearchParams(location.search).get('sheet');
+if (['settings', 'flash', 'dev'].includes(urlSheet)) openSheet(urlSheet);
 
 /* ---------- brightness slider tonal fill ---------- */
 function syncBright(v) {
@@ -1292,6 +1244,7 @@ function onLine(l) {
     const s = JSON.parse(l.slice(3));
     $('mood').textContent = s.m;
     $('bat').textContent = s.bat >= 0 ? `${s.bat}%${s.ch ? ' · заряджається' : ''}` : '—';
+    updateEyeMood(s.m, s.ch);
   } else if (l.startsWith('@C ')) { cfg = JSON.parse(l.slice(3)); fill(); }
   else if (l.startsWith('@B ') && batRows) {
     if (l === '@B end') {
@@ -1330,7 +1283,6 @@ async function openPort(p) {
   try { await port.setSignals({dataTerminalReady: false, requestToSend: false}); } catch (e) {}
   readLoop();
   state('По кабелю', true);
-  /* opening the port may reset the keychain: ask until it answers (it boots in ~4 s) */
   cfg = null;
   const ask = setInterval(() => { if (cfg || !port) clearInterval(ask); else send('config'); }, 1000);
 }
@@ -1347,6 +1299,7 @@ function state(text, on, busy = false) {
   $('state').textContent = text;
   document.body.classList.toggle('linked', on);
   document.body.classList.toggle('linking', !!busy && !on);
+  updateEyeMood($('mood').textContent, false);
 }
 $('usb').onclick = async () => {
   state('Підключаю по кабелю...', false, true);
@@ -1355,7 +1308,7 @@ $('usb').onclick = async () => {
 };
 $('ble').onclick = async () => {
   const SVC = '50495044-4247-4b45-5950-455400000001', RX = '50495044-4247-4b45-5950-455400000002', TX = '50495044-4247-4b45-5950-455400000003';
-  state('Шукаю Піпа по Bluetooth...', false, true);
+  state('Шукаю по Bluetooth...', false, true);
   try {
     const dev = await navigator.bluetooth.requestDevice({filters: [{name: 'Pip'}], optionalServices: [SVC]});
     const svc = await (await dev.gatt.connect()).getPrimaryService(SVC);
@@ -1412,32 +1365,6 @@ $('theme').onchange = e => send('theme ' + e.target.value);
 $('privacy').onchange = e => send('privacy ' + e.target.value);
 $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked ? 1 : 0}`);
 
-/* ---------- tabs (View Transitions API + spring card reveal) ---------- */
-let currentTab = 'settings';
-function switchTab(t) {
-  if (t === currentTab) return;
-  currentTab = t;
-  const apply = () => {
-    document.querySelectorAll('#tabs button').forEach(b => {
-      const on = b.dataset.tab === t;
-      b.classList.toggle('on', on);
-      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
-    });
-    let activeSec = null;
-    document.querySelectorAll('section[data-tab]').forEach(s => {
-      const hide = s.dataset.tab !== t;
-      s.hidden = hide;
-      if (!hide) activeSec = s;
-    });
-    staggerSection(activeSec);
-  };
-  if (document.startViewTransition && !reducedMotion()) document.startViewTransition(apply);
-  else apply();
-}
-$('tabs').onclick = e => {
-  const btn = e.target.closest('button[data-tab]');
-  if (btn) switchTab(btn.dataset.tab);
-};
 $('openDebug').onclick = async () => { await closePort(); state('Відладка відкрита у новій вкладці', false); window.open('debug.html', '_blank'); };
 $('devOn').onclick = () => send('dev 1');
 let batRows = null;
@@ -1453,8 +1380,6 @@ $('flash').onclick = async () => {
   try {
     $('flashState').textContent = 'Готуюся...';
     const {ESPLoader, Transport} = await import('https://unpkg.com/esptool-js@0.6.1/bundle.js');
-    /* ask Pip to show "Обновление" first: the screen keeps that frame while the chip is in the flasher.
-       Firmware that is not Pip's (a factory one, an empty chip) never answers: then just go on after a few seconds. */
     if (!port) await openPort(await navigator.serial.requestPort({filters: [{usbVendorId: 0x303a}]}));
     $('flashState').textContent = "Зв'язуюся з Піпом...";
     for (let t = 0; !cfg && t < 60; t++) await new Promise(r => setTimeout(r, 100));
@@ -1476,8 +1401,6 @@ $('flash').onclick = async () => {
         $('flashState').textContent = 'Прошиваю... не відключай кабель';
       },
     });
-    /* esptool-js 0.6.1 'hard_reset' only lets RTS go, it never pulls it: the chip stayed in the flasher with the last
-       frame on screen. Pull EN low with RTS (DTR low keeps GPIO0 high: a normal boot), then let go. */
     await transport.setDTR(false);
     await transport.setRTS(true);
     await new Promise(r => setTimeout(r, 150));
