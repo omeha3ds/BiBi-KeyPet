@@ -457,8 +457,8 @@ static void torch_open(lv_obj_t *scr)
    so the brand mark in the middle can cover modules and the code still scans. */
 #include "src/libs/qrcode/qrcodegen.h"
 
-#define QR_COUNT (profile_links() ? profile_links() : 1) /* the links set in the panel (profile.h) */
-#define QR_PX 240
+#define QR_COUNT (profile_links()) /* real user links only; 0 shows clean empty state */
+#define QR_PX 244
 #define QR_TERM 252 /* the terminal's code fills its ink plate, modules in the background colour */
 static struct {
     lv_obj_t *pg[2], *img[2], *service[2], *name[2]; /* two pages: the one up and the one sliding in */
@@ -472,14 +472,14 @@ static struct {
 
 static void qr_render(int i)
 {
-    if (qr.done >> i & 1) return;
+    if (i >= QR_COUNT || (qr.done >> i & 1)) return;
     qr.done |= (uint8_t)(1 << i);
     const char *text = profile_link(i)->url;
     int brand = profile_brand(text);
     static uint8_t code[qrcodegen_BUFFER_LEN_FOR_VERSION(10)], tmp[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
     uint32_t *px = (uint32_t *)qr.buf[i]->data, size = qr.size;
     uint32_t light = TH_TERMINAL ? 0xFF000000 | th->text : 0xFFFFFFFF, dark = TH_TERMINAL ? 0xFF000000 | th->bg : 0xFF000000;
-    for (uint32_t i = 0; i < size * size; i++) px[i] = light;
+    for (uint32_t k = 0; k < size * size; k++) px[k] = light;
     if (!qrcodegen_encodeText(text, tmp, code, qrcodegen_Ecc_HIGH, 1, 10, qrcodegen_Mask_AUTO, true)) return;
     /* whole pixels per module and a quiet zone: four modules on white, the plate's 10 px edge in the terminal */
     int n = qrcodegen_getSize(code), m = TH_TERMINAL ? (int)(size - 20) / n : (int)size / (n + 4), off = ((int)size - m * n) / 2;
@@ -504,14 +504,11 @@ static void qr_fill(int p, int i) /* page p shows code i */
 {
     qr_render(i);
     lv_image_set_src(qr.img[p], qr.buf[i]);
-    if (TH_TERMINAL) {
+    if (TH_TERMINAL && qr.service[p]) {
         char t[96];
         snprintf(t, sizeof t, "%s #%06X // %s#", profile_link(i)->service, (unsigned)th->dim, profile_link(i)->handle);
         lv_label_set_text(qr.service[p], th_label(t));
-        return;
     }
-    lv_label_set_text(qr.service[p], th_label(profile_link(i)->service));
-    lv_label_set_text(qr.name[p], profile_link(i)->handle); /* handles stay as they are */
 }
 
 static void qr_marks(void) /* where we are: the header and the page cells, or the dots */
@@ -544,6 +541,7 @@ static void qr_landed(lv_anim_t *a)
 static void qr_gesture(lv_event_t *e)
 {
     (void)e;
+    if (QR_COUNT <= 1) return;
     lv_dir_t d = lv_indev_get_gesture_dir(lv_indev_active());
     if (d != LV_DIR_LEFT && d != LV_DIR_RIGHT) return;
     if (lv_anim_delete(&qr, qr_slide)) qr_slide(NULL, 1000), qr_landed(NULL); /* a swipe mid-slide: land the last one first */
@@ -571,9 +569,29 @@ static void qr_close(void)
 
 static void qr_open(lv_obj_t *scr)
 {
+    if (QR_COUNT == 0) {
+        /* Clean empty state (1:1 match with web panel) — no NovikovVisuals fallback */
+        static lv_draw_buf_t *empty_ic;
+        if (!empty_ic) {
+            empty_ic = lv_draw_buf_create(60, 60, LV_COLOR_FORMAT_A8, 0);
+            if (empty_ic) doodle_icon_mask(ICON_QR, empty_ic->data, (int)empty_ic->header.stride, 60);
+        }
+        lv_obj_t *tile = th_box(scr, (SCR - 108) / 2, 114, 108, 108, 28, th->panel);
+        if (empty_ic) {
+            lv_obj_t *ic = lv_image_create(tile);
+            lv_image_set_src(ic, empty_ic);
+            lv_obj_set_style_image_recolor(ic, lv_color_hex(0x6E6E6E), 0);
+            lv_obj_set_style_image_recolor_opa(ic, LV_OPA_COVER, 0);
+            lv_obj_center(ic);
+        }
+        th_text_at(scr, th->body, th->text, "Посилань ще немає", -1, 254);
+        th_text_at(scr, th->tiny, th->dim, "Додай посилання в Налаштуваннях", -1, 296);
+        return;
+    }
     int size = TH_TERMINAL ? QR_TERM : QR_PX;
     if (qr.theme != theme_index() + 1) qr.done = 0, qr.theme = theme_index() + 1; /* other colours */
     if (qr.rev != profile_rev) qr.done = 0, qr.rev = profile_rev, qr.i = 0;  /* other links */
+    if (qr.i >= QR_COUNT) qr.i = 0;
     for (int k = 0; k < QR_COUNT && k < 8; k++) {
         if (qr.buf[k] && qr.size != size) lv_draw_buf_destroy(qr.buf[k]), qr.buf[k] = NULL, qr.done = 0;
         if (!qr.buf[k]) qr.buf[k] = lv_draw_buf_create(size, size, LV_COLOR_FORMAT_ARGB8888, 0);
@@ -584,6 +602,7 @@ static void qr_open(lv_obj_t *scr)
     for (int p = 0; p < 2; p++) {
         lv_obj_t *pg = qr.pg[p] = th_box(scr, 0, 0, SCR, SCR, 0, 0);
         lv_obj_set_style_bg_opa(pg, LV_OPA_TRANSP, 0);
+        qr.service[p] = qr.name[p] = NULL;
         if (TH_TERMINAL) {
             qr.img[p] = lv_image_create(pg);
             lv_obj_set_pos(qr.img[p], 107, 78);
@@ -591,14 +610,10 @@ static void qr_open(lv_obj_t *scr)
             lv_label_set_recolor(qr.service[p], true);
             continue;
         }
-        lv_obj_t *card = th_box(pg, (SCR - 270) / 2, (SCR - 270) / 2 + 18, 270, 270, th->radius ? 22 : 0, 0xFFFFFF);
+        /* Clean minimalist QR card (1:1 match with web panel: 276x276, r=28, no header label) */
+        lv_obj_t *card = th_box(pg, (SCR - 276) / 2, 86, 276, 276, 28, 0xFFFFFF);
         qr.img[p] = lv_image_create(card);
         lv_obj_center(qr.img[p]);
-        qr.service[p] = th_text(pg, th->small, th->dim, "");
-        lv_obj_align(qr.service[p], LV_ALIGN_TOP_MID, 0, 30);
-        qr.name[p] = th_text(pg, th->body, th->text, "");
-        lv_obj_set_style_text_letter_space(qr.name[p], 0, 0);
-        lv_obj_align(qr.name[p], LV_ALIGN_TOP_MID, 0, 56);
     }
     if (TH_TERMINAL) {
         qr.head = th_header(scr, "", 40);
@@ -607,7 +622,7 @@ static void qr_open(lv_obj_t *scr)
         th_footer(scr, TH_LEFT " " TH_RIGHT " свайп   " TH_DOWN " назад", 399);
     } else
         for (int k = 0; k < QR_COUNT && k < 8; k++)
-            qr.dots[k] = dot(scr, SCR / 2 + (int)((k - (QR_COUNT - 1) / 2.0f) * 18), SCR - 54, 8, th->text);
+            qr.dots[k] = dot(scr, SCR / 2 + (int)((k - (QR_COUNT - 1) / 2.0f) * 18), 398, 9, 0xFFFFFF);
     qr.cur = 0;
     lv_obj_add_flag(qr.pg[1], LV_OBJ_FLAG_HIDDEN);
     qr_fill(0, qr.i);
@@ -1263,112 +1278,79 @@ static void sw_close(void)
 
 /* ================= badge: the name, big; a tap or the top button changes the layout ================= */
 
-#ifdef KEYPET_AITU /* the owner's own build: the AITU mark (not part of the public firmware) */
-extern const lv_image_dsc_t aitu_mark_420, aitu_mark_118; /* drawn at these sizes from the vector: tools/aitu.py */
-#endif
 #define BADGE_FIRST profile.first /* set in the panel */
 #define BADGE_LAST profile.last
 
-static struct { lv_obj_t *box; int look; } bd; /* the look stays while the badge is closed */
+static struct {
+    lv_obj_t *eyes;
+    lv_draw_buf_t *buf;
+    lv_timer_t *blink;
+    int theme;
+    bool closed;
+} bd;
 
-/* the AITU rings are round about the dot at (137, 120) of the 240 px mask: that dot goes to (cx, cy) */
-static void badge_mark(int size, int cx, int cy, uint32_t color)
+static const lv_font_t *badge_fit_font(const char *text)
 {
-#ifndef KEYPET_AITU
-    /* Pip's own eyes, drawn at the size asked for from their outline: sharp at any size */
-    static lv_draw_buf_t *eyes[2];
-    lv_draw_buf_t **b = &eyes[size == 118 ? 0 : 1];
-    if (!*b) {
-        *b = lv_draw_buf_create((uint32_t)size, (uint32_t)size, LV_COLOR_FORMAT_A8, 0);
-        if (!*b) return;
-        doodle_icon_mask(ICON_PIP, (*b)->data, (int)(*b)->header.stride, size);
+    const lv_font_t *cand[3] = {th->big ? th->big : th->body, th->title ? th->title : th->body, th->body};
+    for (int i = 0; i < 3; i++) {
+        lv_point_t sz;
+        lv_text_get_size(&sz, text, cand[i], 0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+        if (sz.x <= 376) return cand[i];
     }
-    lv_obj_t *e = lv_image_create(bd.box);
-    lv_image_set_src(e, *b);
-    lv_obj_set_style_image_recolor(e, lv_color_hex(color), 0);
-    lv_obj_set_style_image_recolor_opa(e, LV_OPA_COVER, 0);
-    lv_obj_set_pos(e, cx - size / 2, cy - size / 2);
-#else
-    /* each size has its own mask made from the logo's vector: a scaled raster goes soft */
-    const lv_image_dsc_t *src = size == 118 ? &aitu_mark_118 : &aitu_mark_420;
-    int w = (int)src->header.w;
-    lv_obj_t *m = lv_image_create(bd.box);
-    lv_image_set_src(m, src);
-    lv_obj_set_style_image_recolor(m, lv_color_hex(color), 0);
-    lv_obj_set_style_image_recolor_opa(m, LV_OPA_COVER, 0);
-    lv_obj_set_pos(m, cx - 137 * w / 240, cy - 120 * w / 240);
-    if (w != size) lv_image_set_pivot(m, 137 * w / 240, 120 * w / 240), lv_image_set_scale(m, (uint32_t)(256 * size / w));
-#endif
+    return th->body;
 }
 
-static void badge_line(const char *text, const lv_font_t *font, uint32_t color, int y, int space)
+static void badge_blink_cb(lv_timer_t *t)
 {
-    lv_obj_set_style_text_letter_space(th_text_at(bd.box, font, color, text, -1, y), space, 0);
+    if (!bd.eyes) return;
+    bd.closed = !bd.closed;
+    lv_image_set_scale_y(bd.eyes, bd.closed ? 22 : 256);
+    lv_timer_set_period(t, bd.closed ? 140 : 6500 + lv_rand(0, 5500));
 }
 
-static void badge_build(void)
+static void badge_close(void)
 {
-    lv_obj_clean(bd.box);
-    const lv_font_t *big = th->big ? th->big : th->body;
-    if (bd.look == 0) { /* the name alone, on a dial */
-        if (TH_TERMINAL) {
-            static th_cell_t ring[72];
-            th_ring(ring, 72, 214, 5);
-            for (int i = 0; i < 72; i += 6) ring[i].color = th->mute;
-            th_cells(bd.box, ring, 72);
-        } else {
-            lv_obj_t *sc = lv_scale_create(bd.box);
-            lv_obj_set_size(sc, 444, 444);
-            lv_obj_center(sc);
-            lv_scale_set_mode(sc, LV_SCALE_MODE_ROUND_INNER);
-            lv_scale_set_angle_range(sc, 360);
-            lv_scale_set_rotation(sc, 270);
-            lv_scale_set_total_tick_count(sc, 61);
-            lv_scale_set_major_tick_every(sc, 5);
-            lv_scale_set_label_show(sc, false);
-            lv_obj_set_style_arc_width(sc, 0, 0);
-            lv_obj_set_style_length(sc, 7, LV_PART_ITEMS);
-            lv_obj_set_style_line_width(sc, 2, LV_PART_ITEMS);
-            lv_obj_set_style_line_color(sc, lv_color_hex(th->faint), LV_PART_ITEMS);
-            lv_obj_set_style_length(sc, 14, LV_PART_INDICATOR);
-            lv_obj_set_style_line_width(sc, 2, LV_PART_INDICATOR);
-            lv_obj_set_style_line_color(sc, lv_color_hex(th->dim), LV_PART_INDICATOR);
-        }
-        badge_line(BADGE_FIRST, big, th->text, 152, 2);
-        badge_line(BADGE_LAST, big, th->text, 224, 2);
-        th_box(bd.box, SCR / 2 - 40, 310, 80, 4, 0, th->accent);
-        if (profile.org[0]) badge_line(profile.org, th->tiny_bold, th->dim, 336, 6);
-    } else if (bd.look == 1) { /* the mark small on top, the name under it */
-        badge_mark(118, SCR / 2, 112, th->text);
-        badge_line(BADGE_FIRST, big, th->text, 204, 1);
-        badge_line(BADGE_LAST, big, th->text, 266, 1);
-        th_box(bd.box, SCR / 2 - 80, 350, 160, 2, 0, th->faint);
-        if (profile.org[0]) badge_line(profile.org, th->tiny_bold, th->accent, 366, 6);
-    } else { /* the mark faint behind the name */
-        badge_mark(420, SCR / 2, SCR / 2, th->faint);
-        badge_line(BADGE_FIRST, big, th->text, 164, 2);
-        badge_line(BADGE_LAST, big, th->text, 236, 2);
-        th_box(bd.box, SCR / 2 - 20, 320, 40, 4, 0, th->accent);
-    }
-}
-
-static void badge_next(void) { bd.look = (bd.look + 1) % 3, badge_build(); }
-static void badge_tap(lv_event_t *e) { (void)e; badge_next(); }
-
-static bool badge_button(int id)
-{
-    if (id != PIP_BTN_PWR) return false;
-    badge_next();
-    return true;
+    if (bd.blink) lv_timer_delete(bd.blink), bd.blink = NULL;
+    bd.eyes = NULL, bd.closed = false;
 }
 
 static void badge_open(lv_obj_t *scr)
 {
-    bd.box = th_box(scr, 0, 0, SCR, SCR, 0, 0);
-    lv_obj_set_style_bg_opa(bd.box, LV_OPA_TRANSP, 0);
-    lv_obj_add_flag(scr, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(scr, badge_tap, LV_EVENT_CLICKED, NULL);
-    badge_build();
+    /* Pure black minimalist badge (1:1 match with web Digital Twin): single layout, no ticks/lines/grid */
+    lv_obj_set_style_bg_color(scr, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_image_src(scr, NULL, 0);
+
+    uint32_t scl = th->eye_sclera || th->eye_stroke ? th->eye_sclera : themes[TH_DEFAULT].eye_sclera;
+    uint32_t pup = th->eye_pupil ? th->eye_pupil : themes[TH_DEFAULT].eye_pupil;
+    uint32_t rim = th->eye_stroke;
+    if (!bd.buf) bd.buf = lv_draw_buf_create(120, 72, LV_COLOR_FORMAT_ARGB8888, 0);
+    if (bd.buf && bd.theme != theme_index() + 1) {
+        doodle_mini_eyes((uint32_t *)bd.buf->data, 120, 72, scl, pup, rim, theme_index() == TH_OBSIDIAN);
+        bd.theme = theme_index() + 1;
+    }
+    if (bd.buf) {
+        bd.eyes = lv_image_create(scr);
+        lv_image_set_src(bd.eyes, bd.buf);
+        lv_image_set_pivot(bd.eyes, 60, 36);
+        lv_obj_set_pos(bd.eyes, (SCR - 120) / 2, 124 - 36);
+        bd.closed = false;
+        bd.blink = lv_timer_create(badge_blink_cb, 6500 + lv_rand(0, 5500), NULL);
+    }
+
+    const char *f = BADGE_FIRST[0] ? BADGE_FIRST : "";
+    const char *l = BADGE_LAST[0] ? BADGE_LAST : "";
+    if (!f[0] && !l[0]) f = "Твоє", l = "Ім'я";
+    if (f[0] && l[0]) {
+        th_text_at(scr, badge_fit_font(f), 0xFFFFFF, f, -1, 198);
+        th_text_at(scr, badge_fit_font(l), 0xFFFFFF, l, -1, 260);
+    } else {
+        const char *s = f[0] ? f : l;
+        th_text_at(scr, badge_fit_font(s), 0xFFFFFF, s, -1, 228);
+    }
+    if (profile.org[0]) {
+        lv_obj_t *o = th_text_at(scr, th->tiny, 0x8E8E8E, profile.org, -1, 350);
+        lv_obj_set_style_text_letter_space(o, 1, 0);
+    }
 }
 
 /* ================= noise: a sound level meter for the studio, the colour says how quiet it is ================= */
@@ -2296,7 +2278,7 @@ const app_t apps[] = {
     {.id = "care", .name = "Пип", .icon = ICON_PIP, .color = 0x00DAC3, .open = care_open, .close = care_close},
     {.id = "qr", .name = "Quick QR", .icon = ICON_QR, .color = 0x48484A, .open = qr_open, .close = qr_close, .awake = true},
     {.id = "noise", .name = "Шумомер", .icon = ICON_NOISE, .color = 0x34C759, .open = nz_open, .close = nz_close, .awake = true},
-    {.id = "badge", .name = "Бейдж", .icon = ICON_BADGE, .color = 0x6D7CFF, .open = badge_open, .button = badge_button, .awake = true},
+    {.id = "badge", .name = "Бейдж", .icon = ICON_BADGE, .color = 0x6D7CFF, .open = badge_open, .close = badge_close, .awake = true},
     {.id = "timer", .name = "Таймер", .icon = ICON_TIMER, .color = 0xFF9230, .open = timer_open, .close = timer_close,
      .button = timer_button, .awake = true},
     {.id = "stopwatch", .name = "Секундомер", .icon = ICON_STOPWATCH, .color = 0xFF4245, .open = sw_open, .close = sw_close,

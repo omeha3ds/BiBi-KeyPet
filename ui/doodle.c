@@ -201,6 +201,40 @@ void doodle_icon_mask(int icon, uint8_t *a8, int stride, int size)
             a8[y * stride + x] = (uint8_t)(255 * clamp01(0.5f - glyph(icon, (x + 0.5f - size * 0.5f) * k, (y + 0.5f - size * 0.5f) * k) / k));
 }
 
+/* Flat tilted Pixel mini eyes for the minimalist Badge (exact 1:1 match with web Digital Twin) */
+static float rot_ellipse(float x, float y, float cx, float cy, float rx, float ry, float c, float s)
+{
+    float dx = x - cx, dy = y - cy;
+    return ellipse(dx * c + dy * s, -dx * s + dy * c, rx, ry);
+}
+void doodle_mini_eyes(uint32_t *px, int w, int h, uint32_t sclera, uint32_t pupil, uint32_t stroke, bool slim_pupil)
+{
+    memset(px, 0, (size_t)w * h * 4);
+    const float c13 = 0.97437f, s13 = 0.22495f; /* 13 deg */
+    const float c7 = 0.99255f, s7 = 0.12187f;   /* 7 deg */
+    const float prx = slim_pupil ? 8.4f : 12.0f, pry = slim_pupil ? 17.4f : 24.6f;
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++) {
+            float fx = x + 0.5f - w * 0.5f, fy = y + 0.5f - h * 0.5f;
+            float dl = rot_ellipse(fx, fy, -24.6f, 0.0f, 21.0f, 28.2f, c13, -s13);
+            float dr = rot_ellipse(fx, fy, 24.6f, 0.0f, 21.0f, 28.2f, c13, s13);
+            float d = fminf(dl, dr);
+            if (d > 2.5f) continue;
+            uint32_t *p = &px[y * w + x];
+            float cov = clamp01(0.5f - d);
+            over(p, 0xFF000000u | sclera, cov);
+            if (cov > 0.01f) {
+                float pl = rot_ellipse(fx, fy, -22.8f, 0.6f, prx, pry, c7, -s7);
+                float pr = rot_ellipse(fx, fy, 22.8f, 0.6f, prx, pry, c7, s7);
+                over(p, 0xFF000000u | pupil, clamp01(0.5f - fminf(pl, pr)) * cov);
+            }
+            if (stroke) {
+                float rim = clamp01(0.5f - (fabsf(d + 0.9f) - 1.0f));
+                over(p, 0xFF000000u | stroke, rim);
+            }
+        }
+}
+
 /* color: the disc (glass) or the cell panel (blocks); ink: the symbol (outline, blocks); line: the outline ring */
 void doodle_icon(int icon, int style, uint32_t color, uint32_t ink, uint32_t line, uint32_t *px, int w, int h)
 {

@@ -2,12 +2,11 @@
 #include "doodle.h"
 #include <string.h>
 
-/* until someone sets their own: an obvious placeholder, and a code that leads to the project */
+/* defaults until configured from the panel: clean Ukrainian name and empty QR list */
 profile_t profile = {
-    .first = "Твоё",
-    .last = "Имя",
-    .org = "KeyPet",
-    .link = {{"GitHub", "Pip-KeyPet", "https://github.com/NovikovVisuals/Pip-KeyPet"}},
+    .first = "Твоє",
+    .last = "Ім'я",
+    .org = "",
 };
 int profile_rev = 1;
 static void (*on_change)(void);
