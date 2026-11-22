@@ -9,9 +9,12 @@ try{
   const q=new URLSearchParams(location.search);
   const p=q.get('pixel')||localStorage.getItem('pip-pixel');
   if(['peony','obsidian','bay','hazel','coral','porcelain'].includes(p))document.documentElement.dataset.pixel=p;
+  const stQ=q.get('style'),stS=localStorage.getItem('pip-eye-style');
+  const st=stQ==='plain'||stQ==='liquid'?stQ:(stS==='plain'||stS==='liquid'?stS:'liquid');
+  document.documentElement.dataset.eyeStyle=st;
   const fxQ=q.get('fx'),fxS=localStorage.getItem('pip-fx');
   const weak=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4&&navigator.deviceMemory&&navigator.deviceMemory<=4)||matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fx=fxQ==='simple'||fxQ==='liquid'?fxQ:(fxS==='simple'||fxS==='liquid'?fxS:(weak?'simple':'liquid'));
+  const fx=fxQ==='simple'||fxQ==='full'?fxQ:(fxS==='simple'||fxS==='full'?fxS:(weak?'simple':'full'));
   document.documentElement.dataset.fx=fx;
 }catch(e){}
 </script>
@@ -377,9 +380,21 @@ a:hover{text-decoration:underline}
 :root[data-pixel="coral"] #pipSvg .eye-pupil{rx:37px;ry:80px}
 :root[data-pixel="porcelain"] #pipSvg .eye-pupil{rx:42px;ry:42px}
 
+/* Plain eye style (Звичайні): crisp flat vivid eyes, still tracking cursor & blinking cleanly */
+:root[data-eye-style="plain"] .goo-body{filter:none}
+:root[data-eye-style="plain"] .obs-goo-rim,
+:root[data-eye-style="plain"] .liquid-only{display:none!important}
+:root[data-eye-style="plain"] .eye-sclera-l,
+:root[data-eye-style="plain"] .eye-sclera-r{fill:var(--eye-sclera)}
+:root[data-eye-style="plain"] .eye-pupil-l,
+:root[data-eye-style="plain"] .eye-pupil-r{fill:var(--eye-pupil)}
+:root[data-eye-style="plain"] .simple-rim{display:inline}
+:root[data-eye-style="plain"][data-pixel="obsidian"] .simple-rim{filter:url(#obs-rim-plain)}
+
 /* Simplified fallback mode: zero SVG filters, flat crisp vector eyes for weak devices & reduced motion */
 :root[data-fx="simple"] .goo-body,
 :root[data-fx="simple"] .obs-goo-rim,
+:root[data-fx="simple"] .simple-rim,
 :root[data-fx="simple"] #pipSvg .eye-pupil{filter:none!important}
 :root[data-fx="simple"] .obs-goo-rim,
 :root[data-fx="simple"] .liquid-only{display:none!important}
@@ -388,6 +403,24 @@ a:hover{text-decoration:underline}
 :root[data-fx="simple"] .eye-pupil-l,
 :root[data-fx="simple"] .eye-pupil-r{fill:var(--eye-pupil)}
 :root[data-fx="simple"] .simple-rim{display:inline}
+
+/* Compact flat segmented switcher (used for Eye Style) */
+.seg{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--surface-2);padding:4px;border-radius:999px;
+}
+.seg button{
+  min-height:32px;padding:6px 13px;border-radius:999px;
+  font:600 12.5px/1 var(--font-sans);
+  background:transparent;color:var(--text-2);
+}
+.seg button:hover{background:var(--surface-3);color:var(--text)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg-row{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:18px;background:var(--surface-2);flex-wrap:wrap;
+}
+.seg-row .seg{background:var(--surface-1)}
 
 /* Eyelid blink & sleep/charging expression */
 .eye-lid{
@@ -935,9 +968,12 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
                 <feDropShadow in="goo" dx="0" dy="0" stdDeviation="6.5" flood-color="#4dd0ff" flood-opacity="0.88"/>
               </filter>
 
-              <!-- Obsidian pupil liquid glow -->
+              <!-- Obsidian pupil liquid glow & plain rim glow -->
               <filter id="obs-pupil" x="-45%" y="-45%" width="190%" height="190%">
                 <feDropShadow dx="0" dy="0" stdDeviation="7.5" flood-color="#4dd0ff" flood-opacity="0.95"/>
+              </filter>
+              <filter id="obs-rim-plain" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#4dd0ff" flood-opacity="0.88"/>
               </filter>
 
               <!-- Volumetric sclera radial gradients (focal point tracks cursor!) -->
@@ -1063,6 +1099,10 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
           <button type="button" class="swatch" data-set-pixel="coral" data-label="Корал" style="--sw:#ffb096;--sw-p:#d93c16" title="Корал" aria-label="Корал" aria-pressed="false"></button>
           <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Порцеляна" style="--sw:#f3e3b8;--sw-p:#bd4c16" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"></button>
         </div>
+        <div class="seg" id="eyeStyleBar" role="group" aria-label="Стиль очей">
+          <button type="button" data-eye-style="plain" aria-pressed="false">Звичайні</button>
+          <button type="button" data-eye-style="liquid" aria-pressed="true">Liquid</button>
+        </div>
       </div>
 
       <div class="actions">
@@ -1148,8 +1188,15 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
             <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
             <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
           </div>
+          <div class="seg-row">
+            <div><div class="toggle-title">Стиль очей</div><small>стосується лише режиму «Очі» на сторінці</small></div>
+            <div class="seg" id="eyeStyleSettings" role="group" aria-label="Стиль очей у налаштуваннях">
+              <button type="button" data-eye-style="plain" aria-pressed="false">Звичайні</button>
+              <button type="button" data-eye-style="liquid" aria-pressed="true">Liquid</button>
+            </div>
+          </div>
           <div class="toggle">
-            <div><div class="toggle-title">Спрощена графіка сторінки</div><small>вимикає SVG-фільтри liquid-очей для слабких пристроїв (автоматично при зменшенні руху)</small></div>
+            <div><div class="toggle-title">Спрощена графіка сторінки</div><small>вимикає SVG-фільтри для слабких пристроїв (автоматично при зменшенні руху)</small></div>
             <label class="switch"><input type="checkbox" id="simpleFx" aria-label="Спрощена графіка сторінки"><span></span></label>
           </div>
           <div><label for="power">Засинати, якщо Піпа не чіпати</label>
@@ -1294,15 +1341,32 @@ $('swatches').onclick = e => {
 $('pipOrb').onclick = boopEyes;
 $('pipOrb').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); boopEyes(); } };
 
-/* ---------- Simplified no-SVG-filter fallback mode ---------- */
+/* ---------- Eye style (Звичайні / Liquid) & Simplified no-SVG-filter fallback ---------- */
 const simpleMode = () => reducedMotion() || document.documentElement.dataset.fx === 'simple';
+const isLiquidEyes = () => !simpleMode() && document.documentElement.dataset.eyeStyle !== 'plain';
+
+function setEyeStyle(style, persist = true) {
+  const s = style === 'plain' ? 'plain' : 'liquid';
+  document.documentElement.dataset.eyeStyle = s;
+  document.querySelectorAll('[data-eye-style]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.eyeStyle === s)));
+  if (persist) { try { localStorage.setItem('pip-eye-style', s); } catch (e) {} }
+  if (s === 'plain') resetLiquidGeometry();
+  else if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
+}
 function setSimpleFx(on, persist = true) {
-  const mode = on || reducedMotion() ? 'simple' : 'liquid';
+  const mode = on || reducedMotion() ? 'simple' : 'full';
   document.documentElement.dataset.fx = mode;
   if ($('simpleFx')) $('simpleFx').checked = mode === 'simple';
   if (persist) { try { localStorage.setItem('pip-fx', mode); } catch (e) {} }
   if (mode === 'simple') resetLiquidGeometry();
 }
+['eyeStyleBar', 'eyeStyleSettings'].forEach(id => {
+  $(id)?.addEventListener('click', e => {
+    const b = e.target.closest('[data-eye-style]');
+    if (b) { setEyeStyle(b.dataset.eyeStyle, true); boopEyes(); }
+  });
+});
 if ($('simpleFx')) {
   $('simpleFx').checked = simpleMode();
   $('simpleFx').onchange = e => setSimpleFx(e.target.checked, true);
@@ -1343,6 +1407,19 @@ function resetLiquidGeometry() {
 function applyLiquidFrame(x, y, vx, vy, b, lx, ly) {
   const bClamped = Math.max(-0.14, Math.min(1, b));
   const bPos = Math.max(0, bClamped);
+  const liquid = isLiquidEyes();
+
+  /* Plain style: crisp vertical blink + smooth gaze tracking without gooey merge or specular gradients */
+  if (!liquid) {
+    const sy = Math.max(0.06, 1 - bPos * 0.94);
+    $('liquidScale').setAttribute('transform', `translate(200 200) scale(1 ${sy.toFixed(3)}) translate(-200 -200)`);
+    const px = (x * 20).toFixed(2), py = (y * 15).toFixed(2);
+    const ex = (x * 6).toFixed(2), ey = (y * 4.5).toFixed(2);
+    $('pupilL').setAttribute('transform', `translate(${px} ${py})`);
+    $('pupilR').setAttribute('transform', `translate(${px} ${py})`);
+    $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
+    return;
+  }
 
   /* Elastic squash-and-stretch from gaze velocity + volume-conserving liquid blink */
   const speed = Math.min(1, Math.hypot(vx, vy) * 2.2);
@@ -1434,7 +1511,8 @@ function updateEyeMood(moodText, charging) {
   lid.classList.toggle('alert', document.body.classList.contains('linked') && !sleepy);
 }
 
-/* Initial render so first frame already has liquid volume & specular angle */
+/* Initial render so first frame already matches chosen eye style & liquid angle */
+setEyeStyle(document.documentElement.dataset.eyeStyle || 'liquid', false);
 if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
 
 function animateEyes(now) {
