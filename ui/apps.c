@@ -1549,8 +1549,27 @@ static void style_open(lv_obj_t *scr)
 {
     if (TH_TERMINAL) { style_open_term(scr); return; }
     lv_obj_t *title = th_text(scr, th->body, th->text, "Стиль");
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 50);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 56);
     style_list();
+    if (st.n > 4) {
+        /* 2-column flat Pixel colorway grid fitting comfortably inside the round screen */
+        for (int k = 0; k < st.n; k++) {
+            int i = st.ids[k], col = k & 1, row = k >> 1;
+            bool on = i == theme_index();
+            lv_obj_t *b = th_box(scr, col ? 240 : 54, 126 + row * 72, 172, 56, LV_RADIUS_CIRCLE, on ? themes[i].accent : th->panel);
+            lv_obj_add_flag(b, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_add_event_cb(b, style_pick, LV_EVENT_CLICKED, (void *)(intptr_t)i);
+            lv_obj_t *sw = th_box(b, 14, 19, 18, 18, LV_RADIUS_CIRCLE, on ? themes[i].on_accent : themes[i].accent);
+            if (!on && themes[i].eye_stroke) {
+                lv_obj_set_style_bg_color(sw, lv_color_hex(0x000000), 0);
+                lv_obj_set_style_border_width(sw, 2, 0);
+                lv_obj_set_style_border_color(sw, lv_color_hex(themes[i].eye_stroke), 0);
+            }
+            lv_obj_t *l = th_text(b, th->small, on ? themes[i].on_accent : th->text, themes[i].name);
+            lv_obj_align(l, LV_ALIGN_LEFT_MID, 42, 0);
+        }
+        return;
+    }
     for (int k = 0; k < st.n; k++) {
         int i = st.ids[k];
         lv_obj_t *b = th_button(scr, themes[i].name, i == theme_index(), style_pick);

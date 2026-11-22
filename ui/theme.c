@@ -6,6 +6,8 @@
 
 #define SCR 466
 
+LV_FONT_DECLARE(font_pixel_16) LV_FONT_DECLARE(font_pixel_20) LV_FONT_DECLARE(font_pixel_28)
+LV_FONT_DECLARE(font_pixel_40) LV_FONT_DECLARE(font_pixel_52) LV_FONT_DECLARE(font_pixel_96)
 LV_FONT_DECLARE(font_silence_20) LV_FONT_DECLARE(font_silence_28) LV_FONT_DECLARE(font_silence_96)
 LV_FONT_DECLARE(font_instr_20) LV_FONT_DECLARE(font_instr_28) LV_FONT_DECLARE(font_instr_96) LV_FONT_DECLARE(font_instr_56) LV_FONT_DECLARE(font_instr_40)
 LV_FONT_DECLARE(font_apple_20) LV_FONT_DECLARE(font_apple_28) LV_FONT_DECLARE(font_apple_96)
@@ -13,16 +15,21 @@ LV_FONT_DECLARE(font_diag_16) LV_FONT_DECLARE(font_diag_16b) LV_FONT_DECLARE(fon
 LV_FONT_DECLARE(font_diag_28)
 LV_FONT_DECLARE(font_diag_96) LV_FONT_DECLARE(font_diag_56) LV_FONT_DECLARE(font_diag_40)
 
+#define PIXEL_BASE \
+    .bg = 0x000000, .text = 0xFFFFFF, .dim = 0xA4A4A4, .faint = 0x242424, .panel = 0x141414, .good = 0x46D178, \
+    .tiny = &font_pixel_16, .tiny_bold = &font_pixel_16, .small = &font_pixel_20, .button = &font_pixel_20,    \
+    .body = &font_pixel_28, .title = &font_pixel_40, .big = &font_pixel_52, .digits = &font_pixel_96,          \
+    .caps = false, .radius = 24, .icons = ICONS_FLAT, .clock = CLOCK_BIG, .meter = METER_BAR, .menu = MENU_LIST
+
 const theme_t themes[TH_COUNT] = {
     [TH_SILENCE] = {.name = "Тишина", .bg = 0x000000, .text = 0xF2F2F2, .dim = 0x8C8C8C, .faint = 0x262626, .panel = 0x1A1A1A,
                     .accent = 0xFF3B30, .good = 0xF2F2F2, .small = &font_silence_20, .tiny = &font_silence_20, .tiny_bold = &font_silence_20, .body = &font_silence_28,
                     .digits = &font_silence_96, .caps = true, .radius = LV_RADIUS_CIRCLE, .icons = ICONS_OUTLINE,
-                    .clock = CLOCK_DOTS, .meter = METER_DOTS, .menu = MENU_HONEYCOMB,
-                    .hidden = true /* the honeycomb lags on the board; back when it is fast */},
+                    .clock = CLOCK_DOTS, .meter = METER_DOTS, .menu = MENU_HONEYCOMB, .hidden = true},
     [TH_INSTRUMENT] = {.name = "Приборка", .bg = 0x000000, .text = 0xE8E6E1, .dim = 0xA3A09A, .faint = 0x2A2A2A, .panel = 0x1C1C1C,
                        .accent = 0xFF5A1F, .good = 0xE8E6E1, .small = &font_instr_20, .tiny = &font_instr_20, .tiny_bold = &font_instr_20, .body = &font_instr_28,
                        .digits = &font_instr_96, .big = &font_instr_56, .title = &font_instr_40, .caps = true, .radius = 6, .icons = ICONS_OUTLINE, .clock = CLOCK_DIAL,
-                       .meter = METER_SEGMENTS, .menu = MENU_LIST},
+                       .meter = METER_SEGMENTS, .menu = MENU_LIST, .hidden = true},
     [TH_APPLE] = {.name = "Apple", .bg = 0x000000, .text = 0xFFFFFF, .dim = 0x8E8E93, .faint = 0x3A3A3C, .panel = 0x1C1C1E,
                   .accent = 0x0091FF, .good = 0x30D158, .small = &font_apple_20, .tiny = &font_apple_20, .tiny_bold = &font_apple_20, .body = &font_apple_28, .digits = &font_apple_96,
                   .caps = false, .radius = LV_RADIUS_CIRCLE, .icons = ICONS_GLASS, .clock = CLOCK_BIG, .meter = METER_BAR,
@@ -30,11 +37,17 @@ const theme_t themes[TH_COUNT] = {
     [TH_DIAG] = {.name = "Диагностика", .bg = 0x3A1F1B, .text = 0xE6D8C3, .dim = 0xB9A592, .faint = 0x5A3530, .panel = 0x4A2A26,
                  .accent = 0xE6D8C3, .good = 0xE6D8C3, .grid = 0x5A3530, .mute = 0x8A6A60, .off = 0x4F2B26, .small = &font_diag_20, .body = &font_diag_28,
                  .digits = &font_diag_96, .big = &font_diag_56, .title = &font_diag_40, .tiny = &font_diag_16, .tiny_bold = &font_diag_16b, .button = &font_diag_20b, .caps = true, .radius = 0, .icons = ICONS_BLOCKS, .clock = CLOCK_BLOCKS,
-                 .meter = METER_BLOCKS, .menu = MENU_LIST},
+                 .meter = METER_BLOCKS, .menu = MENU_LIST, .hidden = true},
+    [TH_PEONY]     = {.name = "Півонія",   PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E},
+    [TH_OBSIDIAN]  = {.name = "Обсидіан",  PIXEL_BASE, .accent = 0x66D4FF, .on_accent = 0x041016, .eye_sclera = 0x000000, .eye_pupil = 0x7CE8FF, .eye_stroke = 0x4DD0FF},
+    [TH_BAY]       = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4},
+    [TH_HAZEL]     = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42},
+    [TH_CORAL]     = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16},
+    [TH_PORCELAIN] = {.name = "Порцеляна", PIXEL_BASE, .accent = 0xF0DFB2, .on_accent = 0x1A1407, .eye_sclera = 0xF3E3B8, .eye_pupil = 0xBD4C16},
 };
 
-const theme_t *th = &themes[TH_INSTRUMENT];
-void theme_select(int i) { th = &themes[i >= 0 && i < TH_COUNT ? i : TH_INSTRUMENT]; }
+const theme_t *th = &themes[TH_DEFAULT];
+void theme_select(int i) { th = &themes[i >= 0 && i < TH_COUNT ? i : TH_DEFAULT]; }
 uint32_t th_mute(void) { return th->mute ? th->mute : th->dim; } /* the terminal's extra inks, or the nearest */
 uint32_t th_off(void) { return th->off ? th->off : th->faint; }
 int theme_index(void) { return (int)(th - themes); }
@@ -80,19 +93,21 @@ lv_obj_t *th_text(lv_obj_t *parent, const lv_font_t *font, uint32_t color, const
     return l;
 }
 
-/* primary: filled with the accent (Apple: a tinted glass capsule); secondary: outlined */
+/* primary: filled with the accent; secondary: flat matte panel (Pixel) or outlined (legacy) */
 lv_obj_t *th_button(lv_obj_t *parent, const char *text, bool primary, lv_event_cb_t cb)
 {
     lv_obj_t *b = lv_button_create(parent);
-    lv_obj_set_style_radius(b, th->radius, 0);
+    lv_obj_set_style_radius(b, TH_PIXEL ? LV_RADIUS_CIRCLE : th->radius, 0);
     lv_obj_set_style_shadow_width(b, 0, 0);
     lv_obj_set_style_pad_hor(b, 20, 0);
     lv_obj_set_style_pad_ver(b, 12, 0);
     lv_obj_set_style_min_height(b, 52, 0);
-    uint32_t fill = th == &themes[TH_APPLE] ? (primary ? th->good : th->panel) : primary ? th->accent : th->bg;
+    uint32_t fill = TH_PIXEL ? (primary ? th->accent : th->panel)
+                  : th == &themes[TH_APPLE] ? (primary ? th->good : th->panel)
+                  : primary ? th->accent : th->bg;
     lv_obj_set_style_bg_color(b, lv_color_hex(fill), 0);
-    lv_obj_set_style_bg_opa(b, primary || th == &themes[TH_APPLE] ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
-    if (!primary && th != &themes[TH_APPLE]) {
+    lv_obj_set_style_bg_opa(b, primary || TH_PIXEL || th == &themes[TH_APPLE] ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+    if (!primary && !TH_PIXEL && th != &themes[TH_APPLE]) {
         lv_obj_set_style_border_width(b, 2, 0);
         lv_obj_set_style_border_color(b, lv_color_hex(th->faint), 0);
     }
@@ -103,7 +118,7 @@ lv_obj_t *th_button(lv_obj_t *parent, const char *text, bool primary, lv_event_c
         lv_obj_set_style_border_opa(b, LV_OPA_40, 0);
     }
     lv_obj_add_event_cb(b, cb, LV_EVENT_CLICKED, NULL);
-    uint32_t ink = primary && th != &themes[TH_APPLE] ? th->bg : th->text;
+    uint32_t ink = primary ? (TH_PIXEL ? th->on_accent : th == &themes[TH_APPLE] ? th->text : th->bg) : th->text;
     lv_obj_t *l = th_text(b, th->button ? th->button : th->small, ink, text);
     lv_obj_center(l);
     return b;
@@ -368,7 +383,7 @@ lv_obj_t *th_button_at(lv_obj_t *scr, int x, int y, int w, const char *text, boo
     lv_obj_set_style_pad_all(b, 0, 0);
     lv_obj_set_size(b, w, 44);
     lv_obj_set_pos(b, x, y);
-    if (!primary) lv_obj_set_style_border_color(b, lv_color_hex(th->text), 0);
+    if (!primary && !TH_PIXEL) lv_obj_set_style_border_color(b, lv_color_hex(th->text), 0);
     return b;
 }
 

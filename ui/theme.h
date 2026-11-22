@@ -4,21 +4,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-enum { TH_SILENCE, TH_INSTRUMENT, TH_APPLE, TH_DIAG, TH_COUNT };
-enum { ICONS_OUTLINE, ICONS_GLASS, ICONS_BLOCKS };      /* how app icons are drawn */
-enum { CLOCK_DOTS, CLOCK_DIAL, CLOCK_BIG, CLOCK_BLOCKS }; /* the clock app's face */
+enum { TH_SILENCE, TH_INSTRUMENT, TH_APPLE, TH_DIAG, TH_PEONY, TH_OBSIDIAN, TH_BAY, TH_HAZEL, TH_CORAL, TH_PORCELAIN, TH_COUNT };
+#define TH_DEFAULT TH_PEONY
+#define TH_PIXEL (theme_index() >= TH_PEONY)
+enum { ICONS_OUTLINE, ICONS_GLASS, ICONS_BLOCKS, ICONS_FLAT }; /* how app icons are drawn */
+enum { CLOCK_DOTS, CLOCK_DIAL, CLOCK_BIG, CLOCK_BLOCKS };      /* the clock app's face */
 enum { METER_DOTS, METER_SEGMENTS, METER_BAR, METER_BLOCKS };
 
 typedef struct {
     const char *name;
-    uint32_t bg, text, dim, faint, panel, accent, good, grid; /* grid: dot pattern colour, 0 = none */
-    uint32_t mute, off;                       /* terminal only: third ink, an unlit cell */
-    const lv_font_t *small, *body, *digits, *big, *title; /* capitals only, may be NULL: big for the badge, title for a track */
-    const lv_font_t *tiny, *tiny_bold, *button; /* terminal only: 16 px data rows and headers, 20 px semibold buttons */
+    uint32_t bg, text, dim, faint, panel, accent, on_accent, good, grid; /* grid: dot pattern colour, 0 = none */
+    uint32_t eye_sclera, eye_pupil, eye_stroke;                          /* Pixel badge mini-eyes palette */
+    uint32_t mute, off;                                                  /* terminal only: third ink, an unlit cell */
+    const lv_font_t *small, *body, *digits, *big, *title; /* big for the badge, title for menus/headers */
+    const lv_font_t *tiny, *tiny_bold, *button;           /* 16 px captions/hints, 20 px buttons */
     bool caps;   /* labels in capitals */
     int radius;  /* buttons and cards; LV_RADIUS_CIRCLE for pills */
     int icons, clock, meter, menu; /* menu: MENU_* from shell.h */
-    bool hidden;                   /* not offered in the Style app for now */
+    bool hidden;                   /* kept for settings/protocol compatibility, not offered in Style */
 } theme_t;
 
 extern const theme_t themes[TH_COUNT];
