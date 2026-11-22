@@ -20,7 +20,7 @@ try{
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=IBM+Plex+Mono:wght@500;600&family=JetBrains+Mono:wght@500;700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
 <style>
 /* Pure-black editorial stage for Pip keychain.
    Flat matte dark surfaces (#0d0d0d-#161616), zero borders, zero gradients, zero UI glow.
@@ -318,11 +318,53 @@ a:hover{text-decoration:underline}
 }
 /* Barely-there circle ring to anchor the radial callouts on pure black */
 .pip-orb::before{
-  content:"";position:absolute;inset:0;border-radius:50%;
+  content:"";position:absolute;inset:0;border-radius:50%;z-index:4;
   border:1px solid #1e1e1e;pointer-events:none;
   transition:border-color 280ms var(--ease-std);
 }
 .linked .pip-orb::before{border-color:#2e2e2e}
+
+/* Digital Twin 466x466 circular AMOLED viewport (governed directly by #bright) */
+.twin-screen{
+  position:relative;width:100%;height:100%;
+  border-radius:50%;overflow:hidden;
+  background:#000000;
+  display:grid;place-items:center;
+  transition:filter 160ms var(--ease-std);
+}
+.twin-layer{
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  opacity:0;transform:scale(.96);pointer-events:none;
+  transition:opacity 220ms var(--ease-std),transform 260ms var(--spring-spatial);
+}
+.twin-layer.active{opacity:1;transform:scale(1);pointer-events:auto}
+#badgeSvg,#qrCanvas{width:100%;height:100%;display:block}
+
+/* Subtle contextual caption under the round screen (twin controls, flat matte) */
+.twin-bar{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+}
+.twin-hint{
+  display:inline-flex;align-items:center;gap:6px;
+  font:500 12px/1 var(--font-sans);color:var(--text-3);
+  min-height:24px;
+}
+.twin-hint[hidden]{display:none}
+.twin-hint button{
+  min-height:26px;width:26px;padding:0;border-radius:50%;
+  background:var(--surface-2);color:var(--text-2);font-size:15px;
+}
+.twin-hint button:hover{background:var(--surface-4);color:var(--text)}
+.twin-hint .ico{font-size:16px}
+.eco-pill{
+  font:600 11px/1 var(--font-mono);letter-spacing:.08em;
+  padding:4px 9px;border-radius:999px;
+  background:var(--surface-2);color:var(--text-2);
+}
+body:not([data-twin="eyes"]) .palette-bar{opacity:.52}
+.palette-bar{transition:opacity 200ms var(--ease-std)}
+.palette-bar:hover{opacity:1}
 
 .pip-svg{
   width:94%;height:94%;overflow:visible;
@@ -934,9 +976,12 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
           <span class="v"><span class="dot"></span><span id="state">Не підключено</span></span>
         </div>
 
-        <!-- Centerpiece: iOS Liquid Pip Eyes inside pure black circle -->
-        <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Очі Піпа — натисни, щоб моргнув">
-          <svg class="pip-svg" id="pipSvg" viewBox="0 0 400 400" aria-hidden="true">
+        <!-- Centerpiece: Digital Twin of the 466x466 round AMOLED keychain display -->
+        <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Цифровий двійник екрана Піпа">
+          <div class="twin-screen" id="twinScreen">
+            <!-- Mode 1: Pip Eyes (Liquid / Plain / Simple applies ONLY here) -->
+            <div class="twin-layer active" id="twinEyes">
+              <svg class="pip-svg" id="pipSvg" viewBox="0 0 400 400" aria-hidden="true">
             <defs>
               <!-- Dynamic eye clip paths (moved along with droplets during gooey blink) -->
               <clipPath id="clipL">
@@ -1084,11 +1129,32 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
               </g>
             </g>
           </svg>
+            </div>
+
+            <!-- Mode 2: Real Firmware Badge (exact ui/apps.c + ui/theme.c rendering) -->
+            <div class="twin-layer" id="twinBadge" aria-hidden="true">
+              <svg id="badgeSvg" viewBox="0 0 466 466"></svg>
+            </div>
+
+            <!-- Mode 3: Real Firmware Quick QR (exact ui/apps.c + ui/theme.c rendering) -->
+            <div class="twin-layer" id="twinQr" aria-hidden="true">
+              <canvas id="qrCanvas" width="466" height="466"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </main>
 
     <footer class="dock">
+      <div class="twin-bar">
+        <div class="seg" id="twinTabs" role="group" aria-label="Екран брелока">
+          <button type="button" data-twin-mode="eyes" aria-pressed="true"><span class="ico">mood</span>Очі</button>
+          <button type="button" data-twin-mode="badge" aria-pressed="false"><span class="ico">badge</span>Бейдж</button>
+          <button type="button" data-twin-mode="qr" aria-pressed="false"><span class="ico">qr_code_2</span>QR</button>
+        </div>
+        <div class="twin-hint" id="twinHint" hidden></div>
+      </div>
+
       <div class="palette-bar">
         <span class="pixel-tag" id="pixelName">Півонія</span>
         <div class="swatches" id="swatches" role="group" aria-label="Колір очей і теми Pixel">
@@ -1336,10 +1402,31 @@ const urlPixel = new URLSearchParams(location.search).get('pixel');
 try { setPixel(urlPixel || localStorage.getItem('pip-pixel') || 'peony'); } catch (e) { setPixel(urlPixel || 'peony'); }
 $('swatches').onclick = e => {
   const btn = e.target.closest('[data-set-pixel]');
-  if (btn) setPixel(btn.dataset.setPixel, true);
+  if (btn) { setTwinMode('eyes'); setPixel(btn.dataset.setPixel, true); }
 };
-$('pipOrb').onclick = boopEyes;
-$('pipOrb').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); boopEyes(); } };
+$('pipOrb').onclick = e => {
+  if (twinMode === 'eyes') boopEyes();
+  else if (twinMode === 'badge') { badgeLook = (badgeLook + 1) % 3; renderTwinBadge(); updateTwinHint(); }
+  else if (twinMode === 'qr') {
+    const r = $('pipOrb').getBoundingClientRect();
+    stepQr(e.clientX < r.left + r.width / 2 ? -1 : 1);
+  }
+};
+$('pipOrb').onkeydown = e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('pipOrb').click(); }
+  else if (twinMode === 'qr' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    e.preventDefault(); stepQr(e.key === 'ArrowRight' ? 1 : -1);
+  }
+};
+/* Swipe left/right on the round digital twin screen in QR mode (matches firmware qr_gesture) */
+let orbTouchX = null;
+$('pipOrb').addEventListener('pointerdown', e => { orbTouchX = e.clientX; });
+$('pipOrb').addEventListener('pointerup', e => {
+  if (orbTouchX !== null && twinMode === 'qr' && Math.abs(e.clientX - orbTouchX) > 36) {
+    stepQr(e.clientX < orbTouchX ? 1 : -1);
+  }
+  orbTouchX = null;
+});
 
 /* ---------- Eye style (Звичайні / Liquid) & Simplified no-SVG-filter fallback ---------- */
 const simpleMode = () => reducedMotion() || document.documentElement.dataset.fx === 'simple';
@@ -1364,12 +1451,416 @@ function setSimpleFx(on, persist = true) {
 ['eyeStyleBar', 'eyeStyleSettings'].forEach(id => {
   $(id)?.addEventListener('click', e => {
     const b = e.target.closest('[data-eye-style]');
-    if (b) { setEyeStyle(b.dataset.eyeStyle, true); boopEyes(); }
+    if (b) { setTwinMode('eyes'); setEyeStyle(b.dataset.eyeStyle, true); boopEyes(); }
   });
 });
 if ($('simpleFx')) {
   $('simpleFx').checked = simpleMode();
   $('simpleFx').onchange = e => setSimpleFx(e.target.checked, true);
+}
+
+/* ---------- Digital Twin of 466x466 Keychain Screen (exact firmware themes, Badge, real QR, Brightness, Eco) ---------- */
+const FW_THEMES = {
+  1: { name: 'Приборка', terminal: false, bg: '#000000', text: '#E8E6E1', dim: '#A3A09A', faint: '#2A2A2A', accent: '#FF5A1F', font: '"IBM Plex Mono",ui-monospace,monospace' },
+  3: { name: 'Діагностика', terminal: true, bg: '#3A1F1B', text: '#E6D8C3', dim: '#B9A592', faint: '#5A3530', mute: '#8A6A60', off: '#4F2B26', accent: '#E6D8C3', grid: '#5A3530', font: '"JetBrains Mono",ui-monospace,monospace' },
+};
+let twinMode = 'eyes', badgeLook = 0, qrIndex = 0, diagBlinkOn = true;
+
+function fwTheme() { return FW_THEMES[Number($('theme')?.value)] || FW_THEMES[1]; }
+function escXml(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fitFont(text, base, maxChars) {
+  const n = (text || '').length;
+  return n <= maxChars ? base : Math.max(22, Math.round(base * maxChars / n));
+}
+
+/* Exact ICON_PIP mark from ui/doodle.c:107-110 (two vertical ovals with cut-out pupils looking right) */
+function pipMarkSvg(size, cx, cy, color, uid) {
+  const s = size / 100;
+  return `<g transform="translate(${cx} ${cy}) scale(${s.toFixed(3)})">
+    <defs><mask id="${uid}">
+      <rect x="-55" y="-55" width="110" height="110" fill="#fff"/>
+      <circle cx="-12" cy="2" r="6" fill="#000"/><circle cx="22" cy="2" r="6" fill="#000"/>
+    </mask></defs>
+    <g mask="url(#${uid})" fill="${color}">
+      <ellipse cx="-17" cy="0" rx="13" ry="17"/><ellipse cx="17" cy="0" rx="13" ry="17"/>
+    </g></g>`;
+}
+
+function renderTwinBadge() {
+  const th = fwTheme();
+  const first = ($('first').value || $('first').placeholder || 'Твоє').toUpperCase();
+  const last = ($('last').value || $('last').placeholder || 'Ім\'я').toUpperCase();
+  const org = ($('org').value || '').trim().toUpperCase();
+  const f1 = fitFont(first, 50, 9), f2 = fitFont(last, 50, 9);
+  const gridDef = th.terminal ? `<defs><pattern id="diagDotGrid" width="11" height="11" patternUnits="userSpaceOnUse">
+    <rect width="11" height="11" fill="${th.bg}"/><rect x="7" y="7" width="2" height="2" fill="${th.grid}"/></pattern></defs>
+    <rect width="466" height="466" fill="url(#diagDotGrid)"/>` : `<rect width="466" height="466" fill="${th.bg}"/>`;
+
+  let body = '';
+  if (badgeLook === 0) {
+    /* Look 0: Name on a dial (60 ticks in Приборка / 72 cells in Діагностика, exact ui/apps.c:1313-1340) */
+    if (th.terminal) {
+      let cells = '';
+      for (let i = 0; i < 72; i++) {
+        const a = (i / 72) * Math.PI * 2 - Math.PI / 2;
+        const x = 233 + Math.cos(a) * 214 - 2.5, y = 233 + Math.sin(a) * 214 - 2.5;
+        cells += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="5" height="5" fill="${i % 6 === 0 ? th.mute : th.off}"/>`;
+      }
+      body += cells;
+    } else {
+      let ticks = '';
+      for (let i = 0; i < 60; i++) {
+        const maj = i % 5 === 0, a = (i / 60) * Math.PI * 2 - Math.PI / 2;
+        const r1 = 222, r2 = r1 - (maj ? 14 : 7);
+        ticks += `<line x1="${(233 + Math.cos(a)*r1).toFixed(1)}" y1="${(233 + Math.sin(a)*r1).toFixed(1)}" x2="${(233 + Math.cos(a)*r2).toFixed(1)}" y2="${(233 + Math.sin(a)*r2).toFixed(1)}" stroke="${maj ? th.dim : th.faint}" stroke-width="2"/>`;
+      }
+      body += ticks;
+    }
+    body += `<text x="233" y="196" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f1}" font-weight="700" letter-spacing="2">${escXml(first)}</text>`;
+    body += `<text x="233" y="264" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f2}" font-weight="700" letter-spacing="2">${escXml(last)}</text>`;
+    body += `<rect x="193" y="308" width="80" height="4" fill="${th.accent}"/>`;
+    if (org) body += `<text x="233" y="352" text-anchor="middle" fill="${th.dim}" font-family='${th.font}' font-size="16" font-weight="700" letter-spacing="6">${escXml(org)}</text>`;
+  } else if (badgeLook === 1) {
+    /* Look 1: Pip mark small on top, name underneath (exact ui/apps.c:1341-1346) */
+    body += pipMarkSvg(118, 233, 112, th.text, 'pipM1');
+    body += `<text x="233" y="246" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f1}" font-weight="700" letter-spacing="1">${escXml(first)}</text>`;
+    body += `<text x="233" y="308" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f2}" font-weight="700" letter-spacing="1">${escXml(last)}</text>`;
+    body += `<rect x="153" y="350" width="160" height="2" fill="${th.faint}"/>`;
+    if (org) body += `<text x="233" y="382" text-anchor="middle" fill="${th.accent}" font-family='${th.font}' font-size="16" font-weight="700" letter-spacing="6">${escXml(org)}</text>`;
+  } else {
+    /* Look 2: Faint large Pip mark behind name (exact ui/apps.c:1347-1352) */
+    body += pipMarkSvg(420, 233, 233, th.faint, 'pipM2');
+    body += `<text x="233" y="208" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f1}" font-weight="700" letter-spacing="2">${escXml(first)}</text>`;
+    body += `<text x="233" y="276" text-anchor="middle" fill="${th.text}" font-family='${th.font}' font-size="${f2}" font-weight="700" letter-spacing="2">${escXml(last)}</text>`;
+    body += `<rect x="213" y="320" width="40" height="4" fill="${th.accent}"/>`;
+  }
+  $('badgeSvg').innerHTML = gridDef + body;
+}
+
+/* ---------- Compact ISO/IEC 18004 QR encoder (Byte mode, v1..10, ECC H/M) ---------- */
+const QR_EXP = new Uint8Array(512), QR_LOG = new Uint8Array(256);
+for (let i = 0, v = 1; i < 255; i++) { QR_EXP[i] = QR_EXP[i + 255] = v; QR_LOG[v] = i; v = v & 128 ? (v << 1) ^ 0x11d : v << 1; }
+const gfMul = (a, b) => (a && b) ? QR_EXP[QR_LOG[a] + QR_LOG[b]] : 0;
+function rsRem(data, ecLen) {
+  let g = [1];
+  for (let i = 0; i < ecLen; i++) {
+    const q = new Array(g.length + 1).fill(0);
+    for (let j = 0; j < g.length; j++) { q[j] ^= g[j]; q[j + 1] ^= gfMul(g[j], QR_EXP[i]); }
+    g = q;
+  }
+  const rem = new Uint8Array(ecLen);
+  for (const b of data) {
+    const f = b ^ rem[0]; rem.copyWithin(0, 1); rem[ecLen - 1] = 0;
+    if (f) for (let i = 0; i < ecLen; i++) rem[i] ^= gfMul(g[i + 1], f);
+  }
+  return rem;
+}
+const QR_SPEC = {
+  H: [null,[17,1],[28,1],[22,2],[16,4],[22,4],[28,4],[26,5],[26,6],[24,8],[28,8]],
+  M: [null,[10,1],[16,1],[26,1],[18,2],[24,2],[16,4],[18,4],[22,4],[22,5],[26,5]],
+};
+const QR_TOTAL = [0,26,44,70,100,134,172,196,242,292,346];
+const QR_ALIGN = [null,[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];
+const QR_FMT = { M: 0, L: 1, H: 2, Q: 3 };
+const QR_MASKS = [
+  (x,y)=>(x+y)%2===0, (x,y)=>y%2===0, (x,y)=>x%3===0, (x,y)=>(x+y)%3===0,
+  (x,y)=>((y>>1)+Math.floor(x/3))%2===0, (x,y)=>((x*y)%2+(x*y)%3)===0,
+  (x,y)=>(((x*y)%2+(x*y)%3)%2)===0, (x,y)=>(((x+y)%2+(x*y)%3)%2)===0,
+];
+function qrEncode(text) {
+  const bytes = new TextEncoder().encode(text || 'https://github.com/NovikovVisuals/Pip-KeyPet');
+  let ver = 0, ecl = 'H';
+  for (const tryEcl of ['H', 'M']) {
+    for (let v = 1; v <= 10; v++) {
+      const [ecPer, blocks] = QR_SPEC[tryEcl][v];
+      if (Math.ceil((4 + (v < 10 ? 8 : 16) + bytes.length * 8) / 8) <= QR_TOTAL[v] - ecPer * blocks) { ver = v; ecl = tryEcl; break; }
+    }
+    if (ver) break;
+  }
+  if (!ver) return null;
+  const [ecPer, blocks] = QR_SPEC[ecl][ver], totalCw = QR_TOTAL[ver], dataCap = totalCw - ecPer * blocks;
+  const bits = [], pushB = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+  pushB(4, 4); pushB(bytes.length, ver < 10 ? 8 : 16);
+  for (const b of bytes) pushB(b, 8);
+  pushB(0, Math.min(4, dataCap * 8 - bits.length));
+  while (bits.length % 8) bits.push(0);
+  const dcw = [];
+  for (let i = 0; i < bits.length; i += 8) { let v = 0; for (let j = 0; j < 8; j++) v = (v << 1) | bits[i + j]; dcw.push(v); }
+  for (let p = 0; dcw.length < dataCap; p ^= 1) dcw.push(p ? 0x11 : 0xec);
+  const shortN = blocks - (totalCw % blocks), shortLen = Math.floor(totalCw / blocks) - ecPer;
+  const dB = [], eB = []; let off = 0;
+  for (let i = 0; i < blocks; i++) {
+    const blk = dcw.slice(off, off + shortLen + (i >= shortN ? 1 : 0)); off += blk.length;
+    dB.push(blk); eB.push(rsRem(blk, ecPer));
+  }
+  const cw = [];
+  for (let i = 0; i < shortLen + 1; i++) for (let b = 0; b < blocks; b++) if (i < dB[b].length) cw.push(dB[b][i]);
+  for (let i = 0; i < ecPer; i++) for (let b = 0; b < blocks; b++) cw.push(eB[b][i]);
+  const size = ver * 4 + 17;
+  const mod = Array.from({length: size}, () => new Uint8Array(size));
+  const fn = Array.from({length: size}, () => new Uint8Array(size));
+  const setFn = (x, y, v) => { if (x >= 0 && y >= 0 && x < size && y < size) { mod[y][x] = v ? 1 : 0; fn[y][x] = 1; } };
+  for (const [fx, fy] of [[3,3],[size-4,3],[3,size-4]])
+    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) setFn(fx + dx, fy + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 2 && Math.max(Math.abs(dx), Math.abs(dy)) !== 4);
+  for (let i = 8; i < size - 8; i++) { setFn(6, i, (i & 1) === 0); setFn(i, 6, (i & 1) === 0); }
+  for (const ay of QR_ALIGN[ver]) for (const ax of QR_ALIGN[ver]) if (!fn[ay][ax])
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) setFn(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+  for (let i = 0; i < 9; i++) { if (!fn[8][i]) setFn(i, 8, 0); if (!fn[i][8]) setFn(8, i, 0); }
+  for (let i = 0; i < 8; i++) { setFn(size - 1 - i, 8, 0); setFn(8, size - 1 - i, 0); }
+  setFn(8, size - 8, 1);
+  if (ver >= 7) {
+    let rem = ver; for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >> 11) * 0x1f25);
+    const vb = (ver << 12) | rem;
+    for (let i = 0; i < 18; i++) { const bit = (vb >> i) & 1, a = size - 11 + (i % 3), b = Math.floor(i / 3); setFn(a, b, bit); setFn(b, a, bit); }
+  }
+  let bi = 0;
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < size; vert++) {
+      const y = ((right + 1) & 2) === 0 ? size - 1 - vert : vert;
+      for (let j = 0; j < 2; j++) {
+        const x = right - j;
+        if (!fn[y][x]) { mod[y][x] = bi < cw.length * 8 ? (cw[bi >> 3] >> (7 - (bi & 7))) & 1 : 0; bi++; }
+      }
+    }
+  }
+  let best = null, bestPen = 1e9;
+  for (let m = 0; m < 8; m++) {
+    const g = mod.map((row, y) => row.map((v, x) => fn[y][x] ? v : (v ^ (QR_MASKS[m](x, y) ? 1 : 0))));
+    const d5 = (QR_FMT[ecl] << 3) | m; let rem = d5;
+    for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >> 9) * 0x537);
+    const fmt = ((d5 << 10) | rem) ^ 0x5412;
+    for (let i = 0; i <= 5; i++) g[8][i] = (fmt >> (14 - i)) & 1;
+    g[8][7] = (fmt >> 8) & 1; g[8][8] = (fmt >> 7) & 1; g[7][8] = (fmt >> 6) & 1;
+    for (let i = 9; i < 15; i++) g[14 - i][8] = (fmt >> (14 - i)) & 1;
+    for (let i = 0; i < 8; i++) g[8][size - 1 - i] = (fmt >> i) & 1;
+    for (let i = 8; i < 15; i++) g[size - 15 + i][8] = (fmt >> i) & 1;
+    let pen = 0, dark = 0;
+    for (let y = 0; y < size; y++) {
+      let run = 1;
+      for (let x = 0; x < size; x++) {
+        dark += g[y][x];
+        if (x > 0 && g[y][x] === g[y][x-1]) { if (++run === 5) pen += 3; else if (run > 5) pen++; } else run = 1;
+        if (x > 0 && y > 0 && g[y][x] === g[y][x-1] && g[y][x] === g[y-1][x] && g[y][x] === g[y-1][x-1]) pen += 3;
+      }
+    }
+    pen += Math.abs(Math.round(dark * 100 / (size * size)) - 50) * 2;
+    if (pen < bestPen) { bestPen = pen; best = g; }
+  }
+  return { size, grid: best };
+}
+
+function getActiveLinks() {
+  const list = [];
+  for (let i = 0; i < 4; i++) {
+    const s = $('ls' + i)?.value.trim() || '', h = $('lh' + i)?.value.trim() || '', u = $('lu' + i)?.value.trim() || '';
+    if (u) list.push({ slot: i, service: s || 'Посилання', handle: h, url: u });
+  }
+  if (!list.length) list.push({ slot: 0, service: 'GitHub', handle: 'Pip-KeyPet', url: 'https://github.com/NovikovVisuals/Pip-KeyPet' });
+  return list;
+}
+function qrBrand(url) {
+  if (/t\.me\/|telegram\.me\//i.test(url)) return 'tg';
+  if (/instagram\.com\//i.test(url)) return 'ig';
+  return '';
+}
+function drawBrandMark(ctx, brand, cx, cy, size, terminal, ink, paper) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const r = size / 2;
+  if (terminal) {
+    ctx.fillStyle = paper;
+    ctx.fillRect(-r - 4, -r - 4, size + 8, size + 8);
+    ctx.fillStyle = ink; ctx.strokeStyle = ink;
+  } else {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.roundRect(-r - 4, -r - 4, size + 8, size + 8, 12); ctx.fill();
+    if (brand === 'tg') {
+      ctx.fillStyle = '#229ED9';
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.92, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#E1306C';
+      ctx.beginPath(); ctx.roundRect(-r * 0.88, -r * 0.88, size * 0.88, size * 0.88, r * 0.42); ctx.fill();
+    }
+    ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#FFFFFF';
+  }
+  if (brand === 'tg') {
+    const k = size * 0.01;
+    ctx.beginPath();
+    ctx.moveTo(26 * k, -20 * k); ctx.lineTo(-26 * k, 1 * k); ctx.lineTo(-8 * k, 8 * k);
+    ctx.lineTo(14 * k, -9 * k); ctx.lineTo(-2 * k, 12 * k); ctx.lineTo(16 * k, 24 * k);
+    ctx.closePath(); ctx.fill();
+  } else if (brand === 'ig') {
+    const b = size * 0.52;
+    ctx.lineWidth = Math.max(2.5, size * 0.075);
+    ctx.beginPath(); ctx.roundRect(-b / 2, -b / 2, b, b, b * 0.28); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, b * 0.23, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(b * 0.28, -b * 0.28, b * 0.06, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function renderTwinQr() {
+  const cv = $('qrCanvas'), ctx = cv.getContext('2d');
+  const th = fwTheme();
+  const list = getActiveLinks();
+  qrIndex = ((qrIndex % list.length) + list.length) % list.length;
+  const item = list[qrIndex];
+  const qr = qrEncode(item.url);
+
+  /* Background (pure black for Приборка, #3A1F1B + 11x11 dot grid for Діагностика) */
+  ctx.fillStyle = th.bg;
+  ctx.fillRect(0, 0, 466, 466);
+  if (th.terminal) {
+    ctx.fillStyle = th.grid;
+    for (let y = 7; y < 466; y += 11)
+      for (let x = 7; x < 466; x += 11) ctx.fillRect(x, y, 2, 2);
+  }
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const brand = qrBrand(item.url);
+
+  if (th.terminal) {
+    /* Exact Діагностика layout (ui/apps.c:587-608) */
+    const hdr = `ПИП-01 // QR ${qrIndex + 1}/${list.length}`;
+    ctx.font = '700 16px "JetBrains Mono",ui-monospace,monospace';
+    ctx.fillStyle = th.text;
+    const hw = ctx.measureText(hdr).width;
+    ctx.fillText(hdr, 233 - 6, 48);
+    if (diagBlinkOn) ctx.fillRect(233 + hw / 2, 40, 9, 16);
+    ctx.fillRect(145, 66, 176, 2);
+
+    const plate = 252, px = 107, py = 78;
+    ctx.fillStyle = th.text;
+    ctx.fillRect(px, py, plate, plate);
+    if (qr) {
+      const m = Math.floor((plate - 20) / qr.size), off = Math.floor((plate - m * qr.size) / 2);
+      ctx.fillStyle = th.bg;
+      for (let y = 0; y < qr.size; y++)
+        for (let x = 0; x < qr.size; x++)
+          if (qr.grid[y][x]) ctx.fillRect(px + off + x * m, py + off + y * m, m, m);
+      if (brand) drawBrandMark(ctx, brand, px + plate / 2, py + plate / 2, Math.round(m * qr.size * 0.26), true, th.bg, th.text);
+    }
+
+    ctx.font = '700 16px "JetBrains Mono",ui-monospace,monospace';
+    const svc = item.service.toUpperCase(), hdl = item.handle ? ` // ${item.handle.toUpperCase()}` : '';
+    const fullW = ctx.measureText(svc + hdl).width;
+    const startX = 233 - fullW / 2;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = th.text; ctx.fillText(svc, startX, 355);
+    if (hdl) { ctx.fillStyle = th.dim; ctx.fillText(hdl, startX + ctx.measureText(svc).width, 355); }
+    ctx.textAlign = 'center';
+
+    const rowW = list.length * 11 - 2;
+    for (let k = 0; k < list.length; k++) {
+      ctx.fillStyle = k === qrIndex ? th.text : th.off;
+      ctx.fillRect(Math.round(233 - rowW / 2 + k * 11), 376, 9, 9);
+    }
+    ctx.font = '500 14px "JetBrains Mono",ui-monospace,monospace';
+    ctx.fillStyle = th.dim;
+    const wSwipe = ctx.measureText('СВАЙП').width, wBack = ctx.measureText('НАЗАД').width;
+    const footW = 7 + 5 + 7 + 7 + wSwipe + 18 + 9 + 7 + wBack;
+    let fx = Math.round(233 - footW / 2), fy = 412;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx + 7, fy - 4.5); ctx.lineTo(fx + 7, fy + 4.5); ctx.closePath(); ctx.fill();
+    fx += 12;
+    ctx.beginPath(); ctx.moveTo(fx + 7, fy); ctx.lineTo(fx, fy - 4.5); ctx.lineTo(fx, fy + 4.5); ctx.closePath(); ctx.fill();
+    fx += 14;
+    ctx.textAlign = 'left';
+    ctx.fillText('СВАЙП', fx, fy);
+    fx += wSwipe + 18;
+    ctx.beginPath(); ctx.moveTo(fx, fy - 3.5); ctx.lineTo(fx + 9, fy - 3.5); ctx.lineTo(fx + 4.5, fy + 4); ctx.closePath(); ctx.fill();
+    fx += 16;
+    ctx.fillText('НАЗАД', fx, fy);
+    ctx.textAlign = 'center';
+  } else {
+    /* Exact Приборка layout (ui/apps.c:594-610) */
+    ctx.font = '600 19px "IBM Plex Mono",ui-monospace,monospace';
+    ctx.fillStyle = th.dim;
+    ctx.fillText(item.service.toUpperCase(), 233, 46);
+    if (item.handle) {
+      ctx.font = '600 25px "IBM Plex Mono",ui-monospace,monospace';
+      ctx.fillStyle = th.text;
+      ctx.fillText(item.handle, 233, 78);
+    }
+
+    const card = 270, cx0 = 98, cy0 = 116;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.roundRect(cx0, cy0, card, card, 22); ctx.fill();
+    if (qr) {
+      const m = Math.floor(240 / (qr.size + 4)), off = Math.floor((card - m * qr.size) / 2);
+      ctx.fillStyle = '#000000';
+      for (let y = 0; y < qr.size; y++)
+        for (let x = 0; x < qr.size; x++)
+          if (qr.grid[y][x]) ctx.fillRect(cx0 + off + x * m, cy0 + off + y * m, m, m);
+      if (brand) drawBrandMark(ctx, brand, 233, cy0 + card / 2, Math.round(m * qr.size * 0.26), false, '#000', '#FFF');
+    }
+
+    for (let k = 0; k < list.length; k++) {
+      ctx.fillStyle = k === qrIndex ? th.text : 'rgba(232,230,225,0.3)';
+      ctx.beginPath(); ctx.arc(233 + (k - (list.length - 1) / 2) * 18, 412, 4, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+/* Blinking block cursor in Діагностика QR header (500ms, exact theme.c:197) */
+setInterval(() => {
+  if (twinMode === 'qr' && fwTheme().terminal && !reducedMotion() && !document.hidden) {
+    diagBlinkOn = !diagBlinkOn;
+    renderTwinQr();
+  }
+}, 500);
+
+function stepQr(dir) {
+  const list = getActiveLinks();
+  if (list.length <= 1) return;
+  qrIndex = (qrIndex + list.length + dir) % list.length;
+  renderTwinQr();
+  updateTwinHint();
+}
+
+function updateTwinHint() {
+  const hint = $('twinHint');
+  const th = fwTheme();
+  if (twinMode === 'eyes') {
+    if ($('eco')?.checked) {
+      hint.innerHTML = '<span class="eco-pill">ECO · ≤20 FPS</span><span>погляд зафіксовано</span>';
+      hint.hidden = false;
+    } else hint.hidden = true;
+  } else if (twinMode === 'badge') {
+    hint.innerHTML = `<span>${th.name} · макет ${badgeLook + 1}/3 · натисни на екран</span>`;
+    hint.hidden = false;
+  } else {
+    const n = getActiveLinks().length;
+    hint.innerHTML = n > 1
+      ? `<button type="button" id="qrPrev" aria-label="Попередній QR"><span class="ico">chevron_left</span></button><span>${th.name} · QR ${qrIndex + 1}/${n}</span><button type="button" id="qrNext" aria-label="Наступний QR"><span class="ico">chevron_right</span></button>`
+      : `<span>${th.name} · реальний QR-код</span>`;
+    hint.hidden = false;
+    $('qrPrev')?.addEventListener('click', () => stepQr(-1));
+    $('qrNext')?.addEventListener('click', () => stepQr(1));
+  }
+}
+
+function setTwinMode(mode) {
+  if (!['eyes', 'badge', 'qr'].includes(mode)) mode = 'eyes';
+  twinMode = mode;
+  document.body.dataset.twin = mode;
+  document.querySelectorAll('#twinTabs [data-twin-mode]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.twinMode === mode)));
+  $('twinEyes').classList.toggle('active', mode === 'eyes');
+  $('twinBadge').classList.toggle('active', mode === 'badge');
+  $('twinQr').classList.toggle('active', mode === 'qr');
+  if (mode === 'badge') renderTwinBadge();
+  else if (mode === 'qr') renderTwinQr();
+  updateTwinHint();
+}
+$('twinTabs').onclick = e => {
+  const b = e.target.closest('[data-twin-mode]');
+  if (b) setTwinMode(b.dataset.twinMode);
+};
+function syncTwinBrightness(pct) {
+  const v = Math.max(10, Math.min(100, Number(pct) || 80));
+  const lvl = (0.22 + (v / 100) * 0.78).toFixed(3);
+  $('twinScreen').style.filter = `brightness(${lvl})`;
 }
 
 /* ---------- Living Liquid Eyes: 2nd-order spring physics, gooey blink merge & moving specular ---------- */
@@ -1515,12 +2006,14 @@ function updateEyeMood(moodText, charging) {
 setEyeStyle(document.documentElement.dataset.eyeStyle || 'liquid', false);
 if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
 
+let lastEcoDraw = 0;
 function animateEyes(now) {
   const dt = now - lastFrameTime;
   lastFrameTime = now;
-  if (!simpleMode()) {
+  const ecoOn = !!$('eco')?.checked;
+  if (!simpleMode() && twinMode === 'eyes') {
     /* Auto-fallback to simple mode if device consistently drops below ~20 fps */
-    if (!document.hidden && dt > 52 && dt < 400 && previewBlink === null) {
+    if (!ecoOn && !document.hidden && dt > 52 && dt < 400 && previewBlink === null) {
       if (++slowFrames >= 14) { setSimpleFx(true, false); return requestAnimationFrame(animateEyes); }
     } else if (dt < 38) slowFrames = 0;
 
@@ -1528,7 +2021,12 @@ function animateEyes(now) {
       applyLiquidFrame(targetX, targetY, 0, 0, previewBlink, targetX, targetY);
       return;
     }
-    if (document.body.classList.contains('linking')) {
+    /* Real firmware eco mode: <= 20 fps and gaze ignores tilt/cursor */
+    if (ecoOn) {
+      if (now - lastEcoDraw < 50) return requestAnimationFrame(animateEyes);
+      lastEcoDraw = now;
+      targetX = 0; targetY = 0;
+    } else if (document.body.classList.contains('linking')) {
       targetX = Math.sin(now / 360) * 0.72;
       targetY = -0.1;
     } else if (now - lastPointer > 3600) {
@@ -1606,11 +2104,12 @@ window.addEventListener('keydown', e => { if (e.key === 'Escape' && document.bod
 const urlSheet = new URLSearchParams(location.search).get('sheet');
 if (['settings', 'flash', 'dev'].includes(urlSheet)) openSheet(urlSheet);
 
-/* ---------- brightness slider tonal fill ---------- */
+/* ---------- brightness slider tonal fill + live Digital Twin luminance ---------- */
 function syncBright(v) {
   const min = Number($('bright').min), max = Number($('bright').max);
   $('brightOut').textContent = v + '%';
   $('brightFill').style.width = ((Number(v) - min) / (max - min) * 100) + '%';
+  syncTwinBrightness(v);
 }
 syncBright($('bright').value);
 
@@ -1734,8 +2233,26 @@ for (const [f, name, note] of FEATS) $('feats').insertAdjacentHTML('beforeend',
 const clean = s => s.replace(/[|\n\r]/g, ' ').trim();
 const preview = () => {
   for (const id of ['first', 'last', 'org']) $('pv' + id[0].toUpperCase() + id.slice(1)).textContent = $(id).value || $(id).placeholder;
+  renderTwinBadge();
 };
-['first', 'last', 'org'].forEach(id => $(id).oninput = preview);
+['first', 'last', 'org'].forEach(id => {
+  $(id).onfocus = () => setTwinMode('badge');
+  $(id).oninput = () => { if (twinMode !== 'badge') setTwinMode('badge'); preview(); };
+});
+for (let i = 0; i < 4; i++) {
+  for (const pfx of ['ls', 'lh', 'lu']) {
+    const el = $(pfx + i);
+    const showSlot = () => {
+      const list = getActiveLinks();
+      const idx = list.findIndex(x => x.slot === i);
+      if (idx >= 0) qrIndex = idx;
+      if (twinMode !== 'qr') setTwinMode('qr');
+      else { renderTwinQr(); updateTwinHint(); }
+    };
+    el.onfocus = showSlot;
+    el.oninput = showSlot;
+  }
+}
 $('bright').oninput = e => syncBright(e.target.value);
 function fill() {
   $('first').value = cfg.first; $('last').value = cfg.last; $('org').value = cfg.org; preview();
@@ -1747,6 +2264,7 @@ function fill() {
   for (const [f] of FEATS) $('f' + f).checked = !!cfg.feat[f];
   $('ver').textContent = cfg.ver || '—';
   $('needlink').textContent = 'Зміни зберігаються в самому брелоку одразу.';
+  renderTwinBadge(); renderTwinQr(); updateTwinHint();
 }
 const flashSaved = id => { $(id).classList.add('show'); setTimeout(() => $(id).classList.remove('show'), 1500); };
 $('saveName').onclick = () => { send(`name ${clean($('first').value)}|${clean($('last').value)}|${clean($('org').value)}`); flashSaved('savedName'); };
@@ -1756,10 +2274,32 @@ $('saveLinks').onclick = async () => {
 };
 $('power').onchange = e => send('power ' + e.target.value);
 $('bright').onchange = e => send('bright ' + e.target.value);
-$('eco').onchange = e => send('eco ' + (e.target.checked ? 1 : 0));
-$('theme').onchange = e => send('theme ' + e.target.value);
+$('eco').onchange = e => { send('eco ' + (e.target.checked ? 1 : 0)); updateTwinHint(); };
+$('theme').onchange = e => {
+  send('theme ' + e.target.value);
+  if (twinMode === 'eyes' && document.body.classList.contains('sheet-open')) setTwinMode('badge');
+  else { renderTwinBadge(); renderTwinQr(); updateTwinHint(); }
+};
 $('privacy').onchange = e => send('privacy ' + e.target.value);
 $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked ? 1 : 0}`);
+
+/* Initial Digital Twin setup + optional preview URL parameters */
+if (params.get('theme') === '1' || params.get('theme') === '3') $('theme').value = params.get('theme');
+if (params.has('bright')) { $('bright').value = params.get('bright'); syncBright($('bright').value); }
+if (params.get('eco') === '1') $('eco').checked = true;
+if (params.has('look')) badgeLook = ((Number(params.get('look')) || 0) % 3 + 3) % 3;
+if (params.get('demoqr') === 'tg') {
+  $('ls0').value = 'Telegram'; $('lh0').value = '@pip_keypet'; $('lu0').value = 'https://t.me/pip_keypet';
+  $('ls1').value = 'GitHub'; $('lh1').value = 'Pip-KeyPet'; $('lu1').value = 'https://github.com/NovikovVisuals/Pip-KeyPet';
+}
+if (params.get('demoName')) {
+  const [f, l, o] = params.get('demoName').split('|');
+  if (f) $('first').value = f; if (l) $('last').value = l; if (o !== undefined) $('org').value = o;
+  preview();
+}
+renderTwinBadge();
+renderTwinQr();
+setTwinMode(params.get('twin') || 'eyes');
 
 $('openDebug').onclick = async () => { await closePort(); state('Відладка відкрита у новій вкладці', false); window.open('debug.html', '_blank'); };
 $('devOn').onclick = () => send('dev 1');
