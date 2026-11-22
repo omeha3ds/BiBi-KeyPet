@@ -2,20 +2,25 @@
 <html lang="uk" data-pixel="obsidian">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Піп — панель керування</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
 <style>
-/* Material 3 / Material You color system driven by Google Pixel seed palettes.
-   Light and dark modes follow the system preference automatically; flat tonal surfaces only. */
+/* Material 3 / Material You Expressive design system for Pip keychain panel.
+   Seed-driven Google Pixel tonal palettes, automatic light/dark theme, flat surfaces only. */
 :root{
   --font-sans:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color-scheme:light dark;
 
-  /* Default seed: Obsidian (neutral obsidian-slate surfaces + sky-cyan accent synced with eyes) */
+  --shape-card:28px;
+  --shape-inner:20px;
+  --shape-field:16px;
+  --shape-pill:9999px;
+
+  /* Default seed: Obsidian (neutral slate surfaces + sky-cyan accent synced with eyes) */
   --md-sys-color-surface:#f7f9fb;
   --md-sys-color-surface-container-lowest:#ffffff;
   --md-sys-color-surface-container-low:#f1f4f7;
@@ -158,7 +163,7 @@
   --pip-eye-bg:#ff9ec1;
 }
 
-/* Pixel Porcelain (warm sand/gold) */
+/* Pixel Porcelain (warm cream-gold) */
 :root[data-pixel="porcelain"]{
   --md-sys-color-surface:#fcf9f1;
   --md-sys-color-surface-container-lowest:#ffffff;
@@ -343,7 +348,7 @@
   font-weight:normal;font-style:normal;font-size:22px;line-height:1;
   display:inline-flex;align-items:center;justify-content:center;
   letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;
-  user-select:none;
+  user-select:none;flex:none;
   font-variation-settings:"FILL" 0,"wght" 500,"GRAD" 0,"opsz" 24;
 }
 
@@ -354,30 +359,116 @@ body{
   color:var(--md-sys-color-on-surface);
   font:400 16px/1.5 var(--font-sans);
   -webkit-font-smoothing:antialiased;
+  min-height:100vh;
 }
-a{color:var(--md-sys-color-primary);text-decoration:none}
+a{color:var(--md-sys-color-primary);text-decoration:none;font-weight:500}
 a:hover{text-decoration:underline}
 
-.app{max-width:1280px;margin:0 auto;padding:24px 24px 64px;display:grid;grid-template-columns:312px minmax(0,1fr);gap:24px;align-items:start}
+/* ---- Material 3 Navigation Rail (desktop) + Bottom Navigation Bar (mobile) ---- */
+.nav-rail{
+  position:fixed;top:0;left:0;bottom:0;width:96px;z-index:20;
+  background:var(--md-sys-color-surface-container);
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 8px 24px;gap:20px;
+}
+.rail-mark{
+  width:52px;height:52px;border-radius:18px;
+  background:var(--md-sys-color-primary-container);
+  color:var(--md-sys-color-on-primary-container);
+  display:grid;place-items:center;
+}
+.rail-eyes{display:flex;gap:6px}
+.rail-eyes i{width:7px;height:13px;border-radius:4px;background:currentColor}
 
-/* ---- sidebar ---- */
-.rail{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px}
-.brand{display:flex;align-items:baseline;gap:10px;padding:0 4px}
-.brand h1{font:700 28px/1 var(--font-sans);margin:0;letter-spacing:-.02em}
-.brand span{font:500 13px/1 var(--font-sans);color:var(--md-sys-color-on-surface-variant)}
+#tabs{
+  display:flex;flex-direction:column;gap:14px;width:100%;align-items:center;
+  margin-top:8px;
+}
+.nav-btn{
+  background:transparent;border:none;padding:4px 0;margin:0;
+  min-height:auto;width:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  color:var(--md-sys-color-on-surface-variant);
+  cursor:pointer;border-radius:16px;
+}
+.nav-btn .nav-pill{
+  width:56px;height:32px;border-radius:var(--shape-pill);
+  display:grid;place-items:center;
+  background:transparent;
+  color:inherit;
+}
+.nav-btn:hover .nav-pill{
+  background:color-mix(in srgb,var(--md-sys-color-on-surface) 8%,transparent);
+  color:var(--md-sys-color-on-surface);
+}
+.nav-btn .nav-label{
+  font:600 12px/1.15 var(--font-sans);
+  letter-spacing:.01em;
+  text-align:center;
+}
+.nav-btn.on{color:var(--md-sys-color-on-surface)}
+.nav-btn.on .nav-pill{
+  background:var(--md-sys-color-secondary-container);
+  color:var(--md-sys-color-on-secondary-container);
+}
+.nav-btn.on .ico{
+  font-variation-settings:"FILL" 1,"wght" 500,"GRAD" 0,"opsz" 24;
+}
+
+.rail-link{
+  margin-top:auto;
+  width:44px;height:44px;border-radius:var(--shape-pill);
+  display:grid;place-items:center;
+  color:var(--md-sys-color-on-surface-variant);
+  background:transparent;
+}
+.rail-link:hover{
+  background:color-mix(in srgb,var(--md-sys-color-on-surface) 8%,transparent);
+  color:var(--md-sys-color-on-surface);
+  text-decoration:none;
+}
+
+/* ---- Main shell next to the Navigation Rail ---- */
+.shell{
+  margin-left:96px;
+  min-height:100vh;
+}
+.app{
+  max-width:1200px;margin:0 auto;
+  padding:28px 32px 64px;
+  display:grid;grid-template-columns:316px minmax(0,1fr);
+  gap:28px;align-items:start;
+}
+
+/* ---- Pip device column ---- */
+.sidebar{position:sticky;top:28px;display:flex;flex-direction:column;gap:16px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 6px}
+.brand h1{font:700 30px/1.1 var(--font-sans);margin:0;letter-spacing:-.025em}
+.brand span{
+  font:600 12px/1 var(--font-sans);
+  background:var(--md-sys-color-tertiary-container);
+  color:var(--md-sys-color-on-tertiary-container);
+  padding:6px 12px;border-radius:var(--shape-pill);
+}
 
 .device{
   background:var(--md-sys-color-surface-container-low);
-  border-radius:28px;
-  padding:22px;
-  display:flex;flex-direction:column;align-items:center;gap:16px;
+  border-radius:var(--shape-card);
+  padding:24px;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
 }
 
-/* Keychain AMOLED round display & expressive Pixel eyes */
+/* Keychain AMOLED round screen & Pixel eyes */
+.screen-wrap{
+  width:196px;aspect-ratio:1;border-radius:50%;
+  background:var(--md-sys-color-surface-container-highest);
+  padding:8px;
+  display:grid;place-items:center;
+}
 .screen{
-  width:184px;aspect-ratio:1;border-radius:50%;
+  width:100%;height:100%;border-radius:50%;
   background:#000;
-  border:7px solid #202327;
+  border:6px solid #1e2125;
   display:grid;place-items:center;
   position:relative;
 }
@@ -391,26 +482,38 @@ a:hover{text-decoration:underline}
   transition:background-color .25s,border-color .25s,height .3s,transform .3s,opacity .3s;
   animation:blink 5.2s infinite;
 }
-body:not(.linked) .eyes i{height:40px;opacity:.88}
+body:not(.linked) .eyes i{height:40px;opacity:.9}
 @keyframes blink{0%,93%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.08)}}
 
-/* Obsidian special: black eye body + glowing sky-blue outline + glowing sky-blue pupil */
+/* Obsidian special: black eye body + glowing sky-blue rim + glowing sky-blue pupil */
 :root[data-pixel="obsidian"] .eyes i{
   background:#060a10;
   border:2.5px solid var(--pip-eye-border);
-  box-shadow:0 0 12px rgba(77,208,255,.7),inset 0 0 8px rgba(77,208,255,.35);
+  box-shadow:0 0 12px rgba(77,208,255,.72),inset 0 0 8px rgba(77,208,255,.35);
 }
 :root[data-pixel="obsidian"] .eyes i::after{
   content:"";
-  width:11px;height:15px;border-radius:999px;
+  width:11px;height:15px;border-radius:var(--shape-pill);
   background:var(--pip-eye-pupil);
   box-shadow:0 0 10px 2px rgba(77,208,255,.95),0 0 20px rgba(77,208,255,.65);
 }
 
-/* Pixel color swatches */
-.swatches{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+/* Pixel color picker */
+.palette-box{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+.palette-head{
+  display:flex;align-items:center;gap:6px;
+  font:500 12px/1 var(--font-sans);
+  color:var(--md-sys-color-on-surface-variant);
+}
+.palette-head b{
+  color:var(--md-sys-color-on-primary-container);
+  background:var(--md-sys-color-primary-container);
+  padding:4px 10px;border-radius:var(--shape-pill);
+  font-weight:600;
+}
+.swatches{display:flex;gap:9px;align-items:center;justify-content:center;flex-wrap:wrap}
 .swatch{
-  width:32px;height:32px;min-height:32px;padding:0;border-radius:50%;
+  width:34px;height:34px;min-height:34px;padding:0;border-radius:50%;
   border:2px solid var(--md-sys-color-outline-variant);
   background:var(--sw);
   cursor:pointer;position:relative;
@@ -420,85 +523,178 @@ body:not(.linked) .eyes i{height:40px;opacity:.88}
   background:#0c1118;
   border-color:#4dd0ff;
 }
-.swatch .ico{font-size:17px;color:#fff;opacity:0;transition:opacity .2s}
+.swatch .ico{font-size:18px;color:#fff;opacity:0}
 .swatch[data-set-pixel="porcelain"] .ico{color:#261a00}
 .swatch[aria-pressed="true"]{
-  border-color:var(--md-sys-color-on-surface);
-  outline:2px solid var(--md-sys-color-primary);
+  border-color:var(--md-sys-color-surface-container-low);
+  outline:2.5px solid var(--md-sys-color-primary);
   outline-offset:2px;
 }
 .swatch[aria-pressed="true"] .ico{opacity:1}
 
-.status{display:flex;gap:8px;align-items:center;font-weight:600;font-size:15px}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--md-sys-color-outline);flex:none}
+/* Connection status pill */
+.status{
+  display:inline-flex;gap:8px;align-items:center;
+  padding:8px 16px;border-radius:var(--shape-pill);
+  background:var(--md-sys-color-surface-container-high);
+  color:var(--md-sys-color-on-surface-variant);
+  font:600 14px/1.2 var(--font-sans);
+  max-width:100%;
+}
+.linked .status{
+  background:var(--md-sys-color-success-container);
+  color:var(--md-sys-color-on-success-container);
+}
+.dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--md-sys-color-outline);
+  flex:none;position:relative;
+}
 .linked .dot{background:var(--md-sys-color-success)}
 
-.facts{width:100%;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;margin:0}
-.facts dt{font:500 13px/21px var(--font-sans);color:var(--md-sys-color-on-surface-variant)}
-.facts dd{margin:0;text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+/* Device telemetry tiles */
+.facts{
+  width:100%;margin:0;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+}
+.fact{
+  background:var(--md-sys-color-surface-container);
+  border-radius:18px;padding:10px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+  min-width:0;
+}
+.fact dt{
+  font:500 11px/1.2 var(--font-sans);
+  color:var(--md-sys-color-on-surface-variant);
+}
+.fact dd{
+  margin:0;font:600 13px/1.25 var(--font-sans);
+  font-variant-numeric:tabular-nums;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 
-.connect{width:100%;display:grid;gap:8px}
-nav{display:flex;flex-direction:column;gap:4px}
-nav button{justify-content:flex-start;background:transparent;border:none;min-height:48px;color:var(--md-sys-color-on-surface-variant);border-radius:999px;padding:10px 18px}
-nav button:hover{background:var(--md-sys-color-surface-container-high);color:var(--md-sys-color-on-surface)}
-nav button.on{background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container)}
-.rail footer{color:var(--md-sys-color-on-surface-variant);font-size:13px;padding:0 6px;line-height:1.5}
+.connect{width:100%;display:grid;gap:10px}
+.sidebar footer{
+  color:var(--md-sys-color-on-surface-variant);
+  font-size:13px;line-height:1.5;
+  padding:4px 8px;
+}
 
-/* ---- main content ---- */
+/* ---- Main content area ---- */
 main{min-width:0}
-.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:4px 0 20px}
-.head h2{font:700 28px/1.2 var(--font-sans);margin:0;letter-spacing:-.015em;text-wrap:balance}
-.head p{margin:6px 0 0;color:var(--md-sys-color-on-surface-variant);max-width:60ch}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:2px 0 22px}
+.head h2{font:700 clamp(26px,2.8vw,34px)/1.15 var(--font-sans);margin:0;letter-spacing:-.02em;text-wrap:balance}
+.head p{margin:8px 0 0;color:var(--md-sys-color-on-surface-variant);max-width:62ch;font-size:15px}
+
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .wide{grid-column:1/-1}
 .card{
   background:var(--md-sys-color-surface-container-low);
-  border-radius:26px;
-  padding:22px;
-  display:flex;flex-direction:column;gap:14px;min-width:0;
+  border-radius:var(--shape-card);
+  padding:24px;
+  display:flex;flex-direction:column;gap:16px;min-width:0;
 }
-.card h3{font:600 16px/1.2 var(--font-sans);margin:0;color:var(--md-sys-color-on-surface);display:flex;align-items:center;gap:8px}
-.card h3 b{color:var(--md-sys-color-primary);font-weight:600;font-size:13px}
-.muted{color:var(--md-sys-color-on-surface-variant);font-size:14px;margin:0}
+.card-title{
+  display:flex;align-items:center;gap:12px;margin:0;
+}
+.card-ico{
+  width:40px;height:40px;border-radius:14px;flex:none;
+  background:var(--md-sys-color-primary-container);
+  color:var(--md-sys-color-on-primary-container);
+  display:grid;place-items:center;
+}
+.card h3{
+  font:600 18px/1.2 var(--font-sans);margin:0;
+  color:var(--md-sys-color-on-surface);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.pill-tag{
+  font:600 12px/1 var(--font-sans);
+  padding:5px 10px;border-radius:var(--shape-pill);
+  background:var(--md-sys-color-tertiary-container);
+  color:var(--md-sys-color-on-tertiary-container);
+}
+.muted{color:var(--md-sys-color-on-surface-variant);font-size:14px;margin:0;line-height:1.5}
 .notice{
   background:var(--md-sys-color-error-container);
   color:var(--md-sys-color-on-error-container);
-  border-radius:20px;padding:14px 18px;margin:0 0 18px;
-  display:flex;align-items:center;gap:12px;
+  border-radius:var(--shape-inner);padding:16px 20px;margin:0 0 20px;
+  display:flex;align-items:center;gap:12px;font-size:15px;
 }
 
+/* ---- Material 3 Expressive buttons ---- */
 button{
-  font:600 15px var(--font-sans);
-  border-radius:999px;padding:10px 20px;
+  font:600 15px/1.2 var(--font-sans);
+  border-radius:var(--shape-pill);
+  padding:12px 22px;
   border:none;
   background:var(--md-sys-color-secondary-container);
   color:var(--md-sys-color-on-secondary-container);
-  cursor:pointer;min-height:46px;
+  cursor:pointer;min-height:48px;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  position:relative;overflow:hidden;
 }
-button:hover{filter:brightness(.96)}
-button.main{background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary)}
+button:hover{
+  background:color-mix(in srgb,var(--md-sys-color-on-secondary-container) 8%,var(--md-sys-color-secondary-container));
+}
+button.main{
+  background:var(--md-sys-color-primary);
+  color:var(--md-sys-color-on-primary);
+}
+button.main:hover{
+  background:color-mix(in srgb,var(--md-sys-color-on-primary) 10%,var(--md-sys-color-primary));
+}
+button.outline{
+  background:transparent;
+  color:var(--md-sys-color-on-surface);
+  border:1.5px solid var(--md-sys-color-outline-variant);
+}
+button.outline:hover{
+  background:color-mix(in srgb,var(--md-sys-color-on-surface) 8%,transparent);
+}
 button:disabled{opacity:.42;cursor:default}
-:focus-visible{outline:2px solid var(--md-sys-color-primary);outline-offset:2px}
+button.nav-btn,button.swatch{min-height:auto}
+button.nav-btn:hover{background:transparent}
+button.swatch:hover{background:var(--sw)}
+button.swatch[data-set-pixel="obsidian"]:hover{background:#0c1118}
+:focus-visible{outline:2.5px solid var(--md-sys-color-primary);outline-offset:2px}
+
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-label,.lbl{display:block;font-size:13px;font-weight:500;color:var(--md-sys-color-on-surface-variant);margin:0 0 6px}
+label,.lbl{display:block;font-size:13px;font-weight:600;color:var(--md-sys-color-on-surface-variant);margin:0 0 6px}
+
+/* ---- Fields & Selects ---- */
 input[type=text],input[type=url],select{
   width:100%;font:inherit;font-size:15px;
   color:var(--md-sys-color-on-surface);
   background:var(--md-sys-color-surface-container-highest);
-  border:1px solid transparent;border-radius:16px;padding:10px 14px;min-height:46px;
+  border:2px solid transparent;border-radius:var(--shape-field);
+  padding:11px 14px;min-height:48px;
 }
-input:focus,select:focus{border-color:var(--md-sys-color-primary);outline:none;background:var(--md-sys-color-surface-container-lowest)}
-input[type=range]{width:100%;accent-color:var(--md-sys-color-primary)}
+input[type=text]::placeholder,input[type=url]::placeholder{color:var(--md-sys-color-outline)}
+input:focus,select:focus{
+  border-color:var(--md-sys-color-primary);
+  outline:none;
+  background:var(--md-sys-color-surface-container-lowest);
+}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.saved{color:var(--md-sys-color-success);font-size:14px;font-weight:600;opacity:0;transition:opacity .25s}
+.saved{
+  display:inline-flex;align-items:center;gap:4px;
+  color:var(--md-sys-color-success);
+  font-size:14px;font-weight:600;
+  opacity:0;pointer-events:none;
+}
 .saved.show{opacity:1}
 
-/* badge preview */
-.badge{display:grid;grid-template-columns:minmax(0,1fr) 156px;gap:20px;align-items:center}
+/* ---- Badge preview ---- */
+.badge{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:24px;align-items:center}
+.preview-wrap{
+  width:168px;aspect-ratio:1;border-radius:50%;
+  background:var(--md-sys-color-surface-container-highest);
+  padding:6px;display:grid;place-items:center;
+}
 .preview{
-  width:156px;aspect-ratio:1;border-radius:50%;
-  background:#000;border:5px solid #202327;color:#fff;
+  width:100%;height:100%;border-radius:50%;
+  background:#000;border:5px solid #1e2125;color:#fff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
   padding:16px;overflow:hidden;
 }
@@ -506,225 +702,418 @@ input[type=range]{width:100%;accent-color:var(--md-sys-color-primary)}
 .preview .mark i{width:9px;height:13px;background:var(--pip-eye-bg);border-radius:4px}
 :root[data-pixel="obsidian"] .preview .mark i{
   background:#060a10;border:1.5px solid var(--pip-eye-border);
-  box-shadow:0 0 6px rgba(77,208,255,.75);
+  box-shadow:0 0 6px rgba(77,208,255,.78);
 }
-.preview b{font:600 17px/1.1 var(--font-sans);max-width:100%;overflow-wrap:anywhere}
+.preview b{font:600 17px/1.12 var(--font-sans);max-width:100%;overflow-wrap:anywhere}
 .preview small{font:600 10px var(--font-mono);color:var(--md-sys-color-primary);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
 
-/* QR links */
+/* ---- QR links ---- */
 .links{display:grid;gap:10px}
-.link{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,2.2fr);gap:8px;align-items:center}
-.link .n{font:600 13px var(--font-mono);color:var(--md-sys-color-on-surface-variant);text-align:center}
-.link.head-row span{font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant)}
+.link{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) minmax(0,2.2fr);gap:10px;align-items:center}
+.link .n{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--md-sys-color-surface-container-highest);
+  color:var(--md-sys-color-on-surface-variant);
+  font:600 12px/1 var(--font-sans);
+  display:grid;place-items:center;
+}
+.link.head-row span{font-size:12px;font-weight:600;color:var(--md-sys-color-on-surface-variant)}
 
-.range{display:flex;align-items:center;gap:12px}
-.range output{font:600 14px var(--font-mono);min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
-.toggles{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
-.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--md-sys-color-outline-variant)}
-.toggle small{display:block;color:var(--md-sys-color-on-surface-variant);font-size:13px;line-height:1.35;margin-top:2px}
-.switch{position:relative;width:52px;height:32px;flex:none}
+/* ---- Material 3 Expressive Slider (zero gradients: real tonal fill track) ---- */
+.range{display:flex;align-items:center;gap:14px}
+.slider-wrap{
+  position:relative;flex:1;height:40px;
+  display:flex;align-items:center;
+}
+.slider-track{
+  position:absolute;left:0;right:0;height:14px;border-radius:var(--shape-pill);
+  background:var(--md-sys-color-surface-container-highest);
+  overflow:hidden;pointer-events:none;
+}
+.slider-fill{
+  height:100%;width:78%;
+  background:var(--md-sys-color-primary);
+  border-radius:var(--shape-pill);
+}
+.slider-wrap input[type=range]{
+  position:relative;z-index:2;width:100%;height:40px;margin:0;
+  appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;
+}
+.slider-wrap input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:10px;height:32px;border-radius:var(--shape-pill);
+  background:var(--md-sys-color-primary);
+  border:3px solid var(--md-sys-color-surface-container-low);
+}
+.slider-wrap input[type=range]::-moz-range-thumb{
+  width:10px;height:32px;border-radius:var(--shape-pill);
+  background:var(--md-sys-color-primary);
+  border:3px solid var(--md-sys-color-surface-container-low);
+}
+.range output{
+  font:600 14px/1 var(--font-sans);
+  min-width:52px;text-align:center;
+  font-variant-numeric:tabular-nums;
+  background:var(--md-sys-color-primary-container);
+  color:var(--md-sys-color-on-primary-container);
+  padding:8px 10px;border-radius:var(--shape-pill);
+}
+
+/* ---- Material 3 Expressive Switches ---- */
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
+.toggle{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:var(--md-sys-color-surface-container);
+  border-radius:var(--shape-inner);
+}
+.toggle-title{font:600 15px/1.3 var(--font-sans)}
+.toggle small{display:block;color:var(--md-sys-color-on-surface-variant);font-size:13px;line-height:1.4;margin-top:2px;font-weight:400}
+.switch{position:relative;width:54px;height:32px;flex:none;margin:0}
 .switch input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
-.switch span{position:absolute;inset:0;background:var(--md-sys-color-surface-container-highest);border:2px solid var(--md-sys-color-outline);border-radius:999px;transition:.2s;pointer-events:none}
-.switch span:before{content:"";position:absolute;width:16px;height:16px;left:6px;top:6px;background:var(--md-sys-color-outline);border-radius:50%;transition:.2s}
-.switch input:checked+span{background:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary)}
-.switch input:checked+span:before{width:24px;height:24px;left:2px;top:2px;transform:translateX(20px);background:var(--md-sys-color-on-primary)}
-.switch input:focus-visible+span{outline:2px solid var(--md-sys-color-primary);outline-offset:2px}
+.switch span{
+  position:absolute;inset:0;
+  background:var(--md-sys-color-surface-container-highest);
+  border:2px solid var(--md-sys-color-outline);
+  border-radius:var(--shape-pill);
+  pointer-events:none;
+}
+.switch span:before{
+  content:"";position:absolute;
+  width:16px;height:16px;left:6px;top:6px;
+  background:var(--md-sys-color-outline);
+  border-radius:50%;
+}
+.switch input:checked+span{
+  background:var(--md-sys-color-primary);
+  border-color:var(--md-sys-color-primary);
+}
+.switch input:checked+span:before{
+  width:24px;height:24px;left:2px;top:2px;
+  transform:translateX(22px);
+  background:var(--md-sys-color-on-primary);
+}
+.switch input:focus-visible+span{outline:2.5px solid var(--md-sys-color-primary);outline-offset:2px}
 
-/* flashing */
+/* ---- Info tip pill ---- */
+.tip-box{
+  background:var(--md-sys-color-surface-container);
+  border-radius:var(--shape-inner);
+  padding:14px 16px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.tip-box .ico{color:var(--md-sys-color-primary);margin-top:1px}
+
+/* ---- Flashing ---- */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s;margin:0;padding:0;list-style:none}
-.steps li{background:var(--md-sys-color-surface-container-low);border-radius:24px;padding:20px;counter-increment:s}
-.steps li:before{content:counter(s);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);font:700 15px var(--font-sans);margin-bottom:10px}
-.steps b{display:block;margin-bottom:4px}
-.flashbox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center}
-.bar{height:10px;background:var(--md-sys-color-surface-container-highest);border-radius:999px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--md-sys-color-primary);border-radius:999px;transition:width .2s}
-details summary{cursor:pointer;color:var(--md-sys-color-on-surface);font-weight:500}
-details p{margin:8px 0 0}
-code{font-family:var(--font-mono);background:var(--md-sys-color-surface-container-high);padding:2px 6px;border-radius:8px;font-size:13px}
+.steps li{
+  background:var(--md-sys-color-surface-container-low);
+  border-radius:var(--shape-card);
+  padding:22px;counter-increment:s;
+  display:flex;flex-direction:column;gap:6px;
+}
+.steps li:before{
+  content:counter(s);
+  display:grid;place-items:center;
+  width:36px;height:36px;border-radius:14px;
+  background:var(--md-sys-color-tertiary-container);
+  color:var(--md-sys-color-on-tertiary-container);
+  font:700 16px var(--font-sans);
+  margin-bottom:6px;
+}
+.steps b{display:block;font-size:16px}
+.flashbox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
+.bar{height:12px;background:var(--md-sys-color-surface-container-highest);border-radius:var(--shape-pill);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--md-sys-color-primary);border-radius:var(--shape-pill)}
+details{
+  background:var(--md-sys-color-surface-container);
+  border-radius:var(--shape-inner);
+  padding:14px 18px;
+}
+details summary{
+  cursor:pointer;color:var(--md-sys-color-on-surface);
+  font-weight:600;list-style:none;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+details summary::-webkit-details-marker{display:none}
+details[open] summary .chev{transform:rotate(180deg)}
+details p{margin:10px 0 0}
+code{font-family:var(--font-mono);background:var(--md-sys-color-surface-container-highest);padding:2px 7px;border-radius:8px;font-size:13px}
 
-@media (max-width:1100px){.toggles{grid-template-columns:1fr}.link{grid-template-columns:28px 1fr 1fr}.link input[type=url]{grid-column:2/-1}.link.head-row{display:none}}
+/* ---- Responsive breakpoints ---- */
+@media (max-width:1180px){
+  .app{grid-template-columns:284px minmax(0,1fr);gap:22px;padding:24px}
+  .toggles{grid-template-columns:1fr}
+  .link{grid-template-columns:30px 1fr 1fr}
+  .link input[type=url]{grid-column:2/-1}
+  .link.head-row{display:none}
+}
 @media (max-width:900px){
-  .app{grid-template-columns:1fr;padding:16px}
-  .rail{position:static}
-  .device{flex-direction:row;flex-wrap:wrap;justify-content:space-between}
-  .screen{width:118px;border-width:5px}.eyes{gap:14px}.eyes i{width:22px;height:34px;border-radius:10px}
-  :root[data-pixel="obsidian"] .eyes i::after{width:7px;height:10px}
-  .device .facts{flex:1;min-width:180px;width:auto}
-  nav{flex-direction:row;overflow-x:auto}
-  nav button{flex:none}
+  /* Convert Navigation Rail into Pixel Bottom Navigation Bar */
+  .nav-rail{
+    top:auto;left:0;right:0;bottom:0;width:auto;height:auto;
+    flex-direction:row;justify-content:center;
+    padding:8px 12px calc(10px + env(safe-area-inset-bottom));
+    gap:0;
+    border-top:1px solid var(--md-sys-color-outline-variant);
+  }
+  .rail-mark,.rail-link{display:none}
+  #tabs{
+    flex-direction:row;justify-content:space-around;
+    max-width:520px;margin:0;gap:4px;
+  }
+  .nav-btn{flex:1;padding:4px 6px}
+  .nav-btn .nav-pill{width:64px;height:32px}
+
+  .shell{margin-left:0}
+  .app{
+    grid-template-columns:1fr;
+    padding:16px 16px calc(96px + env(safe-area-inset-bottom));
+    gap:20px;
+  }
+  .sidebar{position:static}
+  .device{padding:20px}
+  .screen-wrap{width:144px;padding:6px}
+  .screen{border-width:5px}
+  .eyes{gap:16px}
+  .eyes i{width:25px;height:38px;border-radius:11px}
+  body:not(.linked) .eyes i{height:32px}
+  :root[data-pixel="obsidian"] .eyes i::after{width:8px;height:11px}
   .cards,.steps{grid-template-columns:1fr}
 }
-@media (max-width:520px){.fields,.flashbox{grid-template-columns:1fr}.badge{grid-template-columns:1fr;justify-items:center}.badge>div{width:100%}}
+@media (max-width:520px){
+  .fields,.flashbox{grid-template-columns:1fr}
+  .badge{grid-template-columns:1fr;justify-items:center}
+  .badge>div{width:100%}
+  .connect{grid-template-columns:1fr}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-<div class="app">
-  <aside class="rail">
-    <div class="brand"><h1>Піп</h1><span>панель брелока</span></div>
+<aside class="nav-rail" aria-label="Розділи панелі">
+  <div class="rail-mark" aria-hidden="true"><div class="rail-eyes"><i></i><i></i></div></div>
+  <nav id="tabs">
+    <button type="button" class="nav-btn on" data-tab="settings" aria-current="page">
+      <span class="nav-pill"><span class="ico">tune</span></span>
+      <span class="nav-label">Налаштування</span>
+    </button>
+    <button type="button" class="nav-btn" data-tab="flash">
+      <span class="nav-pill"><span class="ico">system_update</span></span>
+      <span class="nav-label">Прошивка</span>
+    </button>
+    <button type="button" class="nav-btn" data-tab="dev">
+      <span class="nav-pill"><span class="ico">terminal</span></span>
+      <span class="nav-label">Розробникам</span>
+    </button>
+  </nav>
+  <a class="rail-link" href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener" title="Вихідний код на GitHub" aria-label="Вихідний код на GitHub">
+    <span class="ico">code</span>
+  </a>
+</aside>
 
-    <div class="device">
-      <div class="screen" aria-hidden="true"><div class="eyes"><i></i><i></i></div></div>
+<div class="shell">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><h1>Піп</h1><span>панель брелока</span></div>
 
-      <div class="swatches" id="swatches" role="group" aria-label="Колір очей і палітри Pixel">
-        <button type="button" class="swatch" data-set-pixel="obsidian" style="--sw:#101417" title="Обсидіан" aria-label="Обсидіан" aria-pressed="true"><span class="ico">check</span></button>
-        <button type="button" class="swatch" data-set-pixel="bay" style="--sw:#5b97e8" title="Затока" aria-label="Затока" aria-pressed="false"><span class="ico">check</span></button>
-        <button type="button" class="swatch" data-set-pixel="hazel" style="--sw:#5c8a6c" title="Шавлія" aria-label="Шавлія" aria-pressed="false"><span class="ico">check</span></button>
-        <button type="button" class="swatch" data-set-pixel="coral" style="--sw:#df6446" title="Корал" aria-label="Корал" aria-pressed="false"><span class="ico">check</span></button>
-        <button type="button" class="swatch" data-set-pixel="peony" style="--sw:#d15a85" title="Півонія" aria-label="Півонія" aria-pressed="false"><span class="ico">check</span></button>
-        <button type="button" class="swatch" data-set-pixel="porcelain" style="--sw:#d7c39c" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"><span class="ico">check</span></button>
+      <div class="device">
+        <div class="screen-wrap" aria-hidden="true">
+          <div class="screen"><div class="eyes"><i></i><i></i></div></div>
+        </div>
+
+        <div class="palette-box">
+          <div class="palette-head"><span>Колір Pixel</span><b id="pixelName">Обсидіан</b></div>
+          <div class="swatches" id="swatches" role="group" aria-label="Колір очей і палітри Pixel">
+            <button type="button" class="swatch" data-set-pixel="obsidian" data-label="Обсидіан" style="--sw:#101417" title="Обсидіан" aria-label="Обсидіан" aria-pressed="true"><span class="ico">check</span></button>
+            <button type="button" class="swatch" data-set-pixel="bay" data-label="Затока" style="--sw:#5b97e8" title="Затока" aria-label="Затока" aria-pressed="false"><span class="ico">check</span></button>
+            <button type="button" class="swatch" data-set-pixel="hazel" data-label="Шавлія" style="--sw:#5c8a6c" title="Шавлія" aria-label="Шавлія" aria-pressed="false"><span class="ico">check</span></button>
+            <button type="button" class="swatch" data-set-pixel="coral" data-label="Корал" style="--sw:#df6446" title="Корал" aria-label="Корал" aria-pressed="false"><span class="ico">check</span></button>
+            <button type="button" class="swatch" data-set-pixel="peony" data-label="Півонія" style="--sw:#d15a85" title="Півонія" aria-label="Півонія" aria-pressed="false"><span class="ico">check</span></button>
+            <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Порцеляна" style="--sw:#d7c39c" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"><span class="ico">check</span></button>
+          </div>
+        </div>
+
+        <div class="status"><span class="dot"></span><span id="state">Не підключено</span></div>
+
+        <dl class="facts">
+          <div class="fact"><dt>Настрій</dt><dd id="mood">—</dd></div>
+          <div class="fact"><dt>Батарея</dt><dd id="bat">—</dd></div>
+          <div class="fact"><dt>Прошивка</dt><dd id="ver">—</dd></div>
+        </dl>
+
+        <div class="connect">
+          <button type="button" class="main" id="usb"><span class="ico">usb</span>Підключити по кабелю</button>
+          <button type="button" id="ble"><span class="ico">bluetooth</span>По Bluetooth</button>
+        </div>
       </div>
 
-      <div class="status"><span class="dot"></span><span id="state">Не підключено</span></div>
-      <dl class="facts">
-        <dt>Настрій</dt><dd id="mood">—</dd>
-        <dt>Батарея</dt><dd id="bat">—</dd>
-        <dt>Прошивка</dt><dd id="ver">—</dd>
-      </dl>
-      <div class="connect">
-        <button class="main" id="usb"><span class="ico">usb</span>Підключити по кабелю</button>
-        <button id="ble"><span class="ico">bluetooth</span>По Bluetooth</button>
+      <footer>Працює в Chrome та Edge. Нічого не встановлюється: сторінка спілкується з брелоком прямо з браузера.
+        <a href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener">Вихідний код</a></footer>
+    </aside>
+
+    <main>
+      <div class="notice" id="nobrowser" hidden>
+        <span class="ico">warning</span>
+        <span>Цей браузер не підтримує роботу з брелоком. Відкрий цю сторінку в <b>Google Chrome</b> або <b>Microsoft Edge</b> на комп'ютері.</span>
       </div>
-    </div>
 
-    <nav id="tabs">
-      <button data-tab="settings" class="on"><span class="ico">tune</span>Налаштування</button>
-      <button data-tab="flash"><span class="ico">system_update</span>Прошивка</button>
-      <button data-tab="dev"><span class="ico">terminal</span>Розробникам</button>
-    </nav>
+      <section data-tab="settings">
+        <div class="head"><div>
+          <h2>Налаштування</h2>
+          <p id="needlink">Підключи Піпа кнопкою «Підключити по кабелю» — його поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
+        </div></div>
 
-    <footer>Працює в Chrome та Edge. Нічого не встановлюється: сторінка спілкується з брелоком прямо з браузера.
-      <a href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener">Вихідний код</a></footer>
-  </aside>
-
-  <main>
-    <div class="notice" id="nobrowser" hidden>
-      <span class="ico">warning</span>
-      <span>Цей браузер не підтримує роботу з брелоком. Відкрий цю сторінку в <b>Google Chrome</b> або <b>Microsoft Edge</b> на комп'ютері.</span>
-    </div>
-
-    <section data-tab="settings">
-      <div class="head"><div>
-        <h2>Налаштування</h2>
-        <p id="needlink">Підключи Піпа кнопкою «Підключити по кабелю» — його поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
-      </div></div>
-
-      <div class="cards">
-        <div class="card wide">
-          <h3><span class="ico">badge</span>Бейдж</h3>
-          <div class="badge">
-            <div>
-              <div class="fields">
-                <div><label for="first">Перший рядок (ім'я)</label><input type="text" id="first" maxlength="30" placeholder="Твоє"></div>
-                <div><label for="last">Другий рядок (прізвище)</label><input type="text" id="last" maxlength="30" placeholder="Ім'я"></div>
+        <div class="cards">
+          <div class="card wide">
+            <div class="card-title"><span class="card-ico"><span class="ico">badge</span></span><h3>Бейдж</h3></div>
+            <div class="badge">
+              <div>
+                <div class="fields">
+                  <div><label for="first">Перший рядок (ім'я)</label><input type="text" id="first" maxlength="30" placeholder="Твоє"></div>
+                  <div><label for="last">Другий рядок (прізвище)</label><input type="text" id="last" maxlength="30" placeholder="Ім'я"></div>
+                </div>
+                <div style="margin-top:12px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
+                <div class="row" style="margin-top:16px">
+                  <button type="button" class="main" id="saveName"><span class="ico">check</span>Зберегти бейдж</button>
+                  <span class="saved" id="savedName"><span class="ico">check_circle</span>Збережено</span>
+                </div>
               </div>
-              <div style="margin-top:12px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
-              <div class="row" style="margin-top:14px"><button class="main" id="saveName"><span class="ico">check</span>Зберегти бейдж</button><span class="saved" id="savedName">Збережено</span></div>
+              <div class="preview-wrap">
+                <div class="preview" aria-label="Приблизно так на брелоку">
+                  <div class="mark"><i></i><i></i></div>
+                  <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg">KeyPet</small>
+                </div>
+              </div>
             </div>
-            <div class="preview" aria-label="Приблизно так на брелоку">
-              <div class="mark"><i></i><i></i></div>
-              <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg">KeyPet</small>
+          </div>
+
+          <div class="card wide">
+            <div class="card-title"><span class="card-ico"><span class="ico">qr_code_2</span></span><h3>Посилання для Quick QR <span class="pill-tag">до чотирьох</span></h3></div>
+            <p class="muted">Піп показуватиме їх QR-кодами, гортаються свайпом. Посилання на Telegram та Instagram отримають значок у центрі коду.</p>
+            <div class="links" id="links">
+              <div class="link head-row"><span></span><span>Назва</span><span>Підпис</span><span>Посилання</span></div>
+            </div>
+            <div class="row">
+              <button type="button" class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button>
+              <span class="saved" id="savedLinks"><span class="ico">check_circle</span>Збережено</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><span class="card-ico"><span class="ico">battery_saver</span></span><h3>Екран і батарея</h3></div>
+            <div class="toggle">
+              <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
+              <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
+            </div>
+            <div><label for="power">Засинати, якщо Піпа не чіпати</label>
+              <select id="power">
+                <option value="15">через 15 секунд (найдовша робота)</option>
+                <option value="30">через 30 секунд</option>
+                <option value="60">через 1 хвилину</option>
+                <option value="120">через 2 хвилини</option>
+                <option value="300">через 5 хвилин</option>
+                <option value="0">ніколи (батарея сяде швидко)</option>
+              </select></div>
+            <p class="muted">Прокидається від дотику, кнопки, якщо взяти в руку, та при сповіщенні. Бейдж, QR і ліхтарик не дають заснути, поки відкриті.</p>
+            <div><label for="bright">Яскравість</label>
+              <div class="range">
+                <div class="slider-wrap">
+                  <div class="slider-track"><div class="slider-fill" id="brightFill"></div></div>
+                  <input type="range" id="bright" min="10" max="100" step="5" value="80">
+                </div>
+                <output id="brightOut">80%</output>
+              </div>
+            </div>
+            <div><label for="theme">Оформлення на брелоку</label>
+              <select id="theme"><option value="1">Приборка — строге, з помаранчевим</option><option value="3">Діагностика — ретро-термінал</option></select></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><span class="card-ico"><span class="ico">notifications</span></span><h3>Сповіщення з iPhone</h3></div>
+            <div><label for="privacy">Що видно на екрані брелока</label>
+              <select id="privacy">
+                <option value="1">Приховано: додаток і час, текст — коли відкриєш</option>
+                <option value="0">Відкрито: усе одразу</option>
+                <option value="2">Вимкнено: текст не приходить взагалі</option>
+              </select></div>
+            <div class="tip-box">
+              <span class="ico">shield_lock</span>
+              <p class="muted">Коди, паролі та банки брелок не зберігає в жодному режимі.</p>
+            </div>
+            <div class="tip-box">
+              <span class="ico">smartphone</span>
+              <p class="muted"><b style="color:var(--md-sys-color-on-surface)">Підключити iPhone:</b> Налаштування → Bluetooth → Pip, далі підтвердь код на брелоку верхньою кнопкою.</p>
+            </div>
+          </div>
+
+          <div class="card wide">
+            <div class="card-title"><span class="card-ico"><span class="ico">sensors</span></span><h3>Що Піп помічає</h3></div>
+            <div class="toggles" id="feats"></div>
+          </div>
+        </div>
+      </section>
+
+      <section data-tab="flash" hidden>
+        <div class="head"><div>
+          <h2>Прошити або оновити Піпа</h2>
+          <p id="fwinfo"></p>
+        </div></div>
+        <div class="cards">
+          <ol class="steps wide">
+            <li><b>Підключи кабель</b><span class="muted">USB-C з передачею даних, а не «лише для зарядки».</span></li>
+            <li><b>Натисни «Прошити»</b><span class="muted">і вибери у списку <b>USB JTAG/serial</b>.</span></li>
+            <li><b>Зачекай хвилину</b><span class="muted">Не відключай кабель, поки шкала не дійде до кінця.</span></li>
+          </ol>
+          <div class="card wide">
+            <div class="flashbox">
+              <button type="button" class="main" id="flash"><span class="ico">download</span>Прошити</button>
+              <div>
+                <div class="bar"><i id="prog"></i></div>
+                <p id="flashState" class="muted" style="margin-top:10px">Улюбленець, налаштування та підключений iPhone при оновленні зберігаються.</p>
+              </div>
+            </div>
+            <details class="muted"><summary><span>Не виходить?</span><span class="ico chev">expand_more</span></summary>
+              <p>Брелок не з'являється у списку: спробуй інший кабель або інший USB-порт. На Linux один раз виконай
+                <code>sudo usermod -aG dialout $USER</code> і перезайди.</p>
+              <p>Прошивка не починається: затисни нижню кнопку брелока, коротко натисни верхню й відпусти нижню. Брелок увійде
+                в режим прошивки — знову натисни «Прошити».</p></details>
+          </div>
+        </div>
+      </section>
+
+      <section data-tab="dev" hidden>
+        <div class="head"><div>
+          <h2>Для розробників</h2>
+          <p>Чому в Піпа такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
+        </div></div>
+        <div class="cards">
+          <div class="card">
+            <div class="card-title"><span class="card-ico"><span class="ico">bug_report</span></span><h3>Відладка</h3></div>
+            <p class="muted">Відкриється в новій вкладці; кабель перейде до неї.</p>
+            <div class="row"><button type="button" class="main" id="openDebug"><span class="ico">open_in_new</span>Відкрити відладку</button></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-ico"><span class="ico">developer_mode</span></span><h3>Режим розробника</h3></div>
+            <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх Піпа прямо на екрані брелока.</p>
+            <div class="row">
+              <button type="button" id="devOn"><span class="ico">visibility</span>Увімкнути</button>
+              <button type="button" class="outline" id="devOff"><span class="ico">visibility_off</span>Вимкнути</button>
+            </div>
+          </div>
+          <div class="card wide">
+            <div class="card-title"><span class="card-ico"><span class="ico">monitoring</span></span><h3>Лог батареї</h3></div>
+            <p class="muted">Піп щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
+            <div class="row">
+              <button type="button" id="batGet"><span class="ico">file_download</span>Завантажити CSV</button>
+              <button type="button" class="outline" id="batClear"><span class="ico">delete</span>Очистити</button>
+              <span class="saved" id="batState"></span>
             </div>
           </div>
         </div>
-
-        <div class="card wide">
-          <h3><span class="ico">qr_code_2</span>Посилання для Quick QR <b>до чотирьох</b></h3>
-          <p class="muted">Піп показуватиме їх QR-кодами, гортаються свайпом. Посилання на Telegram та Instagram отримають значок у центрі коду.</p>
-          <div class="links" id="links">
-            <div class="link head-row"><span></span><span>Назва</span><span>Підпис</span><span>Посилання</span></div>
-          </div>
-          <div class="row"><button class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button><span class="saved" id="savedLinks">Збережено</span></div>
-        </div>
-
-        <div class="card">
-          <h3><span class="ico">battery_saver</span>Екран і батарея</h3>
-          <div class="toggle"><div>Режим енергозбереження<small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
-            <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label></div>
-          <div><label for="power">Засинати, якщо Піпа не чіпати</label>
-            <select id="power">
-              <option value="15">через 15 секунд (найдовша робота)</option>
-              <option value="30">через 30 секунд</option>
-              <option value="60">через 1 хвилину</option>
-              <option value="120">через 2 хвилини</option>
-              <option value="300">через 5 хвилин</option>
-              <option value="0">ніколи (батарея сяде швидко)</option>
-            </select></div>
-          <p class="muted">Прокидається від дотику, кнопки, якщо взяти в руку, та при сповіщенні. Бейдж, QR і ліхтарик не дають заснути, поки відкриті.</p>
-          <div><label for="bright">Яскравість</label>
-            <div class="range"><input type="range" id="bright" min="10" max="100" step="5" value="80"><output id="brightOut">80%</output></div></div>
-          <div><label for="theme">Оформлення на брелоку</label>
-            <select id="theme"><option value="1">Приборка — строге, з помаранчевим</option><option value="3">Діагностика — ретро-термінал</option></select></div>
-        </div>
-
-        <div class="card">
-          <h3><span class="ico">notifications</span>Сповіщення з iPhone</h3>
-          <div><label for="privacy">Що видно на екрані брелока</label>
-            <select id="privacy">
-              <option value="1">Приховано: додаток і час, текст — коли відкриєш</option>
-              <option value="0">Відкрито: усе одразу</option>
-              <option value="2">Вимкнено: текст не приходить взагалі</option>
-            </select></div>
-          <p class="muted">Коди, паролі та банки брелок не зберігає в жодному режимі.</p>
-          <p class="muted"><b style="color:var(--md-sys-color-on-surface)">Підключити iPhone:</b> Налаштування → Bluetooth → Pip, далі підтвердь код на брелоку верхньою кнопкою.</p>
-        </div>
-
-        <div class="card wide">
-          <h3><span class="ico">sensors</span>Що Піп помічає</h3>
-          <div class="toggles" id="feats"></div>
-        </div>
-      </div>
-    </section>
-
-    <section data-tab="flash" hidden>
-      <div class="head"><div>
-        <h2>Прошити або оновити Піпа</h2>
-        <p id="fwinfo"></p>
-      </div></div>
-      <div class="cards">
-        <ol class="steps wide">
-          <li><b>Підключи кабель</b><span class="muted">USB-C з передачею даних, а не «лише для зарядки».</span></li>
-          <li><b>Натисни «Прошити»</b><span class="muted">і вибери у списку <b>USB JTAG/serial</b>.</span></li>
-          <li><b>Зачекай хвилину</b><span class="muted">Не відключай кабель, поки шкала не дійде до кінця.</span></li>
-        </ol>
-        <div class="card wide">
-          <div class="flashbox">
-            <button class="main" id="flash"><span class="ico">download</span>Прошити</button>
-            <div><div class="bar"><i id="prog"></i></div><p id="flashState" class="muted" style="margin-top:8px">Улюбленець, налаштування та підключений iPhone при оновленні зберігаються.</p></div>
-          </div>
-          <details class="muted"><summary>Не виходить?</summary>
-            <p>Брелок не з'являється у списку: спробуй інший кабель або інший USB-порт. На Linux один раз виконай
-              <code>sudo usermod -aG dialout $USER</code> і перезайди.</p>
-            <p>Прошивка не починається: затисни нижню кнопку брелока, коротко натисни верхню й відпусти нижню. Брелок увійде
-              в режим прошивки — знову натисни «Прошити».</p></details>
-        </div>
-      </div>
-    </section>
-
-    <section data-tab="dev" hidden>
-      <div class="head"><div>
-        <h2>Для розробників</h2>
-        <p>Чому в Піпа такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
-      </div></div>
-      <div class="cards">
-        <div class="card">
-          <h3><span class="ico">bug_report</span>Відладка</h3>
-          <p class="muted">Відкриється в новій вкладці; кабель перейде до неї.</p>
-          <div class="row"><button id="openDebug"><span class="ico">open_in_new</span>Відкрити відладку</button></div>
-        </div>
-        <div class="card">
-          <h3><span class="ico">developer_mode</span>Режим розробника</h3>
-          <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх Піпа прямо на екрані брелока.</p>
-          <div class="row"><button id="devOn"><span class="ico">visibility</span>Увімкнути</button><button id="devOff"><span class="ico">visibility_off</span>Вимкнути</button></div>
-        </div>
-        <div class="card">
-          <h3><span class="ico">monitoring</span>Лог батареї</h3>
-          <p class="muted">Піп щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
-          <div class="row"><button id="batGet"><span class="ico">file_download</span>Завантажити CSV</button><button id="batClear"><span class="ico">delete</span>Очистити</button><span class="saved" id="batState"></span></div>
-        </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
+  </div>
 </div>
 
 <script src="firmware/firmware.js"></script>
@@ -736,8 +1125,11 @@ const PIXELS = ['obsidian', 'bay', 'hazel', 'coral', 'peony', 'porcelain'];
 function setPixel(name) {
   if (!PIXELS.includes(name)) name = 'obsidian';
   document.documentElement.dataset.pixel = name;
-  document.querySelectorAll('#swatches .swatch').forEach(b =>
-    b.setAttribute('aria-pressed', String(b.dataset.setPixel === name)));
+  document.querySelectorAll('#swatches .swatch').forEach(b => {
+    const active = b.dataset.setPixel === name;
+    b.setAttribute('aria-pressed', String(active));
+    if (active) $('pixelName').textContent = b.dataset.label;
+  });
   try { localStorage.setItem('pip-pixel', name); } catch (e) {}
 }
 try { setPixel(localStorage.getItem('pip-pixel') || 'obsidian'); } catch (e) { setPixel('obsidian'); }
@@ -745,6 +1137,14 @@ $('swatches').onclick = e => {
   const btn = e.target.closest('[data-set-pixel]');
   if (btn) setPixel(btn.dataset.setPixel);
 };
+
+/* ---------- brightness slider tonal fill ---------- */
+function syncBright(v) {
+  const min = Number($('bright').min), max = Number($('bright').max);
+  $('brightOut').textContent = v + '%';
+  $('brightFill').style.width = ((Number(v) - min) / (max - min) * 100) + '%';
+}
+syncBright($('bright').value);
 
 const FEATS = [
   [0, 'Тряска', 'струснеш — закрутиться голова'],
@@ -855,18 +1255,18 @@ for (let i = 0; i < 4; i++) $('links').insertAdjacentHTML('beforeend',
   `<input type="text" placeholder="@нік" maxlength="46" id="lh${i}" aria-label="Підпис ${i + 1}">` +
   `<input type="url" placeholder="https://t.me/нік" maxlength="198" id="lu${i}" aria-label="Посилання ${i + 1}"></div>`);
 for (const [f, name, note] of FEATS) $('feats').insertAdjacentHTML('beforeend',
-  `<div class="toggle"><div>${name}<small>${note}</small></div><label class="switch"><input type="checkbox" id="f${f}" aria-label="${name}"><span></span></label></div>`);
+  `<div class="toggle"><div><div class="toggle-title">${name}</div><small>${note}</small></div><label class="switch"><input type="checkbox" id="f${f}" aria-label="${name}"><span></span></label></div>`);
 const clean = s => s.replace(/[|\n\r]/g, ' ').trim();
 const preview = () => {
   for (const id of ['first', 'last', 'org']) $('pv' + id[0].toUpperCase() + id.slice(1)).textContent = $(id).value || $(id).placeholder;
 };
 ['first', 'last', 'org'].forEach(id => $(id).oninput = preview);
-$('bright').oninput = e => $('brightOut').textContent = e.target.value + '%';
+$('bright').oninput = e => syncBright(e.target.value);
 function fill() {
   $('first').value = cfg.first; $('last').value = cfg.last; $('org').value = cfg.org; preview();
   cfg.links.forEach((l, i) => { $('ls' + i).value = l[0]; $('lh' + i).value = l[1]; $('lu' + i).value = l[2]; });
   $('power').value = [15, 30, 60, 120, 300, 0].includes(cfg.power) ? cfg.power : 30;
-  $('bright').value = cfg.bright; $('brightOut').textContent = cfg.bright + '%';
+  $('bright').value = cfg.bright; syncBright(cfg.bright);
   $('eco').checked = !!cfg.eco;
   $('theme').value = cfg.theme; $('privacy').value = cfg.privacy;
   for (const [f] of FEATS) $('f' + f).checked = !!cfg.feat[f];
@@ -891,7 +1291,11 @@ $('tabs').onclick = e => {
   const btn = e.target.closest('button[data-tab]');
   if (!btn) return;
   const t = btn.dataset.tab;
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('#tabs button').forEach(b => {
+    const on = b.dataset.tab === t;
+    b.classList.toggle('on', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
   document.querySelectorAll('section[data-tab]').forEach(s => s.hidden = s.dataset.tab !== t);
 };
 $('openDebug').onclick = async () => { await closePort(); state('Відладка відкрита у новій вкладці', false); window.open('debug.html', '_blank'); };
