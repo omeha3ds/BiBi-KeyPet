@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Піп — панель керування</title>
 <script>
-try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getItem('pip-pixel');if(['peony','obsidian','bay','hazel','coral','porcelain'].includes(p))document.documentElement.dataset.pixel=p;}catch(e){}
+try{
+  const q=new URLSearchParams(location.search);
+  const p=q.get('pixel')||localStorage.getItem('pip-pixel');
+  if(['peony','obsidian','bay','hazel','coral','porcelain'].includes(p))document.documentElement.dataset.pixel=p;
+  const fxQ=q.get('fx'),fxS=localStorage.getItem('pip-fx');
+  const weak=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4&&navigator.deviceMemory&&navigator.deviceMemory<=4)||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fx=fxQ==='simple'||fxQ==='liquid'?fxQ:(fxS==='simple'||fxS==='liquid'?fxS:(weak?'simple':'liquid'));
+  document.documentElement.dataset.fx=fx;
+}catch(e){}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,23 +43,37 @@ try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getI
   --spring-spatial:cubic-bezier(.22,1.15,.36,1);
   --ease-std:cubic-bezier(.2,0,0,1);
 
-  /* Default: Pixel Peony (flat vivid pink sclera + bold teal pupil, inspired by reference) */
+  /* Default: Pixel Peony (iOS liquid pink sclera + vivid teal liquid pupil) */
   --accent:#f5b4c8;
   --on-accent:#0a0a0a;
   --accent-soft:#24191d;
   --eye-sclera:#f5b4c8;
+  --eye-hi:#ffe4ed;
+  --eye-mid:#f5b0c6;
+  --eye-deep:#ad5270;
+  --eye-caustic:#ffd9e6;
   --eye-pupil:#00999e;
+  --pupil-hi:#4ae3e6;
+  --pupil-mid:#00979c;
+  --pupil-deep:#004a52;
   --eye-stroke:transparent;
   --eye-stroke-w:0;
 }
 
-/* Pixel Obsidian: pure jet-black eyes + luminous sky-blue outline & pupil */
+/* Pixel Obsidian: liquid pitch-black droplets + luminous sky-blue glass rim & liquid cyan pupils */
 :root[data-pixel="obsidian"]{
   --accent:#66d4ff;
   --on-accent:#041016;
   --accent-soft:#101d24;
   --eye-sclera:#000000;
+  --eye-hi:#163d52;
+  --eye-mid:#040c12;
+  --eye-deep:#000000;
+  --eye-caustic:#4dd0ff;
   --eye-pupil:#7ce8ff;
+  --pupil-hi:#e2fcff;
+  --pupil-mid:#6be2ff;
+  --pupil-deep:#0b86bd;
   --eye-stroke:#4dd0ff;
   --eye-stroke-w:5.5;
 }
@@ -62,7 +84,14 @@ try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getI
   --on-accent:#071324;
   --accent-soft:#131b26;
   --eye-sclera:#9bc9ff;
+  --eye-hi:#e0efff;
+  --eye-mid:#95c5ff;
+  --eye-deep:#447ed0;
+  --eye-caustic:#cce4ff;
   --eye-pupil:#154ec4;
+  --pupil-hi:#5d94ff;
+  --pupil-mid:#154ec4;
+  --pupil-deep:#082266;
   --eye-stroke:transparent;
   --eye-stroke-w:0;
 }
@@ -73,7 +102,14 @@ try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getI
   --on-accent:#08170b;
   --accent-soft:#131e15;
   --eye-sclera:#b9e4bc;
+  --eye-hi:#e8fae9;
+  --eye-mid:#b4e2b8;
+  --eye-deep:#569460;
+  --eye-caustic:#dcf7de;
   --eye-pupil:#167a42;
+  --pupil-hi:#4ac47c;
+  --pupil-mid:#167a42;
+  --pupil-deep:#073b1d;
   --eye-stroke:transparent;
   --eye-stroke-w:0;
 }
@@ -84,7 +120,14 @@ try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getI
   --on-accent:#1c0904;
   --accent-soft:#241612;
   --eye-sclera:#ffb096;
+  --eye-hi:#ffe5dc;
+  --eye-mid:#ffaa8e;
+  --eye-deep:#bf593b;
+  --eye-caustic:#ffd8ca;
   --eye-pupil:#d93c16;
+  --pupil-hi:#ff7a54;
+  --pupil-mid:#d93c16;
+  --pupil-deep:#731704;
   --eye-stroke:transparent;
   --eye-stroke-w:0;
 }
@@ -95,7 +138,14 @@ try{const p=new URLSearchParams(location.search).get('pixel')||localStorage.getI
   --on-accent:#1a1508;
   --accent-soft:#201d15;
   --eye-sclera:#f3e3b8;
+  --eye-hi:#fff9e8;
+  --eye-mid:#f0dfa9;
+  --eye-deep:#b09455;
+  --eye-caustic:#fff2cf;
   --eye-pupil:#bd4c16;
+  --pupil-hi:#ef854c;
+  --pupil-mid:#bd4c16;
+  --pupil-deep:#632105;
   --eye-stroke:transparent;
   --eye-stroke-w:0;
 }
@@ -275,41 +325,76 @@ a:hover{text-decoration:underline}
   width:94%;height:94%;overflow:visible;
   transform-origin:center;
 }
-.pip-svg.squish{animation:eyeSquish 300ms var(--spring-fast)}
-.eye-sclera{
-  fill:var(--eye-sclera);
-  transition:fill 320ms var(--ease-std);
-}
-.eye-rim{
-  fill:none;
-  stroke:var(--eye-stroke);
-  stroke-width:var(--eye-stroke-w);
-  transition:stroke 320ms var(--ease-std),stroke-width 260ms var(--ease-std);
-}
-.eye-pupil{
-  fill:var(--eye-pupil);
-  transition:fill 320ms var(--ease-std),rx 320ms var(--spring-fast),ry 320ms var(--spring-fast);
-}
-/* Luminous rim & pupil ONLY on Obsidian main SVG eyes, never on UI */
-:root[data-pixel="obsidian"] #pipSvg .eye-rim{filter:url(#obs-rim)}
+.pip-svg.squish{animation:eyeSquish 320ms var(--spring-fast)}
+
+/* Liquid SVG layers (gradients & highlights live strictly inside #pipSvg) */
+.goo-body{filter:url(#liquid-goo)}
+.obs-goo-rim{display:none;filter:url(#liquid-goo-obs)}
+:root[data-pixel="obsidian"] .obs-goo-rim{display:inline}
+.obs-rim-shape{fill:var(--eye-stroke)}
+
+.eye-sclera-l{fill:url(#gradScleraL)}
+.eye-sclera-r{fill:url(#gradScleraR)}
+.eye-bridge{fill:var(--eye-mid);transition:fill 300ms var(--ease-std)}
+:root[data-pixel="obsidian"] .eye-bridge{fill:#030a10}
+
+.eye-pupil{transition:rx 320ms var(--spring-fast),ry 320ms var(--spring-fast)}
+.eye-pupil-l{fill:url(#gradPupilL)}
+.eye-pupil-r{fill:url(#gradPupilR)}
 :root[data-pixel="obsidian"] #pipSvg .eye-pupil{filter:url(#obs-pupil)}
 
+/* SVG stop colors wired to active Pixel CSS tokens */
+.s-hi{stop-color:var(--eye-hi);transition:stop-color 300ms var(--ease-std)}
+.s-mid{stop-color:var(--eye-mid);transition:stop-color 300ms var(--ease-std)}
+.s-deep{stop-color:var(--eye-deep);transition:stop-color 300ms var(--ease-std)}
+.s-caustic{stop-color:var(--eye-caustic);transition:stop-color 300ms var(--ease-std)}
+.p-hi{stop-color:var(--pupil-hi);transition:stop-color 300ms var(--ease-std)}
+.p-mid{stop-color:var(--pupil-mid);transition:stop-color 300ms var(--ease-std)}
+.p-deep{stop-color:var(--pupil-deep);transition:stop-color 300ms var(--ease-std)}
+
+/* Specular liquid glass highlights & opposite-edge caustic refraction */
+.eye-caustic{fill:url(#gradCaustic);opacity:.78;pointer-events:none}
+:root[data-pixel="obsidian"] .eye-caustic{opacity:.42}
+.eye-spec{fill:url(#gradSpec);opacity:.82;pointer-events:none}
+.eye-dot{fill:#ffffff;opacity:.75;pointer-events:none}
+:root[data-pixel="obsidian"] .eye-spec{opacity:.46}
+:root[data-pixel="obsidian"] .eye-dot{opacity:.58}
+.eye-edge-sheen{
+  fill:none;stroke:url(#gradEdge);stroke-width:2.4;opacity:.55;pointer-events:none;
+}
+:root[data-pixel="obsidian"] .eye-edge-sheen{opacity:0}
+
+/* Simple fallback rim (hidden in liquid mode, shown in simple mode for Obsidian) */
+.simple-rim{
+  display:none;fill:none;stroke:var(--eye-stroke);stroke-width:var(--eye-stroke-w);
+}
+
 /* Pupil shapes morph smoothly per Pixel colorway (scoped strictly to #pipSvg) */
-:root[data-pixel="peony"] #pipSvg .eye-pupil{rx:42px;ry:86px}
+:root[data-pixel="peony"] #pipSvg .eye-pupil{rx:42px;ry:84px}
 :root[data-pixel="obsidian"] #pipSvg .eye-pupil{rx:28px;ry:58px}
 :root[data-pixel="bay"] #pipSvg .eye-pupil{rx:44px;ry:74px}
 :root[data-pixel="hazel"] #pipSvg .eye-pupil{rx:46px;ry:64px}
 :root[data-pixel="coral"] #pipSvg .eye-pupil{rx:37px;ry:80px}
 :root[data-pixel="porcelain"] #pipSvg .eye-pupil{rx:42px;ry:42px}
 
+/* Simplified fallback mode: zero SVG filters, flat crisp vector eyes for weak devices & reduced motion */
+:root[data-fx="simple"] .goo-body,
+:root[data-fx="simple"] .obs-goo-rim,
+:root[data-fx="simple"] #pipSvg .eye-pupil{filter:none!important}
+:root[data-fx="simple"] .obs-goo-rim,
+:root[data-fx="simple"] .liquid-only{display:none!important}
+:root[data-fx="simple"] .eye-sclera-l,
+:root[data-fx="simple"] .eye-sclera-r{fill:var(--eye-sclera)}
+:root[data-fx="simple"] .eye-pupil-l,
+:root[data-fx="simple"] .eye-pupil-r{fill:var(--eye-pupil)}
+:root[data-fx="simple"] .simple-rim{display:inline}
+
 /* Eyelid blink & sleep/charging expression */
 .eye-lid{
   transform-origin:200px 200px;
-  transition:transform 260ms var(--spring-fast);
 }
-.eye-lid.blinking{transform:scaleY(.05);transition:transform 90ms ease-in}
-.eye-lid.sleepy{transform:scaleY(.78)}
-.eye-lid.alert{transform:scaleY(1.03)}
+.eye-lid.sleepy{transform:scaleY(.78);transition:transform 260ms var(--spring-fast)}
+.eye-lid.alert{transform:scaleY(1.03);transition:transform 260ms var(--spring-fast)}
 
 /* Charging happy lower-lid cheek cover */
 .charge-cheek{
@@ -756,6 +841,11 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}
+  .goo-body,.obs-goo-rim,#pipSvg .eye-pupil{filter:none!important}
+  .obs-goo-rim,.liquid-only{display:none!important}
+  .eye-sclera-l,.eye-sclera-r{fill:var(--eye-sclera)!important}
+  .eye-pupil-l,.eye-pupil-r{fill:var(--eye-pupil)!important}
+  .simple-rim{display:inline!important}
 }
 </style>
 </head>
@@ -811,46 +901,148 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
           <span class="v"><span class="dot"></span><span id="state">Не підключено</span></span>
         </div>
 
-        <!-- Centerpiece: Big Expressive Pip Eyes inside pure black circle -->
+        <!-- Centerpiece: iOS Liquid Pip Eyes inside pure black circle -->
         <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Очі Піпа — натисни, щоб моргнув">
           <svg class="pip-svg" id="pipSvg" viewBox="0 0 400 400" aria-hidden="true">
             <defs>
+              <!-- Dynamic eye clip paths (moved along with droplets during gooey blink) -->
               <clipPath id="clipL">
-                <ellipse cx="120" cy="200" rx="74" ry="96" transform="rotate(-13 120 200)"/>
+                <ellipse id="clipEllL" cx="112" cy="200" rx="69" ry="93" transform="rotate(-13 112 200)"/>
               </clipPath>
               <clipPath id="clipR">
-                <ellipse cx="280" cy="200" rx="74" ry="96" transform="rotate(13 280 200)"/>
+                <ellipse id="clipEllR" cx="288" cy="200" rx="69" ry="93" transform="rotate(13 288 200)"/>
               </clipPath>
-              <filter id="obs-rim" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="0" stdDeviation="6.5" flood-color="#4dd0ff" flood-opacity="0.9"/>
+
+              <!-- SVG Gooey filter: viscous droplet merge during blink/squish -->
+              <filter id="liquid-goo" x="-28%" y="-28%" width="156%" height="156%" color-interpolation-filters="sRGB">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="7.5" result="blur"/>
+                <feColorMatrix in="blur" mode="matrix" values="
+                  1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 26 -12" result="goo"/>
+                <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
               </filter>
+
+              <!-- Obsidian gooey luminous cyan outer liquid glass rim -->
+              <filter id="liquid-goo-obs" x="-35%" y="-35%" width="170%" height="170%" color-interpolation-filters="sRGB">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="7.5" result="blur"/>
+                <feColorMatrix in="blur" mode="matrix" values="
+                  1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 26 -12" result="goo"/>
+                <feDropShadow in="goo" dx="0" dy="0" stdDeviation="6.5" flood-color="#4dd0ff" flood-opacity="0.88"/>
+              </filter>
+
+              <!-- Obsidian pupil liquid glow -->
               <filter id="obs-pupil" x="-45%" y="-45%" width="190%" height="190%">
-                <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#4dd0ff" flood-opacity="0.95"/>
+                <feDropShadow dx="0" dy="0" stdDeviation="7.5" flood-color="#4dd0ff" flood-opacity="0.95"/>
               </filter>
+
+              <!-- Volumetric sclera radial gradients (focal point tracks cursor!) -->
+              <radialGradient id="gradScleraL" cx="50%" cy="50%" r="64%" fx="34%" fy="28%">
+                <stop class="s-hi" offset="0%"/>
+                <stop class="s-mid" offset="56%"/>
+                <stop class="s-deep" offset="100%"/>
+              </radialGradient>
+              <radialGradient id="gradScleraR" cx="50%" cy="50%" r="64%" fx="34%" fy="28%">
+                <stop class="s-hi" offset="0%"/>
+                <stop class="s-mid" offset="56%"/>
+                <stop class="s-deep" offset="100%"/>
+              </radialGradient>
+
+              <!-- Volumetric pupil radial gradients -->
+              <radialGradient id="gradPupilL" cx="50%" cy="50%" r="62%" fx="36%" fy="26%">
+                <stop class="p-hi" offset="0%"/>
+                <stop class="p-mid" offset="52%"/>
+                <stop class="p-deep" offset="100%"/>
+              </radialGradient>
+              <radialGradient id="gradPupilR" cx="50%" cy="50%" r="62%" fx="36%" fy="26%">
+                <stop class="p-hi" offset="0%"/>
+                <stop class="p-mid" offset="52%"/>
+                <stop class="p-deep" offset="100%"/>
+              </radialGradient>
+
+              <!-- Liquid glass top specular sheen -->
+              <linearGradient id="gradSpec" x1="15%" y1="0%" x2="55%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+                <stop offset="48%" stop-color="#ffffff" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </linearGradient>
+
+              <!-- Opposite-edge internal liquid caustic refraction -->
+              <radialGradient id="gradCaustic" cx="50%" cy="62%" r="54%">
+                <stop class="s-caustic" offset="0%" stop-opacity="0.72"/>
+                <stop class="s-caustic" offset="58%" stop-opacity="0.18"/>
+                <stop class="s-caustic" offset="100%" stop-opacity="0"/>
+              </radialGradient>
+
+              <!-- Delicate glass top-rim specular arc -->
+              <linearGradient id="gradEdge" x1="20%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+                <stop offset="45%" stop-color="#ffffff" stop-opacity="0.12"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.35"/>
+              </linearGradient>
             </defs>
 
             <g id="eyeShift">
               <g class="eye-lid" id="eyeLid">
-                <!-- Left eye -->
-                <g>
-                  <ellipse class="eye-sclera" cx="120" cy="200" rx="74" ry="96" transform="rotate(-13 120 200)"/>
-                  <g clip-path="url(#clipL)">
-                    <g id="pupilL">
-                      <ellipse class="eye-pupil" cx="126" cy="202" rx="42" ry="86" transform="rotate(-7 126 202)"/>
-                    </g>
+                <g id="liquidScale">
+                  <!-- Obsidian luminous cyan outer gooey silhouette (merges smoothly on blink) -->
+                  <g class="obs-goo-rim">
+                    <ellipse id="obsOutL" class="obs-rim-shape" cx="112" cy="200" rx="75.5" ry="99.5" transform="rotate(-13 112 200)"/>
+                    <ellipse id="obsOutR" class="obs-rim-shape" cx="288" cy="200" rx="75.5" ry="99.5" transform="rotate(13 288 200)"/>
+                    <ellipse id="obsBridge" class="obs-rim-shape" cx="200" cy="200" rx="0" ry="0"/>
                   </g>
-                  <ellipse class="eye-rim" cx="120" cy="200" rx="74" ry="96" transform="rotate(-13 120 200)"/>
-                </g>
-                <!-- Right eye -->
-                <g>
-                  <ellipse class="eye-sclera" cx="280" cy="200" rx="74" ry="96" transform="rotate(13 280 200)"/>
-                  <g clip-path="url(#clipR)">
-                    <g id="pupilR">
-                      <ellipse class="eye-pupil" cx="274" cy="202" rx="42" ry="86" transform="rotate(7 274 202)"/>
-                    </g>
+
+                  <!-- Main liquid sclera droplets through gooey filter -->
+                  <g class="goo-body">
+                    <ellipse id="scleraL" class="eye-sclera-l" cx="112" cy="200" rx="70" ry="94" transform="rotate(-13 112 200)"/>
+                    <ellipse id="scleraR" class="eye-sclera-r" cx="288" cy="200" rx="70" ry="94" transform="rotate(13 288 200)"/>
+                    <ellipse id="gooBridge" class="eye-bridge liquid-only" cx="200" cy="200" rx="0" ry="0"/>
                   </g>
-                  <ellipse class="eye-rim" cx="280" cy="200" rx="74" ry="96" transform="rotate(13 280 200)"/>
+
+                  <!-- Pupils + moving liquid specular & caustic layers clipped inside each eye -->
+                  <g id="eyeDetails">
+                    <!-- Left eye interior -->
+                    <g clip-path="url(#clipL)">
+                      <g id="causticL" class="liquid-only">
+                        <ellipse class="eye-caustic" cx="126" cy="262" rx="54" ry="29" transform="rotate(-16 126 262)"/>
+                      </g>
+                      <g id="pupilL">
+                        <ellipse class="eye-pupil eye-pupil-l" cx="118" cy="202" rx="40" ry="82" transform="rotate(-7 118 202)"/>
+                      </g>
+                      <g id="specL" class="liquid-only">
+                        <ellipse class="eye-spec" cx="95" cy="148" rx="32" ry="17" transform="rotate(-32 95 148)"/>
+                        <ellipse class="eye-dot" cx="78" cy="176" rx="6.5" ry="4.2" transform="rotate(-24 78 176)"/>
+                      </g>
+                    </g>
+
+                    <!-- Right eye interior -->
+                    <g clip-path="url(#clipR)">
+                      <g id="causticR" class="liquid-only">
+                        <ellipse class="eye-caustic" cx="274" cy="262" rx="54" ry="29" transform="rotate(16 274 262)"/>
+                      </g>
+                      <g id="pupilR">
+                        <ellipse class="eye-pupil eye-pupil-r" cx="282" cy="202" rx="40" ry="82" transform="rotate(7 282 202)"/>
+                      </g>
+                      <g id="specR" class="liquid-only">
+                        <ellipse class="eye-spec" cx="266" cy="146" rx="32" ry="17" transform="rotate(-22 266 146)"/>
+                        <ellipse class="eye-dot" cx="250" cy="174" rx="6.5" ry="4.2" transform="rotate(-14 250 174)"/>
+                      </g>
+                    </g>
+
+                    <!-- Soft glass edge sheen (liquid mode, non-Obsidian) -->
+                    <ellipse id="edgeL" class="eye-edge-sheen liquid-only" cx="112" cy="200" rx="68.5" ry="92.5" transform="rotate(-13 112 200)"/>
+                    <ellipse id="edgeR" class="eye-edge-sheen liquid-only" cx="288" cy="200" rx="68.5" ry="92.5" transform="rotate(13 288 200)"/>
+
+                    <!-- Clean rim for simple no-filter fallback mode -->
+                    <ellipse class="simple-rim" cx="112" cy="200" rx="70" ry="94" transform="rotate(-13 112 200)"/>
+                    <ellipse class="simple-rim" cx="288" cy="200" rx="70" ry="94" transform="rotate(13 288 200)"/>
+                  </g>
                 </g>
+
                 <!-- Happy charging cheek cover -->
                 <path class="charge-cheek" d="M 30 258 Q 120 220 200 258 Q 280 220 370 258 L 370 340 L 30 340 Z"/>
               </g>
@@ -955,6 +1147,10 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
           <div class="toggle">
             <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
             <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
+          </div>
+          <div class="toggle">
+            <div><div class="toggle-title">Спрощена графіка сторінки</div><small>вимикає SVG-фільтри liquid-очей для слабких пристроїв (автоматично при зменшенні руху)</small></div>
+            <label class="switch"><input type="checkbox" id="simpleFx" aria-label="Спрощена графіка сторінки"><span></span></label>
           </div>
           <div><label for="power">Засинати, якщо Піпа не чіпати</label>
             <select id="power">
@@ -1098,8 +1294,109 @@ $('swatches').onclick = e => {
 $('pipOrb').onclick = boopEyes;
 $('pipOrb').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); boopEyes(); } };
 
-/* ---------- Living eyes: smooth pointer/touch tracking, natural blinking, state reactions ---------- */
-let targetX = 0, targetY = 0, curX = 0, curY = 0, lastPointer = 0;
+/* ---------- Simplified no-SVG-filter fallback mode ---------- */
+const simpleMode = () => reducedMotion() || document.documentElement.dataset.fx === 'simple';
+function setSimpleFx(on, persist = true) {
+  const mode = on || reducedMotion() ? 'simple' : 'liquid';
+  document.documentElement.dataset.fx = mode;
+  if ($('simpleFx')) $('simpleFx').checked = mode === 'simple';
+  if (persist) { try { localStorage.setItem('pip-fx', mode); } catch (e) {} }
+  if (mode === 'simple') resetLiquidGeometry();
+}
+if ($('simpleFx')) {
+  $('simpleFx').checked = simpleMode();
+  $('simpleFx').onchange = e => setSimpleFx(e.target.checked, true);
+}
+
+/* ---------- Living Liquid Eyes: 2nd-order spring physics, gooey blink merge & moving specular ---------- */
+const params = new URLSearchParams(location.search);
+const previewBlink = params.has('blink') ? Math.max(0, Math.min(1, Number(params.get('blink')) || 0)) : null;
+const previewAim = params.get('aim') ? params.get('aim').split(',').map(Number) : null;
+
+let targetX = previewAim ? (previewAim[0] || 0) : -0.35;
+let targetY = previewAim ? (previewAim[1] || 0) : -0.28;
+let curX = targetX, curY = targetY, velX = 0, velY = 0;
+let lightX = targetX, lightY = targetY;
+let blinkPos = previewBlink ?? 0, blinkVel = 0, blinkTarget = previewBlink ?? 0;
+let lastPointer = previewAim ? 1e12 : 0;
+let slowFrames = 0, lastFrameTime = performance.now();
+
+function setEyeX(el, cx, rot) {
+  el.setAttribute('cx', cx.toFixed(1));
+  el.setAttribute('transform', `rotate(${rot} ${cx.toFixed(1)} 200)`);
+}
+function resetLiquidGeometry() {
+  setEyeX($('scleraL'), 112, -13); setEyeX($('scleraR'), 288, 13);
+  setEyeX($('obsOutL'), 112, -13); setEyeX($('obsOutR'), 288, 13);
+  setEyeX($('clipEllL'), 112, -13); setEyeX($('clipEllR'), 288, 13);
+  setEyeX($('edgeL'), 112, -13); setEyeX($('edgeR'), 288, 13);
+  $('edgeL').style.opacity = ''; $('edgeR').style.opacity = '';
+  $('gooBridge').setAttribute('rx', '0'); $('gooBridge').setAttribute('ry', '0');
+  $('obsBridge').setAttribute('rx', '0'); $('obsBridge').setAttribute('ry', '0');
+  $('liquidScale').setAttribute('transform', '');
+  $('eyeDetails').style.opacity = '1';
+  $('pupilL').setAttribute('transform', '');
+  $('pupilR').setAttribute('transform', '');
+  $('eyeShift').setAttribute('transform', '');
+}
+
+function applyLiquidFrame(x, y, vx, vy, b, lx, ly) {
+  const bClamped = Math.max(-0.14, Math.min(1, b));
+  const bPos = Math.max(0, bClamped);
+
+  /* Elastic squash-and-stretch from gaze velocity + volume-conserving liquid blink */
+  const speed = Math.min(1, Math.hypot(vx, vy) * 2.2);
+  const sx = 1 + bPos * 0.16 + speed * 0.055 - Math.max(0, -bClamped) * 0.06;
+  const sy = Math.max(0.2, 1 - bPos * 0.72 - speed * 0.04 + Math.max(0, -bClamped) * 0.12);
+  $('liquidScale').setAttribute('transform', `translate(200 200) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(-200 -200)`);
+
+  /* Gooey droplet merge: cleanly separated at rest, fuse into viscous bridge mid-blink */
+  const pinch = bPos * 35;
+  const cxL = 112 + pinch, cxR = 288 - pinch;
+  const rotL = (-13 * (1 - bPos * 0.55)).toFixed(1);
+  const rotR = (13 * (1 - bPos * 0.55)).toFixed(1);
+  setEyeX($('scleraL'), cxL, rotL); setEyeX($('scleraR'), cxR, rotR);
+  setEyeX($('obsOutL'), cxL, rotL); setEyeX($('obsOutR'), cxR, rotR);
+  setEyeX($('clipEllL'), cxL, rotL); setEyeX($('clipEllR'), cxR, rotR);
+  setEyeX($('edgeL'), cxL, rotL); setEyeX($('edgeR'), cxR, rotR);
+
+  const edgeOp = document.documentElement.dataset.pixel === 'obsidian' ? 0 : Math.max(0, 0.55 * (1 - bPos * 2.8));
+  $('edgeL').style.opacity = edgeOp.toFixed(2);
+  $('edgeR').style.opacity = edgeOp.toFixed(2);
+
+  const br = Math.max(0, bPos - 0.14) / 0.86;
+  const brX = (br * 76).toFixed(1), brY = (br * 56).toFixed(1);
+  $('gooBridge').setAttribute('rx', brX); $('gooBridge').setAttribute('ry', brY);
+  $('obsBridge').setAttribute('rx', (br * 82).toFixed(1)); $('obsBridge').setAttribute('ry', (br * 62).toFixed(1));
+
+  /* Fade pupils gently right at the peak of the liquid merge */
+  const detOp = bPos > 0.72 ? Math.max(0.12, 1 - (bPos - 0.72) * 3.1) : 1;
+  $('eyeDetails').style.opacity = detOp.toFixed(2);
+
+  /* Gaze offset */
+  const px = (x * 20).toFixed(2), py = (y * 15).toFixed(2);
+  const ex = (x * 6).toFixed(2), ey = (y * 4.5).toFixed(2);
+  $('pupilL').setAttribute('transform', `translate(${(Number(px) + pinch).toFixed(2)} ${py})`);
+  $('pupilR').setAttribute('transform', `translate(${(Number(px) - pinch).toFixed(2)} ${py})`);
+  $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
+
+  /* Dynamic specular highlight, 3D volume gradient focal point & opposite-rim caustic refraction */
+  const fx = (46 + lx * 26).toFixed(1) + '%';
+  const fy = (40 + ly * 24).toFixed(1) + '%';
+  $('gradScleraL').setAttribute('fx', fx); $('gradScleraL').setAttribute('fy', fy);
+  $('gradScleraR').setAttribute('fx', fx); $('gradScleraR').setAttribute('fy', fy);
+  $('gradPupilL').setAttribute('fx', fx); $('gradPupilL').setAttribute('fy', fy);
+  $('gradPupilR').setAttribute('fx', fx); $('gradPupilR').setAttribute('fy', fy);
+
+  const spX = (lx * 18).toFixed(2), spY = (ly * 14).toFixed(2);
+  $('specL').setAttribute('transform', `translate(${(Number(spX) + pinch).toFixed(2)} ${spY})`);
+  $('specR').setAttribute('transform', `translate(${(Number(spX) - pinch).toFixed(2)} ${spY})`);
+
+  const caX = (-lx * 14).toFixed(2), caY = (-ly * 10).toFixed(2);
+  $('causticL').setAttribute('transform', `translate(${(Number(caX) + pinch).toFixed(2)} ${caY})`);
+  $('causticR').setAttribute('transform', `translate(${(Number(caX) - pinch).toFixed(2)} ${caY})`);
+}
+
 function aimAt(clientX, clientY) {
   const r = $('pipOrb').getBoundingClientRect();
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -1117,16 +1414,15 @@ window.addEventListener('touchmove', e => {
 }, {passive: true});
 
 function blinkOnce() {
-  if (reducedMotion()) return;
-  const lid = $('eyeLid');
-  lid.classList.add('blinking');
-  setTimeout(() => lid.classList.remove('blinking'), 135);
+  if (simpleMode() || previewBlink !== null) return;
+  blinkTarget = 1;
+  setTimeout(() => { blinkTarget = 0; }, 145);
 }
 function scheduleBlink() {
   setTimeout(() => {
-    if (!document.hidden) blinkOnce();
+    if (!document.hidden && !simpleMode() && previewBlink === null) blinkOnce();
     scheduleBlink();
-  }, 4000 + Math.random() * 3400);
+  }, 4200 + Math.random() * 3400);
 }
 scheduleBlink();
 
@@ -1138,22 +1434,44 @@ function updateEyeMood(moodText, charging) {
   lid.classList.toggle('alert', document.body.classList.contains('linked') && !sleepy);
 }
 
+/* Initial render so first frame already has liquid volume & specular angle */
+if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
+
 function animateEyes(now) {
-  if (!reducedMotion()) {
+  const dt = now - lastFrameTime;
+  lastFrameTime = now;
+  if (!simpleMode()) {
+    /* Auto-fallback to simple mode if device consistently drops below ~20 fps */
+    if (!document.hidden && dt > 52 && dt < 400 && previewBlink === null) {
+      if (++slowFrames >= 14) { setSimpleFx(true, false); return requestAnimationFrame(animateEyes); }
+    } else if (dt < 38) slowFrames = 0;
+
+    if (previewBlink !== null) {
+      applyLiquidFrame(targetX, targetY, 0, 0, previewBlink, targetX, targetY);
+      return;
+    }
     if (document.body.classList.contains('linking')) {
       targetX = Math.sin(now / 360) * 0.72;
       targetY = -0.1;
     } else if (now - lastPointer > 3600) {
-      targetX = Math.sin(now / 2600) * 0.24;
-      targetY = Math.cos(now / 3400) * 0.12;
+      targetX = Math.sin(now / 2800) * 0.32 - 0.12;
+      targetY = Math.cos(now / 3600) * 0.18 - 0.16;
     }
-    curX += (targetX - curX) * 0.14;
-    curY += (targetY - curY) * 0.14;
-    const px = (curX * 20).toFixed(2), py = (curY * 15).toFixed(2);
-    const ex = (curX * 6).toFixed(2), ey = (curY * 4.5).toFixed(2);
-    $('pupilL').setAttribute('transform', `translate(${px} ${py})`);
-    $('pupilR').setAttribute('transform', `translate(${px} ${py})`);
-    $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
+
+    /* 2nd-order elastic springs for gaze, light reflection & liquid blink merge */
+    velX = (velX + (targetX - curX) * 0.16) * 0.72;
+    velY = (velY + (targetY - curY) * 0.16) * 0.72;
+    curX += velX; curY += velY;
+
+    lightX += (targetX - lightX) * 0.12;
+    lightY += (targetY - lightY) * 0.12;
+
+    const bStiff = blinkTarget > 0.5 ? 0.36 : 0.22;
+    const bDamp = blinkTarget > 0.5 ? 0.62 : 0.66;
+    blinkVel = (blinkVel + (blinkTarget - blinkPos) * bStiff) * bDamp;
+    blinkPos += blinkVel;
+
+    applyLiquidFrame(curX, curY, velX, velY, blinkPos, lightX, lightY);
   }
   requestAnimationFrame(animateEyes);
 }
