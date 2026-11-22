@@ -378,10 +378,10 @@ a:hover{text-decoration:underline}
 
 /* ---- View Transitions API + CSS spring keyframes ---- */
 main{min-width:0;view-transition-name:tab-content}
-::view-transition-old(tab-content){animation:vtOut 180ms var(--ease-std) both}
-::view-transition-new(tab-content){animation:vtIn 320ms var(--spring-spatial) both}
+::view-transition-old(tab-content){animation:vtOut 160ms var(--ease-std) both}
+::view-transition-new(tab-content){animation:vtIn 200ms var(--ease-std) both}
 @keyframes vtOut{to{opacity:0;transform:translateY(-6px)}}
-@keyframes vtIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes vtIn{from{opacity:0}to{opacity:1}}
 @keyframes pillPop{0%{transform:scaleX(.62)}100%{transform:scaleX(1)}}
 @keyframes cardEnter{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes m3Ripple{to{transform:scale(2.5);opacity:0}}
