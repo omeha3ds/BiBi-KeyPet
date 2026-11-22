@@ -39,7 +39,7 @@ uint32_t th_mute(void) { return th->mute ? th->mute : th->dim; } /* the terminal
 uint32_t th_off(void) { return th->off ? th->off : th->faint; }
 int theme_index(void) { return (int)(th - themes); }
 
-/* UTF-8 upper case for Latin and Russian, which is all the UI writes */
+/* UTF-8 upper case for Latin, Ukrainian and Cyrillic */
 static void caps(char *out, const char *text, int max) /* every case pair is the same length, so it works in place too */
 {
     const unsigned char *s = (const unsigned char *)text;
@@ -48,7 +48,8 @@ static void caps(char *out, const char *text, int max) /* every case pair is the
         if (*s >= 'a' && *s <= 'z') { out[n++] = (char)(*s++ - 32); continue; }
         if (s[0] == 0xD0 && s[1] >= 0xB0 && s[1] <= 0xBF) { out[n++] = (char)0xD0, out[n++] = (char)(s[1] - 0x20), s += 2; continue; } /* а..п */
         if (s[0] == 0xD1 && s[1] >= 0x80 && s[1] <= 0x8F) { out[n++] = (char)0xD0, out[n++] = (char)(s[1] + 0x20), s += 2; continue; } /* р..я */
-        if (s[0] == 0xD1 && s[1] == 0x91) { out[n++] = (char)0xD0, out[n++] = (char)0x81, s += 2; continue; }                   /* ё */
+        if (s[0] == 0xD1 && s[1] >= 0x90 && s[1] <= 0x9F) { out[n++] = (char)0xD0, out[n++] = (char)(s[1] - 0x10), s += 2; continue; } /* ё, є, і, ї */
+        if (s[0] == 0xD2 && s[1] == 0x91) { out[n++] = (char)0xD2, out[n++] = (char)0x90, s += 2; continue; }                            /* ґ */
         out[n++] = (char)*s++;
     }
     out[n] = 0;
