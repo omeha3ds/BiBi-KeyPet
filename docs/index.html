@@ -20,7 +20,7 @@ try{
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=IBM+Plex+Mono:wght@500;600&family=JetBrains+Mono:wght@500;700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
 <style>
 /* Pure-black editorial stage for Pip keychain.
    Flat matte dark surfaces (#0d0d0d-#161616), zero borders, zero gradients, zero UI glow.
@@ -358,7 +358,7 @@ a:hover{text-decoration:underline}
 .twin-hint button:hover{background:var(--surface-4);color:var(--text)}
 .twin-hint .ico{font-size:16px}
 .eco-pill{
-  font:600 11px/1 var(--font-mono);letter-spacing:.08em;
+  font:600 11px/1 var(--font-sans);letter-spacing:.08em;
   padding:4px 9px;border-radius:999px;
   background:var(--surface-2);color:var(--text-2);
 }
@@ -746,19 +746,9 @@ input:focus,select:focus{outline-color:var(--accent);background:#080808}
 }
 .saved.show{opacity:1;transform:translateX(0)}
 
-/* Badge preview inside sheet */
-.badge{display:grid;grid-template-columns:minmax(0,1fr) 136px;gap:16px;align-items:center}
-.preview{
-  width:136px;aspect-ratio:1;border-radius:50%;
-  background:#000000;color:#ffffff;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:14px;overflow:hidden;
-}
-.preview .mini-eyes{width:46px;height:28px;margin-bottom:6px;flex:none}
-.preview .mini-sclera{fill:var(--eye-sclera);stroke:var(--eye-stroke);stroke-width:2.2}
-.preview .mini-pupil{fill:var(--eye-pupil)}
-.preview b{font:600 15px/1.12 var(--font-sans);max-width:100%;overflow-wrap:anywhere}
-.preview small{font:600 9px var(--font-mono);color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+/* Badge fields inside sheet (live preview shown on the central Digital Twin) */
+.badge{display:grid;grid-template-columns:1fr;gap:12px;align-items:center}
+.preview[hidden]{display:none}
 
 /* QR links inside sheet */
 .links{display:grid;gap:8px}
@@ -767,7 +757,7 @@ input:focus,select:focus{outline-color:var(--accent);background:#080808}
 .link .n{
   width:24px;height:24px;border-radius:50%;
   background:var(--surface-1);color:var(--text-3);
-  font:600 11px/1 var(--font-mono);
+  font:600 11.5px/1 var(--font-sans);font-variant-numeric:tabular-nums;
   display:grid;place-items:center;
 }
 
@@ -799,7 +789,7 @@ input:focus,select:focus{outline-color:var(--accent);background:#080808}
   transition:width 160ms var(--spring-fast),transform 160ms var(--spring-fast),background-color 220ms var(--ease-std);
 }
 .range output{
-  font:600 13px/1 var(--font-mono);min-width:46px;text-align:center;
+  font:600 13px/1 var(--font-sans);min-width:46px;text-align:center;
   background:var(--surface-1);color:var(--text);
   padding:7px 9px;border-radius:999px;font-variant-numeric:tabular-nums;
 }
@@ -1233,17 +1223,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
                 <span class="saved" id="savedName"><span class="ico">check_circle</span>Збережено</span>
               </div>
             </div>
-            <div class="preview" aria-label="Приблизно так на брелоку">
-              <svg class="mini-eyes" viewBox="0 0 120 76" aria-hidden="true">
-                <defs>
-                  <clipPath id="mClipL"><ellipse cx="35" cy="38" rx="22" ry="28" transform="rotate(-13 35 38)"/></clipPath>
-                  <clipPath id="mClipR"><ellipse cx="85" cy="38" rx="22" ry="28" transform="rotate(13 85 38)"/></clipPath>
-                </defs>
-                <ellipse class="mini-sclera" cx="35" cy="38" rx="22" ry="28" transform="rotate(-13 35 38)"/>
-                <g clip-path="url(#mClipL)"><ellipse class="mini-pupil" cx="37" cy="38" rx="12" ry="24" transform="rotate(-7 37 38)"/></g>
-                <ellipse class="mini-sclera" cx="85" cy="38" rx="22" ry="28" transform="rotate(13 85 38)"/>
-                <g clip-path="url(#mClipR)"><ellipse class="mini-pupil" cx="83" cy="38" rx="12" ry="24" transform="rotate(7 83 38)"/></g>
-              </svg>
+            <div class="preview" hidden aria-hidden="true">
               <b id="pvFirst">Твоє</b><b id="pvLast">Ім'я</b><small id="pvOrg"></small>
             </div>
           </div>
@@ -1251,7 +1231,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 
         <div class="group">
           <div class="group-title"><span class="group-ico"><span class="ico">qr_code_2</span></span><h3>Посилання для Quick QR <span class="tag">до чотирьох</span></h3></div>
-          <p class="muted">Піп показуватиме їх QR-кодами, гортаються свайпом. Посилання на Telegram та Instagram отримають значок у центрі коду.</p>
+          <p class="muted">На екрані брелока показується чистий QR-код, гортається свайпом. Назва й підпис потрібні лише для зручності тут у списку; Telegram та Instagram отримують значок у центрі коду.</p>
           <div class="links" id="links"></div>
           <div class="row">
             <button type="button" class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button>
@@ -1295,8 +1275,8 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
               <output id="brightOut">80%</output>
             </div>
           </div>
-          <div><label for="theme">Оформлення на брелоку</label>
-            <select id="theme"><option value="1">Приборка — строге, з помаранчевим</option><option value="3">Діагностика — ретро-термінал</option></select></div>
+          <div hidden><label for="theme">Оформлення на брелоку</label>
+            <select id="theme"><option value="4">Мінімал</option><option value="1">Приборка</option><option value="3">Діагностика</option></select></div>
         </div>
 
         <div class="group">
