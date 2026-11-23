@@ -135,20 +135,20 @@ try{
   --eye-stroke-w:0;
 }
 
-/* Pixel Porcelain (warm cream-gold) */
+/* Pixel Fog / Туман (Google Pixel 11 Pro Fog: pale misty mint + silver-grey chrome) */
 :root[data-pixel="porcelain"]{
-  --accent:#f0dca6;
-  --on-accent:#1a1508;
-  --accent-soft:#201d15;
-  --eye-sclera:#f3e3b8;
-  --eye-hi:#fff9e8;
-  --eye-mid:#f0dfa9;
-  --eye-deep:#b09455;
-  --eye-caustic:#fff2cf;
-  --eye-pupil:#bd4c16;
-  --pupil-hi:#ef854c;
-  --pupil-mid:#bd4c16;
-  --pupil-deep:#632105;
+  --accent:#bcc3c6;
+  --on-accent:#121716;
+  --accent-soft:#1b2022;
+  --eye-sclera:#d2dfd6;
+  --eye-hi:#eef5f0;
+  --eye-mid:#d2dfd6;
+  --eye-deep:#8ea096;
+  --eye-caustic:#e6f0ea;
+  --eye-pupil:#263834;
+  --pupil-hi:#4e6963;
+  --pupil-mid:#263834;
+  --pupil-deep:#101917;
   --eye-stroke:transparent;
   --eye-stroke-w:0;
 }
@@ -375,7 +375,7 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
 :root[data-pixel="bay"] .b-pupil{rx:44px;ry:74px}
 :root[data-pixel="hazel"] .b-pupil{rx:46px;ry:64px}
 :root[data-pixel="coral"] .b-pupil{rx:37px;ry:80px}
-:root[data-pixel="porcelain"] .b-pupil{rx:42px;ry:42px}
+:root[data-pixel="porcelain"] .b-pupil{rx:42px;ry:84px}
 
 .pip-svg{
   width:94%;height:94%;overflow:visible;
@@ -431,7 +431,7 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
 :root[data-pixel="bay"] #pipSvg .eye-pupil{rx:44px;ry:74px}
 :root[data-pixel="hazel"] #pipSvg .eye-pupil{rx:46px;ry:64px}
 :root[data-pixel="coral"] #pipSvg .eye-pupil{rx:37px;ry:80px}
-:root[data-pixel="porcelain"] #pipSvg .eye-pupil{rx:42px;ry:42px}
+:root[data-pixel="porcelain"] #pipSvg .eye-pupil{rx:42px;ry:84px}
 
 /* Plain eye style (Звичайні): crisp flat vivid eyes, still tracking cursor & blinking cleanly */
 :root[data-eye-style="plain"] .goo-body{filter:none}
@@ -1165,7 +1165,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
           <button type="button" class="swatch" data-set-pixel="bay" data-label="Затока" style="--sw:#9bc9ff;--sw-p:#154ec4" title="Затока" aria-label="Затока" aria-pressed="false"></button>
           <button type="button" class="swatch" data-set-pixel="hazel" data-label="Шавлія" style="--sw:#b9e4bc;--sw-p:#167a42" title="Шавлія" aria-label="Шавлія" aria-pressed="false"></button>
           <button type="button" class="swatch" data-set-pixel="coral" data-label="Корал" style="--sw:#ffb096;--sw-p:#d93c16" title="Корал" aria-label="Корал" aria-pressed="false"></button>
-          <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Порцеляна" style="--sw:#f3e3b8;--sw-p:#bd4c16" title="Порцеляна" aria-label="Порцеляна" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Туман" style="--sw:#d2dfd6;--sw-p:#263834" title="Туман" aria-label="Туман" aria-pressed="false"></button>
         </div>
         <div class="seg" id="eyeStyleBar" role="group" aria-label="Стиль очей">
           <button type="button" data-eye-style="plain" aria-pressed="false">Звичайні</button>

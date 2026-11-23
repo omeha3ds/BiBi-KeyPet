@@ -479,7 +479,7 @@ const MENU_STYLES = ['Меню: соты', 'Меню: карусель', 'Мен
 const showStyle = () => { styleBtn.textContent = MENU_STYLES[M._sim_menu_style()]; };
 styleBtn.onclick = () => { M._sim_set_menu_style((M._sim_menu_style() + 1) % 3); showStyle(); };
 showStyle();
-const THEMES = [[4, 'Півонія'], [5, 'Обсидіан'], [6, 'Затока'], [7, 'Шавлія'], [8, 'Корал'], [9, 'Порцеляна']];
+const THEMES = [[4, 'Півонія'], [5, 'Обсидіан'], [6, 'Затока'], [7, 'Шавлія'], [8, 'Корал'], [9, 'Туман']];
 const themesEl = document.getElementById('themes');
 const showTheme = () => { [...themesEl.children].forEach((b, k) => b.classList.toggle('on', THEMES[k][0] === M._sim_theme())); showStyle(); };
 THEMES.forEach(([i, name]) => {

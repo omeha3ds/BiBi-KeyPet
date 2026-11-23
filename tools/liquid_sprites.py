@@ -58,9 +58,9 @@ PALETTES = [
         obsidian=False, rim=0,
     ),
     dict(
-        id="porcelain",
-        eye_hi=0xFFF9E8, eye_mid=0xF0DFA9, eye_deep=0xB09455, eye_caustic=0xFFF2CF,
-        pupil_hi=0xEF854C, pupil_mid=0xBD4C16, pupil_deep=0x632105,
+        id="porcelain",  # "Туман" (Google Pixel 11 Pro Fog)
+        eye_hi=0xEEF5F0, eye_mid=0xD2DFD6, eye_deep=0x8EA096, eye_caustic=0xE6F0EA,
+        pupil_hi=0x4E6963, pupil_mid=0x263834, pupil_deep=0x101917,
         obsidian=False, rim=0,
     ),
 ]

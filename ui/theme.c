@@ -30,7 +30,7 @@ const theme_t themes[TH_COUNT] = {
     [TH_BAY]        = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4, .pupil_rx = 0.629f, .pupil_ry = 0.787f},
     [TH_HAZEL]      = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42, .pupil_rx = 0.657f, .pupil_ry = 0.681f},
     [TH_CORAL]      = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16, .pupil_rx = 0.529f, .pupil_ry = 0.851f},
-    [TH_PORCELAIN]  = {.name = "Порцеляна", PIXEL_BASE, .accent = 0xF0DFB2, .on_accent = 0x1A1407, .eye_sclera = 0xF3E3B8, .eye_pupil = 0xBD4C16, .pupil_rx = 0.600f, .pupil_ry = 0.447f},
+    [TH_PORCELAIN]  = {.name = "Туман",     PIXEL_BASE, .accent = 0xBCC3C6, .on_accent = 0x121716, .eye_sclera = 0xD2DFD6, .eye_pupil = 0x263834, .pupil_rx = 0.600f, .pupil_ry = 0.894f},
 };
 
 const theme_t *th = &themes[TH_DEFAULT];
