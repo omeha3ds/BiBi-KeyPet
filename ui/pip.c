@@ -547,8 +547,16 @@ static void step(float dt, const mood_def_t *m, bool dizzy)
     spring(&s.open, 1 - m->closed, 30, 1.0f, dt);
     spring(&s.squash, 0, 300, 0.25f, dt);
     spring(&s.dizzy, dizzy, 20, 1.0f, dt);
-    uint32_t tint = m->tint ? m->tint : 0xFFFFFF;
-    for (int c = 0; c < 3; c++) spring(&s.tint[c], ((tint >> (16 - 8 * c)) & 255) / 255.0f, 20, 1.0f, dt);
+    uint32_t base = TH_PIXEL ? (th->eye_stroke ? th->eye_stroke : th->eye_sclera) : 0xFFFFFF;
+    uint32_t tint = m->tint ? m->tint : base;
+    static int last_theme = -1;
+    int ti = theme_index();
+    if (ti != last_theme) {
+        last_theme = ti;
+        for (int c = 0; c < 3; c++) s.tint[c].x = ((tint >> (16 - 8 * c)) & 255) / 255.0f, s.tint[c].v = 0;
+    } else {
+        for (int c = 0; c < 3; c++) spring(&s.tint[c], ((tint >> (16 - 8 * c)) & 255) / 255.0f, 20, 1.0f, dt);
+    }
     spring(&s.blush, m->blush, 20, 1.0f, dt);
     spring(&s.tremble, m->tremble, 20, 1.0f, dt);
     spring(&s.nod, m->nod, 20, 1.0f, dt);
@@ -760,9 +768,19 @@ static void update(float dt)
 
     }
 
-    s.face.color = lv_color_to_u16(lv_color_make((uint8_t)(fminf(fmaxf(s.tint[0].x, 0), 1) * 255),
-                                                 (uint8_t)(fminf(fmaxf(s.tint[1].x, 0), 1) * 255),
-                                                 (uint8_t)(fminf(fmaxf(s.tint[2].x, 0), 1) * 255)));
+    uint16_t tinted = lv_color_to_u16(lv_color_make((uint8_t)(fminf(fmaxf(s.tint[0].x, 0), 1) * 255),
+                                                    (uint8_t)(fminf(fmaxf(s.tint[1].x, 0), 1) * 255),
+                                                    (uint8_t)(fminf(fmaxf(s.tint[2].x, 0), 1) * 255)));
+    if (TH_PIXEL && th->eye_stroke) {
+        s.face.color = lv_color_to_u16(lv_color_hex(th->eye_sclera));
+        s.face.rim_color = tinted;
+        s.face.rim_width = 6.0f;
+    } else {
+        s.face.color = tinted;
+        s.face.rim_color = 0;
+        s.face.rim_width = 0;
+    }
+    s.face.pupil_color = TH_PIXEL ? lv_color_to_u16(lv_color_hex(th->eye_pupil)) : 0x18C3;
     s.face.blush = fmaxf(s.blush.x, 0);
     /* the screen is dark: no rain, no bobbing "?" - they would keep LVGL drawing for nobody */
     effects(s.dark ? FX_NONE : m->fx, dt);
@@ -1051,15 +1069,18 @@ void pip_create(lv_obj_t *parent)
     lv_obj_add_event_cb(s.canvas, touch_cb, LV_EVENT_PRESS_LOST, NULL);
     dev_create(parent); /* over the canvas */
 
-    s.face.color = 0xFFFF;
-    s.face.pupil_color = 0x18C3; /* #1C1C1C: a touch above black so a pupil at the rim still reads on AMOLED */
+    uint32_t base = TH_PIXEL ? (th->eye_stroke ? th->eye_stroke : th->eye_sclera) : 0xFFFFFF;
+    s.face.color = TH_PIXEL ? lv_color_to_u16(lv_color_hex(th->eye_sclera)) : 0xFFFF;
+    s.face.pupil_color = TH_PIXEL ? lv_color_to_u16(lv_color_hex(th->eye_pupil)) : 0x18C3; /* legacy #1C1C1C; Pixel uses colorway pupil */
+    s.face.rim_color = TH_PIXEL && th->eye_stroke ? lv_color_to_u16(lv_color_hex(th->eye_stroke)) : 0;
+    s.face.rim_width = TH_PIXEL && th->eye_stroke ? 6.0f : 0;
     s.face.heart_color = 0xFA2F; /* #FF4479 */
-    s.face.shading = 0; /* flat whites: the soft shadow crescent cost a third of the ESP32 frame */
+    s.face.shading = 0; /* flat eyes: no gradients/crescent, lowest CPU and AMOLED power */
     s.face.blush_color = 0xFBD4; /* #FF7AA0 */
     shape_t start = mood_shape(&moods[0]);
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < SHAPE_N; j++) s.shape[i][j].x = ((const float *)&start)[j];
-    for (int c = 0; c < 3; c++) s.tint[c].x = 1;
+    for (int c = 0; c < 3; c++) s.tint[c].x = ((base >> (16 - 8 * c)) & 255) / 255.0f;
 
     s.face.vein_color = 0xD9A7;  /* #D8343A */
     s.face.water_color = 0xAEDF; /* #A8D8FF */

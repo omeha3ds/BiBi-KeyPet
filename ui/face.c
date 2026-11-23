@@ -128,7 +128,7 @@ typedef struct {
     float pw, ph, prr, hm, hs, inv_hs;
     uint16_t pupil_color;
     float lid, smile, lid_y, lid_n, cut_r, cut_y, taper, grad_hint, inv_ext_y, inv_dd;
-    float in_k, lit1_k, lit0_k; /* squared distance thresholds for the fast paths */
+    float in_k, rim_k, lit1_k, lit0_k; /* squared distance thresholds for the fast paths */
     face_rect_t pupil;          /* screen box the pupil (and its glints, heart, spiral) can touch */
     float r_min, inv_A, wb;     /* the silhouette's minor semi-axis (model px), for the per-row spans */
     face_rect_t r;
@@ -181,8 +181,9 @@ static void eye_prepare(const face_t *f, const eye_t *e, int w, int h, eye_setup
     s->lid = lid, s->smile = smile, s->lid_y = lid_y, s->lid_n = lid_n, s->cut_r = cut_r, s->cut_y = cut_y, s->taper = taper;
     /* fast paths, as squared distances to the rim (and to the shadow's rim) that settle a pixel without the slow math:
        fully covered whatever the wobble does; fully lit; fully in the shadow crescent */
-    float wb = fabsf(e->wobble);
+    float wb = fabsf(e->wobble), rw = f->rim_width > 0 ? f->rim_width : 0;
     s->in_k = (0.5f + wb) * (0.5f + wb) * 4;
+    s->rim_k = (0.5f + wb + rw) * (0.5f + wb + rw) * 4;
     s->lit1_k = (0.6f / soft + wb) * (0.6f / soft + wb) * 4;
     s->lit0_k = (0.4f / soft + wb) * (0.4f / soft + wb) * 4;
 
@@ -260,6 +261,8 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
     const float grad_hint = s->grad_hint;
     const uint16_t pupil_color = s->pupil_color;
     const bool sw = f->swapped, plain_eye = e->veins <= 0 && e->wet <= 0;
+    const float rw = f->rim_width > 0 ? f->rim_width : 0;
+    const bool has_rim = rw > 0;
     const uint16_t ink_white = swap_if(f->color, sw), ink_pupil = swap_if(pupil_color, sw); /* as they go into buf */
     /* the tears reach this far up the eye frame (ev, see below); rows wholly above them are as plain as a dry eye */
     const float dry_v = ext_y * (1 - 0.34f * clamp01(e->wet)) - 1.5f - 3.0f;
@@ -308,7 +311,7 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
         }
         float q_out = (1 + m_out / s->r_min) * (1 + m_out / s->r_min);
         if (span(s, sy, q_out, &s0, &s1)) xa = (int)floorf(xo + s0 * inv_sq) - 1, xb = (int)ceilf(xo + s1 * inv_sq) + 1;
-        float m_in = (0.5f + s->wb + 0.5f) * mf, m_lit = (0.6f / soft + s->wb + 0.5f) * mf, i0, i1, l0, l1;
+        float m_in = (1.0f + s->wb + rw) * mf, m_lit = (0.6f / soft + s->wb + 0.5f) * mf, i0, i1, l0, l1;
         const bool shadow = f->shading > 0;
         if (!shadow) m_lit = 0;
         if (plain && m_in < s->r_min && m_lit < s->r_min && span(s, sy, (1 - m_in / s->r_min) * (1 - m_in / s->r_min), &i0, &i1) &&
@@ -317,13 +320,13 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
             float lo = mx(i0, l0 - shx), hi = mn(i1, l1 - shx);
             fa = (int)ceilf(xo + lo * inv_sq), fb = (int)floorf(xo + hi * inv_sq);
             if (lid > 0) { /* the lid's half-plane, linear in u along the row */
-                float al = lid_n * (e->tilt * cr + sr), be = lid_n * (lid_y + e->tilt * sr * sy - cr * sy) + 0.5f + 0.25f;
+                float al = lid_n * (e->tilt * cr + sr), be = lid_n * (lid_y + e->tilt * sr * sy - cr * sy) + 0.75f + rw;
                 if (fabsf(al) < 1e-6f) { if (be > 0) fb = fa - 1; }
                 else if (al > 0) fb = (int)mn((float)fb, floorf(-be / al + xo));
                 else fa = (int)mx((float)fa, ceilf(-be / al + xo));
             }
             if (smile > 0) { /* the smile's circle: a hole where it cuts the row */
-                float ucx = -sr * cut_y, vcy = cr * cut_y, R = cut_r + 1.5f, dv = sy - vcy;
+                float ucx = -sr * cut_y, vcy = cr * cut_y, R = cut_r + 1.5f + rw, dv = sy - vcy;
                 if (dv * dv < R * R) {
                     float h = sqrt_fast(R * R - dv * dv);
                     h0a = (int)floorf(xo + ucx - h) - 1, h0b = (int)ceilf(xo + ucx + h) + 1;
@@ -377,33 +380,45 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
             float gx = A * sx + B * sy, gy = B * sx + C * sy, g2 = gx * gx + gy * gy, k = 1 - Q;
             if (k < 0 && k * k >= s->in_k * g2) { PE(0); prev_row[i] = left = NAN; continue; } /* surely outside */
             bool inside = k > 0 && k * k >= s->in_k * g2;                                /* surely covered */
+            bool deep = !has_rim ? inside : (k > 0 && k * k >= s->rim_k * g2);           /* surely past the flat rim too */
             float wob = 0;
-            if (!inside && e->wobble > 0) {
+            if (!deep && e->wobble > 0) {
                 float rl = rsqrt(sx * sx + sy * sy + 1e-6f), c1_ = sx * rl, s1_ = sy * rl;
                 float c2 = c1_ * c1_ - s1_ * s1_, s2 = 2 * s1_ * c1_;
                 float c3 = c2 * c1_ - s2 * s1_, s3 = s2 * c1_ + c2 * s1_;
                 float c5 = c3 * c2 - s3 * s2, s5 = s3 * c2 + c3 * s2;
                 wob = e->wobble * (0.3f * (s2 * w2c + c2 * w2s) + 0.5f * (s3 * w3c + c3 * w3s) + 0.2f * (s5 * w5c + c5 * w5s));
             }
-            float cov = inside ? 1 : clamp01(0.5f + wob + k * 0.5f * rsqrt(g2 + 1e-12f));
+            float d_ell = deep ? rw + 2.0f : wob + k * 0.5f * rsqrt(g2 + 1e-12f);
+            float cov = inside ? 1 : clamp01(0.5f + d_ell);
             if (cov <= 0) { PE(2); prev_row[i] = left = NAN; continue; } /* leave what is behind */
 
             /* lids and smile are flat cuts in the rolled eye frame */
             float eu = cr * u + sr * v, ev = -sr * u + cr * v;
-            if (lid > 0) cov *= 1 - clamp01((lid_y + e->tilt * eu - ev) * lid_n + 0.5f);
+            float d_edge = d_ell;
+            if (lid > 0) {
+                float dl = (ev - (lid_y + e->tilt * eu)) * lid_n;
+                cov *= clamp01(dl + 0.5f);
+                if (dl < d_edge) d_edge = dl;
+            }
             if (smile > 0) {
                 float dy = ev - cut_y;
-                cov *= 1 - clamp01(cut_r - sqrt_fast(eu * eu + dy * dy) + 0.5f);
+                float ds = sqrt_fast(eu * eu + dy * dy) - cut_r;
+                cov *= clamp01(ds + 0.5f);
+                if (ds < d_edge) d_edge = ds;
             }
+            if (cov <= 0) { PE(2); prev_row[i] = left = NAN; continue; }
+            float rim_a = has_rim ? clamp01(rw - d_edge + 0.5f) : 0;
 
             bool near_pupil = x >= s->pupil.x1 && x <= s->pupil.x2 && y >= s->pupil.y1 && y <= s->pupil.y2;
-            if (!near_pupil && plain && f->shading <= 0) { /* the rim, away from the pupil: white over what is behind */
-                buf[y * w + x] = cov >= 1 ? ink_white : swap_if(pixel(f->color, 0, 1, 0, cov, swap_if(buf[y * w + x], sw), x, y), sw);
+            if (!near_pupil && plain && f->shading <= 0) { /* the rim, away from the pupil: flat fill or stroke over what is behind */
+                uint16_t c = rim_a >= 1 ? f->rim_color : rim_a > 0 ? mix565(f->color, f->rim_color, rim_a) : f->color;
+                buf[y * w + x] = cov >= 1 ? swap_if(c, sw) : swap_if(pixel(c, 0, 1, 0, cov, swap_if(buf[y * w + x], sw), x, y), sw);
                 prev_row[i] = left = NAN;
                 PE(1);
                 continue;
             }
-            if (!near_pupil && plain && cov >= 1) { /* most of the white: lit, uncut, away from the pupil */
+            if (!near_pupil && plain && cov >= 1 && rim_a <= 0) { /* most of the white: lit, uncut, away from the pupil */
                 float qx = sx + shx, qy = sy + shy, Qo = A * qx * qx + 2 * B * qx * qy + C * qy * qy;
                 float ox = A * qx + B * qy, oy = B * qx + C * qy, ko = 1 - Qo;
                 if (f->shading <= 0 || (ko > 0 && ko * ko >= s->lit1_k * (ox * ox + oy * oy))) {
@@ -472,11 +487,11 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
                 pc *= 1 - clamp01(0.5f - mn(d1, d2) * rsqrt(gg * gg));
             }
 
-            if (plain && cov >= 1 && shade >= 1 && (pc <= 0 || pc >= 1)) { /* the flat inside of the white or the pupil */
+            if (plain && cov >= 1 && shade >= 1 && rim_a <= 0 && (pc <= 0 || pc >= 1)) { /* the flat inside of the white or the pupil */
                 buf[y * w + x] = pc >= 1 ? ink_pupil : ink_white; PE(3);
                 continue;
             }
-            if (plain && cov >= 1 && pc <= 0) { /* the shadow crescent: the white times the shade, dithered */
+            if (plain && cov >= 1 && rim_a <= 0 && pc <= 0) { /* the shadow crescent: the white times the shade, dithered */
                 static const float bayer16[4][4] = {{0.5f / 16, 8.5f / 16, 2.5f / 16, 10.5f / 16}, {12.5f / 16, 4.5f / 16, 14.5f / 16, 6.5f / 16},
                                                     {3.5f / 16, 11.5f / 16, 1.5f / 16, 9.5f / 16}, {15.5f / 16, 7.5f / 16, 13.5f / 16, 5.5f / 16}};
                 uint16_t ec = f->color;
@@ -501,6 +516,10 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
                 float pool = clamp01(ev - top + 0.5f) * 0.5f * clamp01(e->wet), rim = clamp01(1.6f - fabsf(ev - top - 0.8f)) * clamp01(e->wet);
                 ecol = mix565(mix565(ecol, f->water_color, pool), 0xFFFF, rim);
                 pcol = mix565(mix565(pcol, f->water_color, pool), 0xFFFF, rim);
+            }
+            if (rim_a > 0) {
+                ecol = rim_a >= 1 ? f->rim_color : mix565(ecol, f->rim_color, rim_a);
+                pcol = rim_a >= 1 ? f->rim_color : mix565(pcol, f->rim_color, rim_a);
             }
             buf[y * w + x] = swap_if(pixel(ecol, pcol, shade, pc, cov, swap_if(buf[y * w + x], sw), x, y), sw); PE(3);
         }

@@ -28,6 +28,8 @@ typedef struct { int x1, y1, x2, y2; } face_rect_t; /* inclusive; empty when x2 
 typedef struct {
     eye_t eye[2];
     uint16_t color, pupil_color, heart_color; /* RGB565 */
+    uint16_t rim_color;          /* optional flat outline inside the eye silhouette (RGB565) */
+    float rim_width;             /* outline thickness in screen px, 0 = none */
     float shading;               /* strength of the soft shadow crescent on the lower right, 0 = flat */
     float blush;                 /* pink cheeks under the eyes, 0..1 */
     uint16_t blush_color, vein_color, water_color;
