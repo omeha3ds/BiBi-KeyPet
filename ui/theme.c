@@ -226,7 +226,7 @@ lv_obj_t *th_header(lv_obj_t *scr, const char *text, int y)
     lv_obj_set_style_pad_column(row, 4, 0);
     lv_obj_remove_flag(row, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(row, LV_ALIGN_TOP_MID, 0, y);
-    static const char prefix[] = "пип-01 // "; /* the terminal's device tag; the other themes just say the section */
+    static const char prefix[] = "піп-01 // "; /* the terminal's device tag; the other themes just say the section */
     if (!TH_TERMINAL && !strncmp(text, prefix, sizeof prefix - 1)) text += sizeof prefix - 1;
     lv_obj_t *l = th_text(row, th->tiny_bold, th->text, text);
     lv_obj_set_style_text_letter_space(l, TH_TERMINAL ? 2 : th->caps, 0);

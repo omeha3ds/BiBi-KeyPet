@@ -432,7 +432,7 @@ static void sensors_task(void *arg)
         if (now - last_log > 5000000) {
             last_log = now;
             char note[96]; /* the developer HUD's last line: what only the board knows */
-            snprintf(note, sizeof note, "озу %u К · psram %.1f М · лицо %.0f мс", (unsigned)(heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024),
+            snprintf(note, sizeof note, "озу %u К · psram %.1f М · обличчя %.0f мс", (unsigned)(heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024),
                      heap_caps_get_free_size(MALLOC_CAP_SPIRAM) / 1048576.0f, face_ms[0]);
             pip_dev_note(note);
             ESP_LOGI(TAG, "mood=%s reaction=%s steps=%d face=%.1f ms refresh=%.1f ms accel=(%.2f %.2f %.2f) free psram=%u internal=%u",

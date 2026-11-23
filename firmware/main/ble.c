@@ -103,8 +103,8 @@ static const char *app_name(const char *bundle) /* the apps people have; anythin
 {
     static const struct { const char *id, *name; } known[] = {
         {"ph.telegra.Telegraph", "Telegram"}, {"com.burbn.instagram", "Instagram"}, {"net.whatsapp.WhatsApp", "WhatsApp"},
-        {"com.apple.MobileSMS", "Сообщения"}, {"com.apple.mobilephone", "Телефон"}, {"com.apple.mobilemail", "Почта"},
-        {"com.apple.mobilecal", "Календарь"}, {"com.apple.reminders", "Напоминания"}, {"com.google.Gmail", "Gmail"},
+        {"com.apple.MobileSMS", "Повідомлення"}, {"com.apple.mobilephone", "Телефон"}, {"com.apple.mobilemail", "Пошта"},
+        {"com.apple.mobilecal", "Календар"}, {"com.apple.reminders", "Нагадування"}, {"com.google.Gmail", "Gmail"},
         {"com.vk.vkclient", "VK"}, {"com.apple.facetime", "FaceTime"}, {"com.spotify.client", "Spotify"},
     };
     for (size_t i = 0; i < sizeof known / sizeof known[0]; i++)
@@ -130,7 +130,7 @@ static void ui_note(void *a)
     note_t *n = a;
     if (n->category == 1) { /* an incoming call: the title is who is calling */
         b.call_uid = n->uid;
-        phone_call(n->uid, n->title[0] ? n->title : "Звонок", "входящий");
+        phone_call(n->uid, n->title[0] ? n->title : "Дзвінок", "вхідний");
         return;
     }
     int h = 0, m = 0;

@@ -31,8 +31,8 @@ static struct tm local_now(void)
     return tm;
 }
 
-static const char *const WD[] = {"вс", "пн", "вт", "ср", "чт", "пт", "сб"};
-static const char *const MON[] = {"янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"};
+static const char *const WD[] = {"нд", "пн", "вт", "ср", "чт", "пт", "сб"};
+static const char *const MON[] = {"січ", "лют", "бер", "кві", "тра", "чер", "лип", "сер", "вер", "жов", "лис", "гру"};
 
 /* ================= clock: one face per theme ================= */
 
@@ -41,12 +41,12 @@ static const char *const MON[] = {"янв", "фев", "мар", "апр", "ма�
 /* a word for how he is, for the clock and the care screen */
 static const char *pip_word(const pip_info_t *in)
 {
-    if (in->asleep) return "спит";
-    if (in->food < 0.25f) return "голоден";
-    if (in->energy < 0.25f) return "устал";
-    if (in->fun < 0.25f) return "скучает";
-    if (in->love < 0.25f) return "одинок";
-    return in->day_mood > 0.3f ? "доволен" : in->day_mood < -0.3f ? "не в духе" : "спокоен";
+    if (in->asleep) return "спить";
+    if (in->food < 0.25f) return "голодний";
+    if (in->energy < 0.25f) return "втомився";
+    if (in->fun < 0.25f) return "нудьгує";
+    if (in->love < 0.25f) return "самотній";
+    return in->day_mood > 0.3f ? "задоволений" : in->day_mood < -0.3f ? "не в гуморі" : "спокійний";
 }
 
 static struct {
@@ -90,9 +90,9 @@ static void clock_tick(lv_timer_t *t)
         snprintf(t, sizeof t, "%s  %d %s %d", WD[tm.tm_wday], tm.tm_mday, MON[tm.tm_mon], tm.tm_year + 1900);
         lv_label_set_text(ck.date, th_label(t));
         snprintf(t, sizeof t, "%d", in.steps);
-        th_leader(ck.rows[0], "шаги", t, 202);
+        th_leader(ck.rows[0], "кроки", t, 202);
         th_leader(ck.rows[1], "заряд", shell_battery_text(), 202);
-        th_leader(ck.rows[2], "пип", th_label(pip_word(&in)), 202);
+        th_leader(ck.rows[2], "піп", th_label(pip_word(&in)), 202);
     } else if (th->clock == CLOCK_DIAL) {
         float ang[3] = {(tm.tm_hour % 12 + tm.tm_min / 60.0f) * 30, (tm.tm_min + tm.tm_sec / 60.0f) * 6, tm.tm_sec * 6.0f};
         const float len[3] = {112, 168, 186}, tail[3] = {16, 20, 36};
@@ -152,7 +152,7 @@ static void clock_open(lv_obj_t *scr)
         ck.date = th_text(scr, th->small, th->dim, "");
         lv_obj_align(ck.date, LV_ALIGN_CENTER, 0, 92);
     } else if (th->clock == CLOCK_BLOCKS) {
-        th_header(scr, "пип-01 // время", 52);
+        th_header(scr, "піп-01 // час", 52);
         ck.date = th_text_at(scr, th->tiny, th->dim, "", -1, 125);
         ck.nd = th_blocks(ck.tc, 97, 163, "00:00", 11, 9);
         th_ring(ck.tc + ck.nd, 60, 214, 8);
@@ -240,17 +240,17 @@ static void timer_ui_term(void)
     uint32_t left = timer_left();
     bool fresh = !tm_.running && left == (uint32_t)tm_.minutes * 60000;
     char t[32];
-    lv_label_set_text(tm_.head, th_label(fresh ? "пип-01 // таймер" : tm_.running ? "таймер // идёт" : "таймер // пауза"));
+    lv_label_set_text(tm_.head, th_label(fresh ? "піп-01 // таймер" : tm_.running ? "таймер // йде" : "таймер // пауза"));
     if (fresh) {
         snprintf(t, sizeof t, "%02d", tm_.minutes);
         th_blocks_hide(tm_.grid, tm_.tc + TM_MMSS, 147);
         th_blocks_show(tm_.grid, tm_.tc + TM_MM, t, th->text);
-        lv_label_set_text(tm_.sub, th_label("минут"));
+        lv_label_set_text(tm_.sub, th_label("хвилин"));
     } else {
         snprintf(t, sizeof t, "%02u:%02u", (unsigned)(left / 60000), (unsigned)(left / 1000 % 60));
         th_blocks_hide(tm_.grid, tm_.tc + TM_MM, 70);
         th_blocks_show(tm_.grid, tm_.tc + TM_MMSS, t, tm_.running ? th->text : th->dim);
-        snprintf(t, sizeof t, "из %02d:00", tm_.minutes);
+        snprintf(t, sizeof t, "з %02d:00", tm_.minutes);
         lv_label_set_text(tm_.sub, th_label(t));
     }
     /* a cell a minute: set, or still to go; the running minute blinks */
@@ -268,7 +268,7 @@ static void timer_ui_term(void)
     }
     lv_obj_set_flag(tm_.go, LV_OBJ_FLAG_HIDDEN, tm_.running);
     lv_obj_set_flag(tm_.pause, LV_OBJ_FLAG_HIDDEN, !tm_.running);
-    lv_label_set_text(tm_.foot, th_label(fresh ? TH_DOWN " назад" : TH_DOWN " сброс"));
+    lv_label_set_text(tm_.foot, th_label(fresh ? TH_DOWN " назад" : TH_DOWN " скинути"));
 }
 
 static void timer_ui(lv_timer_t *t)
@@ -445,7 +445,7 @@ static void torch_open(lv_obj_t *scr)
 {
     tc.scr = scr;
     torch_paint();
-    tc.hint = th_text(scr, th->small, 0x777777, "тап — цвет\nвверх/вниз — яркость");
+    tc.hint = th_text(scr, th->small, 0x777777, "тап — колір\nвгору/вниз — яскравість");
     lv_obj_center(tc.hint);
     lv_obj_fade_out(tc.hint, 600, 1800);
     lv_obj_add_flag(scr, LV_OBJ_FLAG_CLICKABLE);
@@ -515,7 +515,7 @@ static void qr_marks(void) /* where we are: the header and the page cells, or th
 {
     if (TH_TERMINAL) {
         char t[48];
-        snprintf(t, sizeof t, "пип-01 // qr %d/%d", qr.i + 1, QR_COUNT);
+        snprintf(t, sizeof t, "піп-01 // qr %d/%d", qr.i + 1, QR_COUNT);
         lv_label_set_text(qr.head, th_label(t));
         for (int k = 0; k < QR_COUNT && k < 8; k++) th_cell_set(qr.grid, &qr.pages[k], k == qr.i ? th->text : th->off);
     } else
@@ -707,13 +707,13 @@ static void care_tick(lv_timer_t *t)
             lv_obj_set_style_text_color(care.vals[i], lv_color_hex(v[i] < 0.25f ? th->dim : th->text), 0);
         }
         char s[64];
-        snprintf(s, sizeof s, "состояние: %s", pip_word(&in));
+        snprintf(s, sizeof s, "стан: %s", pip_word(&in));
         lv_label_set_text(care.state, th_label(s));
         return;
     }
     for (int i = 0; i < 5; i++) meter_set(&care.m[i], v[i]);
     char s[64];
-    snprintf(s, sizeof s, "%s, шагов: %d", in.asleep ? "спит" : "не спит", in.steps);
+    snprintf(s, sizeof s, "%s, кроків: %d", in.asleep ? "спить" : "не спить", in.steps);
     lv_label_set_text(care.state, th_label(s));
 }
 
@@ -735,7 +735,7 @@ static void care_play(lv_event_t *e) { (void)e; pip_action(PIP_ACT_PLAY); shell_
 
 static void care_open_term(lv_obj_t *scr, const char *const *names)
 {
-    th_header(scr, "пип-01 // забота", 40);
+    th_header(scr, "піп-01 // догляд", 40);
     care.state = th_text_at(scr, th->tiny, th->dim, "", -1, 89);
     for (int i = 0; i < 5; i++) {
         int y = 128 + i * 30;
@@ -746,8 +746,8 @@ static void care_open_term(lv_obj_t *scr, const char *const *names)
         for (int k = 0; k < 12; k++) care.tc[i * 12 + k] = (th_cell_t){(int16_t)(196 + k * 11), (int16_t)y, 9, 16, th->off};
         care.shown[i] = 0;
     }
-    th_button_at(scr, 88, 292, 120, "кормить", true, care_feed);
-    th_button_at(scr, 218, 292, 108, "играть", false, care_play);
+    th_button_at(scr, 88, 292, 120, "годувати", true, care_feed);
+    th_button_at(scr, 218, 292, 108, "грати", false, care_play);
     lv_obj_t *snd = th_button_at(scr, 336, 292, 44, "", false, care_sound);
     lv_obj_delete(lv_obj_get_child(snd, 0));
     /* a speaker in 4 px cells inside the outlined button; its waves go when the sound is off */
@@ -763,7 +763,7 @@ static void care_open_term(lv_obj_t *scr, const char *const *names)
 
 static void care_open(lv_obj_t *scr)
 {
-    static const char *const names[5] = {"Еда", "Энергия", "Веселье", "Внимание", "Прогулки"};
+    static const char *const names[5] = {"Їжа", "Енергія", "Веселощі", "Увага", "Прогулянки"};
     if (TH_TERMINAL) {
         care_open_term(scr, names);
         care_tick(NULL);
@@ -772,7 +772,7 @@ static void care_open(lv_obj_t *scr)
     }
     /* Apple tints each need with a system colour; the other themes use one ink */
     static const uint32_t apple[5] = {0xFF9230, 0x30D158, 0xFF375F, 0x3CD3FE, 0x0091FF};
-    lv_obj_t *title = th_text(scr, th->body, th == &themes[TH_APPLE] ? 0x30D158 : th->text, "Пип");
+    lv_obj_t *title = th_text(scr, th->body, th == &themes[TH_APPLE] ? 0x30D158 : th->text, "Піп");
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 40);
     for (int i = 0; i < 5; i++) {
         int y = 96 + i * 40;
@@ -789,8 +789,8 @@ static void care_open(lv_obj_t *scr)
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
     lv_obj_set_style_pad_column(row, 8, 0);
     lv_obj_align(row, LV_ALIGN_TOP_MID, 0, 340);
-    th_button(row, "Кормить", true, care_feed);
-    th_button(row, "Играть", false, care_play);
+    th_button(row, "Годувати", true, care_feed);
+    th_button(row, "Грати", false, care_play);
     th_button(row, voice_volume() > 0 ? LV_SYMBOL_AUDIO : LV_SYMBOL_CLOSE, false, care_sound);
     care_tick(NULL);
     care.timer = lv_timer_create(care_tick, 500, NULL);
@@ -822,7 +822,7 @@ static struct {
 static void game_score(void)
 {
     if (TH_TERMINAL) {
-        lv_label_set_text_fmt(gm.score, "%s %04d // %s %04d", th_label("счёт"), gm.points, th_label("рекорд"), gm.best);
+        lv_label_set_text_fmt(gm.score, "%s %04d // %s %04d", th_label("рахунок"), gm.points, th_label("рекорд"), gm.best);
         lv_obj_remove_flag(gm.score, LV_OBJ_FLAG_HIDDEN);
     } else lv_label_set_text_fmt(gm.score, "%d", gm.points);
 }
@@ -877,13 +877,13 @@ static void game_tick(lv_timer_t *t)
         char s[96];
         if (TH_TERMINAL) {
             snprintf(s, sizeof s, "%04d", gm.points);
-            th_leader(gm.rows[0], "счёт", s, 202);
+            th_leader(gm.rows[0], "рахунок", s, 202);
             snprintf(s, sizeof s, "%04d", gm.best);
             th_leader(gm.rows[1], "рекорд", s, 202);
             lv_obj_add_flag(gm.score, LV_OBJ_FLAG_HIDDEN);
             gm.flash_ms = 0;
         } else {
-            snprintf(s, sizeof s, "Время!\nсчёт %d, лучший %d\nтап — заново", gm.points, gm.best);
+            snprintf(s, sizeof s, "Час вийшов!\nрахунок %d, рекорд %d\nтап — ще раз", gm.points, gm.best);
             lv_label_set_text(gm.over, th_label(s));
         }
         lv_obj_remove_flag(gm.over, LV_OBJ_FLAG_HIDDEN);
@@ -956,9 +956,9 @@ static void game_open_term(lv_obj_t *scr)
     lv_obj_remove_style_all(gm.over);
     lv_obj_set_size(gm.over, SCR, SCR);
     lv_obj_remove_flag(gm.over, LV_OBJ_FLAG_CLICKABLE);
-    th_plate(gm.over, 83, 140, 300, 48, th->body, "время вышло", false, NULL);
+    th_plate(gm.over, 83, 140, 300, 48, th->body, "час вийшов", false, NULL);
     for (int i = 0; i < 2; i++) gm.rows[i] = th_text_at(gm.over, th->tiny, i ? th->dim : th->text, "", 132, 213 + i * 26);
-    th_button_at(gm.over, 153, 282, 160, TH_UP " ещё раз", true, game_tap);
+    th_button_at(gm.over, 153, 282, 160, TH_UP " ще раз", true, game_tap);
     th_footer(gm.over, TH_DOWN " назад", 347);
 }
 
@@ -1086,8 +1086,8 @@ static void mz_new(void)
     mz_place(mz.goal, (mz.m.n - 0.5f) * mz.m.c, (mz.m.n - 0.5f) * mz.m.c);
     mz_place(mz.ball, mz.m.x, mz.m.y);
     char s[48];
-    if (TH_TERMINAL) snprintf(s, sizeof s, "пип-01 // лабиринт %d/4", mz.level + 1);
-    else snprintf(s, sizeof s, "уровень %d", mz.level + 1);
+    if (TH_TERMINAL) snprintf(s, sizeof s, "піп-01 // лабіринт %d/4", mz.level + 1);
+    else snprintf(s, sizeof s, "рівень %d", mz.level + 1);
     lv_label_set_text(mz.label, th_label(s));
 }
 
@@ -1138,7 +1138,7 @@ static void mz_open(lv_obj_t *scr)
     lv_obj_set_style_image_recolor_opa(mz.walls, LV_OPA_COVER, 0);
     if (TH_TERMINAL) {
         mz.label = th_header(scr, "", 40);
-        th_footer(scr, TH_UP " новый   " TH_DOWN " назад", 404);
+        th_footer(scr, TH_UP " новий   " TH_DOWN " назад", 404);
         mz.goal = th_cursor(scr, 12, 12, th->text); /* a blinking block, sized per maze below */
         mz.ball = th_box(scr, 0, 0, 10, 10, 0, th->text);
     } else {
@@ -1191,11 +1191,11 @@ static void sw_draw_term(void)
         if (i < 0) { lv_label_set_text(sw.lap_rows[k], ""); continue; }
         uint32_t lap = sw.laps[i] - (i ? sw.laps[i - 1] : 0);
         char key[16];
-        snprintf(key, sizeof key, "кр %02d", i + 1);
+        snprintf(key, sizeof key, "кл %02d", i + 1);
         snprintf(t, sizeof t, "%02u:%02u.%02u", (unsigned)(lap / 60000), (unsigned)(lap / 1000 % 60), (unsigned)(lap / 10 % 100));
         th_leader(sw.lap_rows[k], key, t, 234);
     }
-    lv_label_set_text(sw.foot, th_label(sw.running ? TH_UP " круг   " TH_DOWN " сброс" : e ? TH_UP " дальше   " TH_DOWN " сброс"
+    lv_label_set_text(sw.foot, th_label(sw.running ? TH_UP " коло   " TH_DOWN " скинути" : e ? TH_UP " далі   " TH_DOWN " скинути"
                                                                                        : TH_UP " старт   " TH_DOWN " назад"));
 }
 
@@ -1210,7 +1210,7 @@ static void sw_draw(lv_timer_t *t)
     char buf[160] = "", line[48];
     for (int i = sw.n - 1; i >= 0 && i >= sw.n - 3; i--) { /* the last three laps, newest first */
         uint32_t lap = sw.laps[i] - (i ? sw.laps[i - 1] : 0);
-        snprintf(line, sizeof line, "%sкруг %d   %02u:%02u.%02u", buf[0] ? "\n" : "", i + 1, (unsigned)(lap / 60000),
+        snprintf(line, sizeof line, "%sколо %d   %02u:%02u.%02u", buf[0] ? "\n" : "", i + 1, (unsigned)(lap / 60000),
                  (unsigned)(lap / 1000 % 60), (unsigned)(lap / 10 % 100));
         strncat(buf, line, sizeof buf - strlen(buf) - 1);
     }
@@ -1242,7 +1242,7 @@ static void sw_tap(lv_event_t *e) /* pause and go on */
 static void sw_open(lv_obj_t *scr)
 {
     if (TH_TERMINAL) {
-        th_header(scr, "пип-01 // секундомер", 40);
+        th_header(scr, "піп-01 // секундомір", 40);
         th_blocks(sw.tc, 97, 97, "00:00", 11, 9);
         sw.grid = th_cells(scr, sw.tc, 147);
         sw.time = sw.grid; /* "open" */
@@ -1360,7 +1360,7 @@ static void badge_open(lv_obj_t *scr)
 #define NZ_BARS 40 /* the last 20 s, a bar per half second */
 
 static const struct { float below; uint32_t color; const char *word; } nz_bands[] = {
-    {30, 0x34C759, "тишина"}, {40, 0x9BE15D, "тихо"}, {55, 0xFFD60A, "разговор"}, {70, 0xFF9F0A, "шумно"}, {999, 0xFF453A, "громко"},
+    {30, 0x34C759, "тиша"}, {40, 0x9BE15D, "тихо"}, {55, 0xFFD60A, "розмова"}, {70, 0xFF9F0A, "шумно"}, {999, 0xFF453A, "гучно"},
 };
 
 static struct {
@@ -1408,7 +1408,7 @@ static void nz_update(lv_timer_t *t)
     }
     lv_obj_invalidate(nz.bars);
     char s[48];
-    snprintf(s, sizeof s, "мин %d   макс %d", (int)lroundf(nz.lo), (int)lroundf(nz.hi));
+    snprintf(s, sizeof s, "мін %d   макс %d", (int)lroundf(nz.lo), (int)lroundf(nz.hi));
     lv_label_set_text(nz.span, th_label(s));
 }
 
@@ -1445,7 +1445,7 @@ static void nz_open(lv_obj_t *scr)
     nz.unit = th_text(scr, th->small, th->dim, "");
     lv_label_set_text(nz.unit, "дБ"); /* the unit keeps its case */
     lv_obj_align(nz.unit, LV_ALIGN_CENTER, 0, 14);
-    nz.word = th_text(scr, th->body, th->dim, mic_on() ? "" : "нет микрофона");
+    nz.word = th_text(scr, th->body, th->dim, mic_on() ? "" : "немає мікрофона");
     lv_obj_align(nz.word, LV_ALIGN_CENTER, 0, 52);
     for (int i = 0; i < NZ_BARS; i++) nz.cells[i] = (th_cell_t){(int16_t)(SCR / 2 - NZ_BARS * 6 / 2 + i * 6), 349, 4, 3, th_off()};
     nz.bars = th_cells(scr, nz.cells, NZ_BARS);
@@ -1521,7 +1521,7 @@ static bool style_button(int id)
 
 static void style_open_term(lv_obj_t *scr)
 {
-    th_header(scr, "пип-01 // стиль", 40);
+    th_header(scr, "піп-01 // стиль", 40);
     st.focus = theme_index();
     style_list();
     for (int k = 0; k < st.n; k++) {
@@ -1541,8 +1541,8 @@ static void style_open_term(lv_obj_t *scr)
         st.swatch[k * 3 + 2] = (th_cell_t){397, (int16_t)(y + 11), 9, 22, themes[i].accent};
     }
     th_cells(scr, st.swatch, st.n * 3);
-    th_text_at(scr, th->tiny, th->mute, "лицо пипа не меняется", -1, 331);
-    th_footer(scr, TH_UP " применить   " TH_DOWN " назад", 371);
+    th_text_at(scr, th->tiny, th->mute, "обличчя піпа не змінюється", -1, 331);
+    th_footer(scr, TH_UP " застосувати   " TH_DOWN " назад", 371);
     style_show();
 }
 
@@ -1599,7 +1599,7 @@ static void games_pick(lv_event_t *e) { lv_async_call(games_go, lv_event_get_use
 
 static void games_open(lv_obj_t *scr)
 {
-    th_header(scr, "пип-01 // игры", 40);
+    th_header(scr, "піп-01 // ігри", 40);
     int n = 0;
     for (int i = app_count; i < app_total; i++) n += apps[i].group && !strcmp(apps[i].group, "games");
     int pitch = n > 5 ? 52 : 60, y = SCR / 2 - n * pitch / 2 + 8, k = 0;
@@ -1694,8 +1694,8 @@ static void xo_draw(void)
         for (int k = 0; k < 2; k++) lv_obj_set_flag(xo.x[c][k], LV_OBJ_FLAG_HIDDEN, who != 1), lv_obj_set_style_opa(xo.x[c][k], opa, 0);
         lv_obj_set_flag(xo.o[c], LV_OBJ_FLAG_HIDDEN, who != 2), lv_obj_set_style_opa(xo.o[c], opa, 0);
     }
-    static const char *const say[2][4] = {{"ты выиграл", "пип выиграл", "твой ход", "пип думает"},
-                                          {"крестики выиграли", "нолики выиграли", "ход крестиков", "ход ноликов"}};
+    static const char *const say[2][4] = {{"ти переміг", "піп переміг", "твій хід", "піп думає"},
+                                          {"хрестики перемогли", "нулики перемогли", "хід хрестиків", "хід нуликів"}};
     char s[64];
     snprintf(s, sizeof s, "%s   %d:%d", say[xo.mode][xo.won >= 0 ? xo.won : 2 + xo.turn], xo.wins[xo.mode][0], xo.wins[xo.mode][1]);
     lv_label_set_text(xo.status, th_label(s));
@@ -1796,7 +1796,7 @@ static void xo_open(lv_obj_t *scr)
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
     lv_obj_set_style_pad_column(row, 10, 0);
     lv_obj_align(row, LV_ALIGN_TOP_MID, 0, 392);
-    static const char *const names[2] = {"с пипом", "с другом"};
+    static const char *const names[2] = {"з піпом", "з другом"};
     for (int i = 0; i < 2; i++) {
         lv_obj_t *c = xo.chips[i] = lv_obj_create(row);
         lv_obj_remove_style_all(c);
@@ -1818,10 +1818,10 @@ static void xo_open(lv_obj_t *scr)
 /* ================= the magic 8 ball: shake it or tap, a triangle floats up with the answer ================= */
 
 static const char *const eight_says[] = {
-    "Бесспорно", "Предрешено", "Никаких сомнений", "Определённо да", "Можешь быть уверен в этом",
-    "Мне кажется — да", "Вероятнее всего", "Хорошие перспективы", "Знаки говорят — да", "Да",
-    "Пока не ясно, попробуй снова", "Спроси позже", "Лучше не рассказывать", "Сейчас нельзя предсказать", "Сконцентрируйся и спроси опять",
-    "Даже не думай", "Мой ответ — нет", "По моим данным — нет", "Перспективы не очень хорошие", "Весьма сомнительно",
+    "Безперечно", "Вирішено наперед", "Жодних сумнівів", "Безумовно так", "Можеш бути впевнений",
+    "Мені здається — так", "Найімовірніше", "Гарні перспективи", "Знаки кажуть — так", "Так",
+    "Поки неясно, спробуй ще", "Спитай пізніше", "Краще не казати", "Зараз не передбачити", "Зосередься і спитай ще",
+    "Навіть не думай", "Моя відповідь — ні", "За моїми даними — ні", "Перспективи не дуже", "Вельми сумнівно",
 };
 
 static struct {
@@ -1969,9 +1969,9 @@ static void cn_landed(lv_anim_t *a)
     cn_exec(NULL, 1000);
     cn_show(cn.face);
     cn.count[cn.face]++;
-    lv_label_set_text(cn.word, th_label(cn.face ? "решка" : "орёл"));
+    lv_label_set_text(cn.word, th_label(cn.face ? "решка" : "орел"));
     char s[48];
-    snprintf(s, sizeof s, "орёл %d   решка %d", cn.count[0], cn.count[1]);
+    snprintf(s, sizeof s, "орел %d   решка %d", cn.count[0], cn.count[1]);
     lv_label_set_text(cn.tally, th_label(s));
     voice_say(VOICE_TICK);
 }
@@ -2329,7 +2329,7 @@ const app_t apps[] = {
     /* the games, listed by "games" and not in the menu */
     {.id = "ball", .name = "Кулька", .icon = ICON_GAME, .color = 0xDB34F2, .open = game_open, .close = game_close, .imu = game_imu,
      .button = game_button, .group = "games"},
-    {.id = "xo", .name = "Хрестики-нолики", .icon = ICON_XO, .open = xo_open, .close = xo_close, .group = "games"},
+    {.id = "xo", .name = "Хрестики-нулики", .icon = ICON_XO, .open = xo_open, .close = xo_close, .group = "games"},
     {.id = "eight", .name = "Куля-вісімка", .icon = ICON_EIGHT, .open = e8_open, .close = e8_close, .imu = e8_imu, .button = e8_button,
      .group = "games"},
     {.id = "coin", .name = "Монетка", .icon = ICON_COIN, .open = cn_open, .close = cn_close, .imu = cn_imu, .button = cn_button,

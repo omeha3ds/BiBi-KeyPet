@@ -920,13 +920,13 @@ static void dev_paint(uint16_t *px, const face_rect_t *clip)
 
 static void dev_text(void)
 {
-    static const char *const why[] = {"сон", "карточка дня", "тело", "послевкусие", "нужда", "ночь", "занят", "палитра"};
+    static const char *const why[] = {"сон", "картка дня", "тіло", "післясмак", "потреба", "ніч", "зайнятий", "палітра"};
     pet_why_t w;
     pet_mood_why(&s.pet, s.tz, &w);
     char t[160], b[200];
     snprintf(t, sizeof t, "DEV MODE\n%.0f к/с  кадр %.0f мс\n%s%s%s  <- %s", dev.fps, s.frame_ms, moods[s.shown].name,
              s.react_mood >= 0 ? " / " : "", s.react_mood >= 0 ? s.react_name : "", w.kind >= 0 && w.kind < 8 ? why[w.kind] : "?");
-    snprintf(b, sizeof b, "наклон %+.1f %+.1f\nтряска %.1f  мик %.0f дБ  бат %d%%%s%s", s.imu.tilt_x, s.imu.tilt_y, s.imu.energy,
+    snprintf(b, sizeof b, "нахил %+.1f %+.1f\nтряска %.1f  мік %.0f дБ  бат %d%%%s%s", s.imu.tilt_x, s.imu.tilt_y, s.imu.energy,
              mic_on() ? mic_db() : 0.0f, s.bat_pct, dev.note[0] ? "\n" : "", dev.note);
     lv_label_set_text(dev.top, t);
     lv_label_set_text(dev.bot, b);
