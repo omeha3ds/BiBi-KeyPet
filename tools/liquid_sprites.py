@@ -77,6 +77,8 @@ HEART_W, HEART_H = 88, 84
 BLUSH_W, BLUSH_H = 104, 42
 LID_W, LID_H, LID_EDGE_Y = 240, 216, 182
 SMILE_W, SMILE_H, SMILE_EDGE_Y = 240, 152, 28
+WET_W, WET_H = 136, 52
+VEINS_W, VEINS_H, VEINS_RX, VEINS_RY = 128, 172, 62.0, 83.2
 
 
 def hex_rgb(c: int) -> tuple[float, float, float]:
@@ -358,7 +360,7 @@ def render_blush() -> list[float]:
 
 
 def render_lid() -> list[float]:
-    """Curved upper eyelid A8 mask (black): follows eye dome curvature + soft feathered rim & 3D contact shadow."""
+    """Curved upper eyelid A8 mask (black): apex sits right on LID_EDGE_Y so low-lid moods (indignant/afraid/dismayed) match Plain."""
     w, h = LID_W, LID_H
     cx = w * 0.5
     out: list[float] = []
@@ -366,16 +368,16 @@ def render_lid() -> list[float]:
         py = y + 0.5
         for x in range(w):
             # Normalized horizontal offset across the eye dome (-1..+1)
-            u = ((x + 0.5) - cx) / (w * 0.36)
-            # Graceful convex dome arch: center higher, outer/inner sides wrap gently down around the eye
-            y_curve = LID_EDGE_Y - 14.0 + 14.0 * min(u * u, 1.85)
+            u = ((x + 0.5) - cx) / (w * 0.34)
+            # Gentle convex dome arch centered ON LID_EDGE_Y (no upward offset): hugs eye curvature softly
+            y_curve = LID_EDGE_Y + 8.5 * min(u * u, 1.85)
             d = py - y_curve  # <0 above lid (solid black), >0 below lid (soft contact shadow fading to 0)
             if d <= 0.0:
                 a = 1.0
             else:
-                # Smooth anti-aliased eyelid lip (0..4.5 px) + soft 3D shadow falloff (up to ~22 px)
+                # Smooth anti-aliased eyelid lip (0..4.5 px) + soft 3D shadow falloff (up to ~20 px)
                 lip = smoothstep(4.5, 0.0, d)
-                shadow = 0.44 * math.exp(-((d / 9.5) ** 1.55))
+                shadow = 0.42 * math.exp(-((d / 9.0) ** 1.55))
                 # Fade shadow cleanly to 0 before the bottom edge of the sprite
                 win = smoothstep(h - 1.5, h - 10.0, py)
                 a = max(lip, shadow) * win
@@ -403,6 +405,62 @@ def render_smile() -> list[float]:
                 win = smoothstep(1.5, 9.0, py)
                 a = max(lip, shadow) * win
             out.append(clamp01(a))
+    return out
+
+
+def render_wet() -> list[tuple[float, float, float, float]]:
+    """Translucent aqua tear pool with shimmering white meniscus hugging the lower 70:94 sclera arc (PIP_HURT)."""
+    w, h = WET_W, WET_H
+    cx = w * 0.5
+    cy = (h - 1.0) - SCLERA_RY
+    c_water = hex_rgb(0x76DCFF)
+    px: list[tuple[float, float, float, float]] = []
+    for y in range(h):
+        ny = ((y + 0.5) - cy) / SCLERA_RY
+        for x in range(w):
+            nx = ((x + 0.5) - cx) / SCLERA_RX
+            r = math.hypot(nx, ny)
+            d_ell = (0.985 - r) * SCLERA_RX
+            if d_ell <= -0.5:
+                px.append((0.0, 0.0, 0.0, 0.0))
+                continue
+            cov = clamp01(d_ell + 0.5)
+            ny_top = 0.63 + 0.022 * math.sin(nx * 5.2)
+            pool = smoothstep(ny_top - 0.03, ny_top + 0.04, ny) * 0.56
+            meniscus = math.exp(-(((ny - ny_top) / 0.028) ** 2)) * 0.92 * clamp01(d_ell - 0.8)
+            a = clamp01(max(pool, meniscus)) * cov
+            if a <= 1e-4:
+                px.append((0.0, 0.0, 0.0, 0.0))
+            else:
+                col = mix3(c_water, (1.0, 1.0, 1.0), clamp01(meniscus / max(a, 1e-3)))
+                px.append((col[0], col[1], col[2], a))
+    return px
+
+
+def render_veins() -> list[float]:
+    """Delicate bloodshot branching veins around sclera rim (A8 mask recolored red in PIP_STONED)."""
+    w, h = VEINS_W, VEINS_H
+    cx, cy = w * 0.5, h * 0.5
+    out: list[float] = []
+    for y in range(h):
+        ny = ((y + 0.5) - cy) / VEINS_RY
+        for x in range(w):
+            nx = ((x + 0.5) - cx) / VEINS_RX
+            rr = math.hypot(nx, ny)
+            if rr < 0.42 or rr > 0.97:
+                out.append(0.0)
+                continue
+            ang = math.atan2(ny, nx)
+            v1 = ang * 1.114 + 0.18 * math.sin(rr * 13.0 + ang * 5.0)
+            v2 = ang * 2.069 + 0.30 * math.sin(rr * 21.0 + ang * 2.0) + 0.5
+            off1 = abs(v1 - round(v1))
+            off2 = abs(v2 - round(v2))
+            d1 = off1 * 0.898 * rr * VEINS_RX
+            d2 = off2 * 0.483 * rr * VEINS_RX
+            m1 = clamp01(0.75 + 0.95 * (rr - 0.45) - d1) * clamp01((rr - 0.42) * 4.0)
+            m2 = clamp01(0.55 - d2) * clamp01((rr - 0.70) * 5.0)
+            fade_out = smoothstep(0.97, 0.90, rr)
+            out.append(clamp01(max(m1, m2) * 0.88 * fade_out))
     return out
 
 
@@ -524,6 +582,20 @@ def main() -> None:
     c_parts.append(format_img_dsc("liq_smile", "liq_smile_map", SMILE_W, SMILE_H,
                                   "LV_COLOR_FORMAT_A8", SMILE_W, len(smile_data)) + "\n")
 
+    wet_px = render_wet()
+    wet_data = encode_rgb565a8(WET_W, WET_H, wet_px)
+    total_bytes += len(wet_data)
+    c_parts.append(format_c_array("liq_wet_map", wet_data) + "\n")
+    c_parts.append(format_img_dsc("liq_wet", "liq_wet_map", WET_W, WET_H,
+                                  "LV_COLOR_FORMAT_RGB565A8", WET_W * 2, len(wet_data)) + "\n")
+
+    veins_a = render_veins()
+    veins_data = encode_a8(VEINS_W, VEINS_H, veins_a)
+    total_bytes += len(veins_data)
+    c_parts.append(format_c_array("liq_veins_map", veins_data) + "\n")
+    c_parts.append(format_img_dsc("liq_veins", "liq_veins_map", VEINS_W, VEINS_H,
+                                  "LV_COLOR_FORMAT_A8", VEINS_W, len(veins_data)) + "\n")
+
     c_parts.append(f"const lv_image_dsc_t *const liquid_sclera[{len(PALETTES)}] = {{{', '.join(sclera_refs)}}};\n")
     c_parts.append(f"const lv_image_dsc_t *const liquid_pupil[{len(PALETTES)}] = {{{', '.join(pupil_refs)}}};\n")
 
@@ -552,6 +624,12 @@ def main() -> None:
         f"#define LIQ_SMILE_W {SMILE_W}\n"
         f"#define LIQ_SMILE_H {SMILE_H}\n"
         f"#define LIQ_SMILE_EDGE_Y {SMILE_EDGE_Y}\n"
+        f"#define LIQ_WET_W {WET_W}\n"
+        f"#define LIQ_WET_H {WET_H}\n"
+        f"#define LIQ_VEINS_W {VEINS_W}\n"
+        f"#define LIQ_VEINS_H {VEINS_H}\n"
+        f"#define LIQ_VEINS_RX {int(VEINS_RX)}\n"
+        f"#define LIQ_VEINS_RY {int(VEINS_RY)}\n"
         f"#define LIQ_FLASH_BYTES {total_bytes}\n\n"
         "extern const lv_image_dsc_t *const liquid_sclera[LIQ_PALETTES];\n"
         "extern const lv_image_dsc_t *const liquid_pupil[LIQ_PALETTES];\n"
@@ -560,6 +638,8 @@ def main() -> None:
         "extern const lv_image_dsc_t liq_blush;\n"
         "extern const lv_image_dsc_t liq_lid;\n"
         "extern const lv_image_dsc_t liq_smile;\n"
+        "extern const lv_image_dsc_t liq_wet;\n"
+        "extern const lv_image_dsc_t liq_veins;\n"
     )
 
     with open(h_path, "w", encoding="utf-8", newline="\n") as f:
@@ -575,7 +655,9 @@ def main() -> None:
         f"  heart     ({HEART_W}x{HEART_H} RGB565A8): {len(heart_data) / 1024:.1f} KB\n"
         f"  blush     ({BLUSH_W}x{BLUSH_H} A8): {len(blush_data) / 1024:.1f} KB\n"
         f"  lid       ({LID_W}x{LID_H} A8): {len(lid_data) / 1024:.1f} KB\n"
-        f"  smile     ({SMILE_W}x{SMILE_H} A8): {len(smile_data) / 1024:.1f} KB"
+        f"  smile     ({SMILE_W}x{SMILE_H} A8): {len(smile_data) / 1024:.1f} KB\n"
+        f"  wet       ({WET_W}x{WET_H} RGB565A8): {len(wet_data) / 1024:.1f} KB\n"
+        f"  veins     ({VEINS_W}x{VEINS_H} A8): {len(veins_data) / 1024:.1f} KB"
     )
 
 

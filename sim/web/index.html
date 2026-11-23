@@ -273,6 +273,8 @@ if (simQ.get('bench') === '1') {
   if (simQ.has('qr')) simQ.getAll('qr').forEach((v, i) => { writeSimStr(v); M._sim_set_link_buf(i); });
   if (simQ.has('mood')) M._sim_set_mood(+simQ.get('mood'));
   if (simQ.get('screen')) { writeSimStr(simQ.get('screen')); M._sim_open_buf(); }
+  M._sim_frame(16);
+  if (simQ.has('touch')) { const [tx, ty] = simQ.get('touch').split(',').map(Number); M._sim_touch(tx, ty, 1); }
   const frames = Math.max(45, Math.ceil((+(simQ.get('wait') || 720)) / 16));
   for (let k = 0; k < frames; k++) M._sim_frame(16);
   blitScreen();

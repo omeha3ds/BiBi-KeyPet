@@ -23,7 +23,13 @@
 #define LIQ_SMILE_W 240
 #define LIQ_SMILE_H 152
 #define LIQ_SMILE_EDGE_Y 28
-#define LIQ_FLASH_BYTES 861040
+#define LIQ_WET_W 136
+#define LIQ_WET_H 52
+#define LIQ_VEINS_W 128
+#define LIQ_VEINS_H 172
+#define LIQ_VEINS_RX 62
+#define LIQ_VEINS_RY 83
+#define LIQ_FLASH_BYTES 904272
 
 extern const lv_image_dsc_t *const liquid_sclera[LIQ_PALETTES];
 extern const lv_image_dsc_t *const liquid_pupil[LIQ_PALETTES];
@@ -32,3 +38,5 @@ extern const lv_image_dsc_t liq_heart;
 extern const lv_image_dsc_t liq_blush;
 extern const lv_image_dsc_t liq_lid;
 extern const lv_image_dsc_t liq_smile;
+extern const lv_image_dsc_t liq_wet;
+extern const lv_image_dsc_t liq_veins;
