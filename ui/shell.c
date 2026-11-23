@@ -263,8 +263,8 @@ static void hex_input(lv_event_code_t code, lv_point_t p)
 
 static int list_middle(void) { return (int)fmaxf(0, fminf(sh.n - 1, roundf(sh.pos))); }
 
-/* size and ink by distance from the middle, continuous: 36 px in the plate, 26 one row away, 20 two away */
-static float row_scale(float ad) { return (ad < 1 ? 36 - ad * 10 : ad < 2 ? 26 - (ad - 1) * 6 : 20) / 36.0f; }
+/* size and ink by distance from the middle, continuous: 32 px in the plate, 24 one row away, 20 two away */
+static float row_scale(float ad) { return (ad < 1 ? 32 - ad * 8 : ad < 2 ? 24 - (ad - 1) * 4 : 20) / 32.0f; }
 
 /* Area-averaging downscale of an alpha mask by f (0.5..1): separable, each output pixel covers at most three source
    pixels a side, weights in 1/256. Fast enough for the ESP32 (it runs when the theme changes). */
@@ -301,11 +301,11 @@ static void shrink(const uint8_t *src, int sstride, int w, int h, uint8_t *dst, 
         }
 }
 
-/* Each row is drawn once, as an alpha mask in the big font, and shrunk ahead of time to every size from 20 to 36 px:
+/* Each row is drawn once, as an alpha mask in the big font, and shrunk ahead of time to every size from 20 to 32 px:
    scrolling then only picks a mask and tints it. (Scaling text live made LVGL render every row into a layer and
    transform it each frame: ~45 ms a menu frame on the board.) */
 #define ROW_PX_MIN 20
-#define ROW_PX_MAX 36
+#define ROW_PX_MAX 32
 #define ROW_SIZES (ROW_PX_MAX - ROW_PX_MIN + 1)
 static lv_draw_buf_t *row_mask[24][ROW_SIZES];
 
@@ -340,7 +340,7 @@ static void rows_build(void)
         lv_area_t a = {ix, 0, w - 1, h - 1};
         lv_draw_label(&layer, &dsc, &a);
         lv_canvas_finish_layer(pen, &layer);
-        if (isz) doodle_icon_mask(apps[i].icon, base->data + (h - isz) / 2 * base->header.stride, (int)base->header.stride, isz);
+        if (isz) doodle_icon_mask(apps[i].icon, base->data + ((h - isz) / 2 + (TH_PIXEL ? 2 : 0)) * base->header.stride, (int)base->header.stride, isz);
         for (int k = 0; k < ROW_SIZES; k++) { /* area-averaged down to each size */
             if (row_mask[i][k]) lv_draw_buf_destroy(row_mask[i][k]);
             float f = (float)(ROW_PX_MIN + k) / big;
@@ -374,13 +374,14 @@ static void list_layout(void)
         /* the row's pre-shrunk mask for this distance: it grows and shrinks a pixel at a time */
         lv_draw_buf_t *m = row_at(i, ad);
         if (lv_image_get_src(r) != m) lv_image_set_src(r, m), lv_image_set_src(l, m);
-        lv_color_t ink = lv_color_mix(lv_color_hex(terminal ? th->mute : th->faint), lv_color_hex(th->dim), (uint8_t)(255 * fminf(fmaxf(ad - 1, 0), 1)));
+        lv_color_t ink = lv_color_mix(lv_color_hex(terminal ? th->mute : TH_PIXEL ? 0x4A4A4A : th->faint), lv_color_hex(th->dim), (uint8_t)(255 * fminf(fmaxf(ad - 1, 0), 1)));
         lv_obj_set_style_image_recolor(r, ink, 0);
         /* the plate is see-through there: hand the row over to it; the terminal fades rows out before its key strip */
         float fade = terminal ? fminf(1, fmaxf(0, (1.9f - ad) * 2)) : fminf(1, ad);
         lv_obj_set_style_opa(r, (lv_opa_t)(255 * fade), 0);
-        lv_obj_align(r, LV_ALIGN_LEFT_MID, LENS_X + (TH_PIXEL ? 24 : 16), (int32_t)roundf(d * ROW));
-        lv_obj_align(l, LV_ALIGN_LEFT_MID, TH_PIXEL ? 24 : 16, (int32_t)roundf(d * ROW));
+        int32_t dy = (int32_t)roundf(d * ROW) - (TH_PIXEL ? 2 : 0);
+        lv_obj_align(r, LV_ALIGN_LEFT_MID, LENS_X + (TH_PIXEL ? 24 : 16), dy);
+        lv_obj_align(l, LV_ALIGN_LEFT_MID, TH_PIXEL ? 24 : 16, dy);
     }
     int mid = list_middle();
     if (mid != sh.tick_row) { /* a detent */
@@ -582,6 +583,8 @@ static void close_app(void)
     sh.open = -1;
 }
 
+static void pill_opa(void *o, int32_t v) { lv_obj_set_style_bg_opa(o, (lv_opa_t)v, 0); }
+
 static void open_app(int i)
 {
     if (sh.style == MENU_LIST && group_owner(i)) { /* the list turns into the group */
@@ -605,13 +608,21 @@ static void open_app(int i)
         return;
     }
     if (apps[i].vertical) { lv_screen_load_anim(sh.app_scr, LV_SCREEN_LOAD_ANIM_FADE_IN, 200, 0, old != NULL); return; } /* no pull-down */
-    lv_obj_t *pill = lv_obj_create(sh.app_scr); /* "pull down to go back" handle */
+    lv_obj_t *pill = lv_obj_create(sh.app_scr); /* "pull down to go back" handle, subtle and fades out after 2.5 s */
     lv_obj_remove_style_all(pill);
     lv_obj_set_size(pill, 44, 5);
     lv_obj_set_style_radius(pill, 3, 0);
-    lv_obj_set_style_bg_opa(pill, LV_OPA_50, 0);
+    lv_obj_set_style_bg_opa(pill, LV_OPA_30, 0);
     lv_obj_set_style_bg_color(pill, lv_color_hex(th->dim), 0);
     lv_obj_align(pill, LV_ALIGN_TOP_MID, 0, 14);
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, pill);
+    lv_anim_set_exec_cb(&a, pill_opa);
+    lv_anim_set_values(&a, LV_OPA_30, LV_OPA_TRANSP);
+    lv_anim_set_delay(&a, 2500);
+    lv_anim_set_duration(&a, 450);
+    lv_anim_start(&a);
     lv_screen_load_anim(sh.app_scr, LV_SCREEN_LOAD_ANIM_FADE_IN, 200, 0, old != NULL); /* the replaced app goes after */
 }
 

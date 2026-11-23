@@ -1341,8 +1341,8 @@ static void badge_open(lv_obj_t *scr)
     const char *l = BADGE_LAST[0] ? BADGE_LAST : "";
     if (!f[0] && !l[0]) f = "Твоє", l = "Ім'я";
     if (f[0] && l[0]) {
-        th_text_at(scr, badge_fit_font(f), 0xFFFFFF, f, -1, 198);
-        th_text_at(scr, badge_fit_font(l), 0xFFFFFF, l, -1, 260);
+        th_text_at(scr, badge_fit_font(f), 0xFFFFFF, f, -1, 195);
+        th_text_at(scr, badge_fit_font(l), 0xFFFFFF, l, -1, 263);
     } else {
         const char *s = f[0] ? f : l;
         th_text_at(scr, badge_fit_font(s), 0xFFFFFF, s, -1, 228);
@@ -1538,7 +1538,7 @@ static void style_open(lv_obj_t *scr)
         for (int k = 0; k < st.n; k++) {
             int i = st.ids[k], col = k & 1, row = k >> 1;
             bool on = i == theme_index();
-            lv_obj_t *b = th_box(scr, col ? 240 : 54, 126 + row * 72, 172, 56, LV_RADIUS_CIRCLE, on ? themes[i].accent : th->panel);
+            lv_obj_t *b = th_box(scr, col ? 240 : 42, 126 + row * 72, 184, 56, LV_RADIUS_CIRCLE, on ? themes[i].accent : th->panel);
             lv_obj_add_flag(b, LV_OBJ_FLAG_CLICKABLE);
             lv_obj_add_event_cb(b, style_pick, LV_EVENT_CLICKED, (void *)(intptr_t)i);
             lv_obj_t *sw = th_box(b, 14, 19, 18, 18, LV_RADIUS_CIRCLE, on ? themes[i].on_accent : themes[i].accent);
@@ -1548,7 +1548,7 @@ static void style_open(lv_obj_t *scr)
                 lv_obj_set_style_border_color(sw, lv_color_hex(themes[i].eye_stroke), 0);
             }
             lv_obj_t *l = th_text(b, th->small, on ? themes[i].on_accent : th->text, themes[i].name);
-            lv_obj_align(l, LV_ALIGN_LEFT_MID, 42, 0);
+            lv_obj_align(l, LV_ALIGN_LEFT_MID, 40, 0);
         }
         return;
     }
