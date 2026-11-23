@@ -16,7 +16,8 @@ LV_FONT_DECLARE(font_pixel_40) LV_FONT_DECLARE(font_pixel_52) LV_FONT_DECLARE(fo
     .caps = false, .radius = 24, .icons = ICONS_FLAT, .clock = CLOCK_BIG, .meter = METER_BAR, .menu = MENU_LIST
 
 #define PIXEL_OBSIDIAN \
-    PIXEL_BASE, .accent = 0x66D4FF, .on_accent = 0x041016, .eye_sclera = 0x000000, .eye_pupil = 0x7CE8FF, .eye_stroke = 0x4DD0FF
+    PIXEL_BASE, .accent = 0x66D4FF, .on_accent = 0x041016, .eye_sclera = 0x000000, .eye_pupil = 0x7CE8FF, .eye_stroke = 0x4DD0FF, \
+    .pupil_rx = 0.400f, .pupil_ry = 0.617f
 
 const theme_t themes[TH_COUNT] = {
     /* Hidden legacy indices 0..3 map to Obsidian so old NVS values or `theme 0..3` stay valid and 4..9 numbering never shifts */
@@ -24,12 +25,12 @@ const theme_t themes[TH_COUNT] = {
     [TH_INSTRUMENT] = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
     [TH_APPLE]      = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
     [TH_DIAG]       = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
-    [TH_PEONY]      = {.name = "Півонія",   PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E},
+    [TH_PEONY]      = {.name = "Півонія",   PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E, .pupil_rx = 0.600f, .pupil_ry = 0.894f},
     [TH_OBSIDIAN]   = {.name = "Обсидіан",  PIXEL_OBSIDIAN},
-    [TH_BAY]        = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4},
-    [TH_HAZEL]      = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42},
-    [TH_CORAL]      = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16},
-    [TH_PORCELAIN]  = {.name = "Порцеляна", PIXEL_BASE, .accent = 0xF0DFB2, .on_accent = 0x1A1407, .eye_sclera = 0xF3E3B8, .eye_pupil = 0xBD4C16},
+    [TH_BAY]        = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4, .pupil_rx = 0.629f, .pupil_ry = 0.787f},
+    [TH_HAZEL]      = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42, .pupil_rx = 0.657f, .pupil_ry = 0.681f},
+    [TH_CORAL]      = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16, .pupil_rx = 0.529f, .pupil_ry = 0.851f},
+    [TH_PORCELAIN]  = {.name = "Порцеляна", PIXEL_BASE, .accent = 0xF0DFB2, .on_accent = 0x1A1407, .eye_sclera = 0xF3E3B8, .eye_pupil = 0xBD4C16, .pupil_rx = 0.600f, .pupil_ry = 0.447f},
 };
 
 const theme_t *th = &themes[TH_DEFAULT];

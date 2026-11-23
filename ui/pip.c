@@ -14,9 +14,11 @@
 #define SCR 466
 #define TAP_MS 300
 #define SPREAD 0.55f  /* angle of each eye from the front of the (virtual, round) head, rad */
-#define REST_SPACING 237.0f /* px between the eyes when looking straight */
+#define REST_SPACING 205.0f /* px between the eyes when looking straight (exact 176 * 466/400 from docs/index.html) */
 #define HEAD_R (REST_SPACING / (2 * 0.5227f)) /* sin(SPREAD); turning the head slides the far eye behind the near one */
 #define EYE_SCALE 1.45f /* mood table sizes -> screen */
+#define SITE_W_K 0.980f /* scales neutral 118*1.45 -> exact site 163 px width (rx=70 in 400x400 SVG) */
+#define SITE_H_K 1.095f /* scales neutral 138*1.45 -> exact site 219 px height (ry=94 in 400x400 SVG) */
 
 typedef struct { float w, h, roll, taper, lid, tilt, smile, pw, ph, square, heart, glint, spiral, veins, wet; } shape_t;
 #define SHAPE_N (int)(sizeof(shape_t) / sizeof(float))
@@ -755,15 +757,18 @@ static void update(float dt)
         float x0 = HEAD_R * sinf(phi), y0 = 240.0f * sinf(hp);
 
         if (i) k *= 1 + m->size_asym;
-        e->w = sh->w * k * (1 + 0.12f * (1 - open)) * (1 - 0.5f * sq);
-        e->h = sh->h * k * open * (1 + sq) * (i ? 1 - 0.95f * wink : 1);
-        e->depth = sh->w * k * 0.5f; /* flatter discs foreshorten more when turned away */
-        y0 += (sh->h * k - e->h) * 0.25f; /* closing settles toward the lower half */
+        e->w = sh->w * SITE_W_K * k * (1 + 0.12f * (1 - open)) * (1 - 0.5f * sq);
+        e->h = sh->h * SITE_H_K * k * open * (1 + sq) * (i ? 1 - 0.95f * wink : 1);
+        e->depth = e->w * 0.5f; /* flatter discs foreshorten more when turned away */
+        y0 += (sh->h * SITE_H_K * k - e->h) * 0.25f; /* closing settles toward the lower half */
         e->x = cx + x0 * cosf(hr) - y0 * sinf(hr) + jx + frand(-0.3f, 0.3f) * trem;
         e->y = cy + x0 * sinf(hr) + y0 * cosf(hr) + jy + frand(-0.3f, 0.3f) * trem;
         e->yaw = hy + side * SPREAD * 0.5f;
         e->pitch = hp;
-        e->roll = hr - side * sh->roll;
+        /* Exact +-13 deg sclera lean & +-6 deg pupil counter-tilt from docs/index.html, fading smoothly when closed/squished */
+        float awake_k = fminf(1.0f, fmaxf(0.0f, (e->h - 36.0f) / 70.0f));
+        float rest_roll = side * 0.2269f * awake_k; /* -13 deg left, +13 deg right */
+        e->roll = hr - side * sh->roll + rest_roll;
         e->taper = sh->taper;
         e->lid = sh->lid;
         e->tilt = -side * sh->tilt;
@@ -772,8 +777,15 @@ static void update(float dt)
         float dz = s.dizzy.x * 0.45f, ph = s.t * 9 * side;
         e->look_x = fmaxf(-0.85f, fminf(0.85f, s.look_x.x - e->yaw + cosf(ph) * dz - side * m->cross));
         e->look_y = fmaxf(-0.7f, fminf(0.7f, s.look_y.x - hp + sinf(ph) * dz));
-        e->pw = sh->pw;
-        e->ph = sh->ph;
+        /* Per-palette site pupil proportions (scaled by each mood's relative pupil dilation/contraction) */
+        float base_pw = th->pupil_rx > 0.01f ? th->pupil_rx : 0.40f;
+        float base_ph = th->pupil_ry > 0.01f ? th->pupil_ry : 0.44f;
+        float hm = fminf(1.0f, fmaxf(0.0f, sh->heart));
+        float spw = fminf(0.85f, base_pw * (sh->pw / 0.40f));
+        float sph = fminf(0.90f, base_ph * (sh->ph / 0.44f));
+        e->pw = spw + (sh->pw - spw) * hm;
+        e->ph = sph + (sh->ph - sph) * hm;
+        e->pupil_roll = -side * 0.1047f * awake_k * (1.0f - hm); /* +6 deg left -> -7 deg total, -6 deg right -> +7 deg total */
         e->square = sh->square;
         e->heart = sh->heart;
         e->glint = sh->glint;
@@ -791,7 +803,7 @@ static void update(float dt)
     if (TH_PIXEL && th->eye_stroke) {
         s.face.color = lv_color_to_u16(lv_color_hex(th->eye_sclera));
         s.face.rim_color = tinted;
-        s.face.rim_width = 6.0f;
+        s.face.rim_width = 6.5f;
     } else {
         s.face.color = tinted;
         s.face.rim_color = 0;
@@ -992,14 +1004,13 @@ float pip_frame_worst(int secs, const char **mood, const char **reaction)
 /* ---------- Liquid sprite eyes: pre-baked Flash sprites drawn by LVGL (zero per-frame gradient math) ---------- */
 static void liquid_eye_geom(const eye_t *e, int idx, float *eff_w, float *eh, float *ang)
 {
+    (void)idx;
     /* Elastic squash for blink, sleep and heavy lids: gently widens horizontally for organic softness */
     float squeeze = e->h < 32.0f ? 1.0f + 0.08f * (1.0f - fmaxf(e->h, 0.0f) / 32.0f) : 1.0f;
-    float lid_push = e->lid > 0.05f ? 1.0f + 0.05f * fminf(1.0f, e->lid) : 1.0f;
+    float lid_push = e->lid > 0.05f ? 1.0f + 0.04f * fminf(1.0f, e->lid) : 1.0f;
     *eff_w = fmaxf(e->w * squeeze * lid_push * fmaxf(0.55f, cosf(e->yaw * 0.75f)), 18.0f);
-    *eh = fmaxf(e->h, 11.0f);
-    float awake_k = fminf(1.0f, fmaxf(0.0f, (e->h - 24.0f) / 60.0f));
-    float rest_tilt = (idx == 0 ? -0.14f : 0.14f) * awake_k; /* subtle +-8 deg Pixel droplet lean */
-    *ang = e->roll + rest_tilt;
+    *eh = fmaxf(e->h, 7.0f);
+    *ang = e->roll; /* already includes exact +-13 deg site lean shared with Plain mode */
 }
 
 static void liquid_bounds(face_rect_t out[4])
@@ -1073,11 +1084,11 @@ static void liquid_draw_cb(lv_event_t *ev)
         /* 2. Volumetric pupil (or glossy heart in PIP_LOVE), fading cleanly during deep blink/sleep */
         float det_a = fminf(1.0f, fmaxf(0.0f, (eye->h - 18.0f) / 26.0f));
         if (det_a > 0.05f) {
-            float prx = rx * eye->pw * (is_obs ? 0.90f : 1.04f) * fmaxf(0.68f, cosf(eye->look_x * 0.65f));
-            float pry = ry * eye->ph * (is_obs ? 1.18f : 1.12f);
-            float max_dx = fmaxf(2.0f, rx - prx * 0.92f - (is_obs ? 10.0f : 5.0f));
-            float max_dy = fmaxf(2.0f, ry - pry * 0.92f - (is_obs ? 10.0f : 5.0f));
-            float ux = sinf(eye->look_x) * 1.05f, uy = sinf(eye->look_y) * 1.05f;
+            float prx = rx * eye->pw * fmaxf(0.62f, cosf(eye->look_x * 0.72f));
+            float pry = ry * eye->ph * fmaxf(0.75f, cosf(eye->look_y * 0.65f));
+            float max_dx = fmaxf(2.0f, rx - prx * 0.94f - (is_obs ? 9.5f : 3.5f));
+            float max_dy = fmaxf(2.0f, ry - pry * 0.94f - (is_obs ? 9.5f : 3.5f));
+            float ux = sinf(eye->look_x) * 0.95f, uy = sinf(eye->look_y) * 0.95f + 0.04f;
             float ulen = hypotf(ux, uy);
             if (ulen > 1.0f) ux /= ulen, uy /= ulen;
             float lx = ux * max_dx, ly = uy * max_dy;
@@ -1086,7 +1097,7 @@ static void liquid_draw_cb(lv_event_t *ev)
 
             lv_draw_image_dsc_t pdsc;
             lv_draw_image_dsc_init(&pdsc);
-            pdsc.rotation = rot10;
+            pdsc.rotation = (int32_t)lroundf((ang + eye->pupil_roll) * (1800.0f / 3.14159265f));
             pdsc.opa = (lv_opa_t)lroundf(det_a * 255.0f);
             pdsc.antialias = 1;
             if (eye->heart > 0.35f) {

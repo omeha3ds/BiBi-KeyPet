@@ -65,12 +65,12 @@ PALETTES = [
     ),
 ]
 
-# Geometry constants shared with ui/pip.c
-SCLERA_W, SCLERA_H = 148, 172
-SCLERA_RX, SCLERA_RY = 64.0, 76.0  # 10 px margin around ellipse for Obsidian glow & clean AA
+# Geometry constants shared with ui/pip.c (exact 70:94 sclera aspect ratio from docs/index.html)
+SCLERA_W, SCLERA_H = 152, 198
+SCLERA_RX, SCLERA_RY = 66.0, 88.6  # 70:94 exact site aspect, 10 px margin for Obsidian glow & clean AA
 
-PUPIL_W, PUPIL_H = 76, 100
-PUPIL_RX, PUPIL_RY = 26.0, 38.0    # 12 px margin around ellipse for Obsidian pupil halo
+PUPIL_W, PUPIL_H = 84, 132
+PUPIL_RX, PUPIL_RY = 30.0, 54.0    # sleek tall oval matching site pupils, 12 px margin for Obsidian halo
 
 SPEC_W, SPEC_H = 76, 64
 HEART_W, HEART_H = 88, 84

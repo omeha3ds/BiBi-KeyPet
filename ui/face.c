@@ -125,7 +125,7 @@ typedef struct {
     v3 c0, c1, d;
     float dd, shx, shy, soft, w2c, w2s, w3c, w3s, w5c, w5s;
     v3 g, t1, t2;
-    float pw, ph, prr, hm, hs, inv_hs;
+    float pw, ph, inv_pw, inv_ph, pmin, prr, hm, hs, inv_hs;
     uint16_t pupil_color;
     float lid, smile, lid_y, lid_n, cut_r, cut_y, taper, grad_hint, inv_ext_y, inv_dd;
     float in_k, rim_k, lit1_k, lit0_k; /* squared distance thresholds for the fast paths */
@@ -161,15 +161,18 @@ static void eye_prepare(const face_t *f, const eye_t *e, int w, int h, eye_setup
     float w5c = cosf(2 + 2.3f * wt), w5s = sinf(2 + 2.3f * wt);
     s->shx = shx, s->shy = shy, s->soft = soft, s->w2c = w2c, s->w2s = w2s, s->w3c = w3c, s->w3s = w3s, s->w5c = w5c, s->w5s = w5s;
 
-    /* pupil frame on the unit ball */
+    /* pupil frame on the unit ball, with optional in-plane counter-rotation matching site SVG */
     float gyw = e->look_x, gpt = e->look_y;
     v3 g = {sinf(gyw) * cosf(gpt), sinf(gpt), cosf(gyw) * cosf(gpt)};
-    v3 t1 = {cosf(gyw), 0, -sinf(gyw)};
-    v3 t2 = {g.y * t1.z - g.z * t1.y, g.z * t1.x - g.x * t1.z, g.x * t1.y - g.y * t1.x};
+    v3 u1 = {cosf(gyw), 0, -sinf(gyw)};
+    v3 u2 = {g.y * u1.z - g.z * u1.y, g.z * u1.x - g.x * u1.z, g.x * u1.y - g.y * u1.x};
+    float cpr = cosf(e->pupil_roll), spr = sinf(e->pupil_roll);
+    v3 t1 = {cpr * u1.x + spr * u2.x, cpr * u1.y + spr * u2.y, cpr * u1.z + spr * u2.z};
+    v3 t2 = {-spr * u1.x + cpr * u2.x, -spr * u1.y + cpr * u2.y, -spr * u1.z + cpr * u2.z};
     float pw = fmaxf(e->pw, 0.01f), ph = fmaxf(e->ph, 0.01f), prr = (1 - clamp01(e->square)) * fminf(pw, ph);
     float hm = clamp01(e->heart), hs = fmaxf(pw, ph) * 2.1f;
     uint16_t pupil_color = mix565(f->pupil_color, f->heart_color, hm);
-    s->g = g, s->t1 = t1, s->t2 = t2, s->pw = pw, s->ph = ph, s->prr = prr, s->hm = hm, s->hs = hs, s->inv_hs = 1.0f / hs;
+    s->g = g, s->t1 = t1, s->t2 = t2, s->pw = pw, s->ph = ph, s->inv_pw = 1.0f / pw, s->inv_ph = 1.0f / ph, s->pmin = fminf(pw, ph), s->prr = prr, s->hm = hm, s->hs = hs, s->inv_hs = 1.0f / hs;
     s->pupil_color = pupil_color;
 
     /* 2D cuts in the eye's rolled frame, px */
@@ -235,7 +238,12 @@ static inline bool pupil_at(const eye_t *e, const eye_setup_t *s, float X, float
     *pd = 1, *gd = 1;
     if (dot(p, s->g) <= 0) return false;
     float ps = dot(p, s->t1), pt = dot(p, s->t2);
-    *pd = rbox(ps, pt, s->pw, s->ph, s->prr);
+    if (e->square <= 0.001f) {
+        float ux = ps * s->inv_pw, uy = pt * s->inv_ph;
+        *pd = (sqrt_fast(ux * ux + uy * uy) - 1.0f) * s->pmin;
+    } else {
+        *pd = rbox(ps, pt, s->pw, s->ph, s->prr);
+    }
     if (s->hm > 0) *pd += (heart(ps * s->inv_hs, -pt * s->inv_hs + 0.5f) * s->hs - *pd) * s->hm; /* as eye_rows has it */
     if (e->glint > 0) {
         float m = mn(s->pw, s->ph) * clamp01(e->glint), ax1 = ps + 0.35f * s->pw, ay1 = pt + 0.38f * s->ph, ax2 = ps - 0.30f * s->pw, ay2 = pt - 0.32f * s->ph;
@@ -256,7 +264,7 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
     const v3 c0 = s->c0, c1 = s->c1, d = s->d, g = s->g, t1 = s->t1, t2 = s->t2;
     const float dd = s->dd, shx = s->shx, shy = s->shy, soft = s->soft;
     const float w2c = s->w2c, w2s = s->w2s, w3c = s->w3c, w3s = s->w3s, w5c = s->w5c, w5s = s->w5s;
-    const float pw = s->pw, ph = s->ph, prr = s->prr, hm = s->hm, hs = s->hs, inv_hs = 1.0f / hs;
+    const float pw = s->pw, ph = s->ph, inv_pw = s->inv_pw, inv_ph = s->inv_ph, pmin = s->pmin, prr = s->prr, hm = s->hm, hs = s->hs, inv_hs = 1.0f / hs;
     const float lid = s->lid, smile = s->smile, lid_y = s->lid_y, lid_n = s->lid_n, cut_r = s->cut_r, cut_y = s->cut_y, taper = s->taper;
     const float grad_hint = s->grad_hint;
     const uint16_t pupil_color = s->pupil_color;
@@ -457,7 +465,12 @@ FACE_HOT static void eye_rows(const face_t *f, const eye_t *e, const eye_setup_t
             bool real = near_pupil && dot(p, g) > 0; /* elsewhere pd is a stand-in: no gradient may be taken from it */
             if (real) {
                 ps = dot(p, t1), pt = dot(p, t2);
-                pd = rbox(ps, pt, pw, ph, prr);
+                if (e->square <= 0.001f) {
+                    float ux = ps * inv_pw, uy = pt * inv_ph;
+                    pd = (sqrt_fast(ux * ux + uy * uy) - 1.0f) * pmin;
+                } else {
+                    pd = rbox(ps, pt, pw, ph, prr);
+                }
                 if (hm > 0) pd += (heart(ps * inv_hs, -pt * inv_hs + 0.5f) * hs - pd) * hm;
             }
             float gl = isnan(left) ? NAN : pd - left, gu = isnan(prev_row[i]) ? NAN : pd - prev_row[i];

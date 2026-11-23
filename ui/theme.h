@@ -14,7 +14,8 @@ enum { METER_DOTS, METER_SEGMENTS, METER_BAR, METER_BLOCKS };
 typedef struct {
     const char *name;
     uint32_t bg, text, dim, faint, panel, accent, on_accent, good, grid; /* grid: dot pattern colour, 0 = none */
-    uint32_t eye_sclera, eye_pupil, eye_stroke;                          /* Pixel badge mini-eyes palette */
+    uint32_t eye_sclera, eye_pupil, eye_stroke;                          /* Pixel eye palette */
+    float pupil_rx, pupil_ry;                                            /* Pixel pupil ratios (rx/70, ry/94 from docs/index.html) */
     uint32_t mute, off;                                                  /* terminal only: third ink, an unlit cell */
     const lv_font_t *small, *body, *digits, *big, *title; /* big for the badge, title for menus/headers */
     const lv_font_t *tiny, *tiny_bold, *button;           /* 16 px captions/hints, 20 px buttons */

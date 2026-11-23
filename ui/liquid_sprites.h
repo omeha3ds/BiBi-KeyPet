@@ -3,14 +3,14 @@
 #include "lvgl.h"
 
 #define LIQ_PALETTES 6
-#define LIQ_SCLERA_W 148
-#define LIQ_SCLERA_H 172
-#define LIQ_SCLERA_RX 64
-#define LIQ_SCLERA_RY 76
-#define LIQ_PUPIL_W 76
-#define LIQ_PUPIL_H 100
-#define LIQ_PUPIL_RX 26
-#define LIQ_PUPIL_RY 38
+#define LIQ_SCLERA_W 152
+#define LIQ_SCLERA_H 198
+#define LIQ_SCLERA_RX 66
+#define LIQ_SCLERA_RY 88
+#define LIQ_PUPIL_W 84
+#define LIQ_PUPIL_H 132
+#define LIQ_PUPIL_RX 30
+#define LIQ_PUPIL_RY 54
 #define LIQ_SPEC_W 76
 #define LIQ_SPEC_H 64
 #define LIQ_HEART_W 88
@@ -23,7 +23,7 @@
 #define LIQ_SMILE_W 240
 #define LIQ_SMILE_H 152
 #define LIQ_SMILE_EDGE_Y 28
-#define LIQ_FLASH_BYTES 714736
+#define LIQ_FLASH_BYTES 861040
 
 extern const lv_image_dsc_t *const liquid_sclera[LIQ_PALETTES];
 extern const lv_image_dsc_t *const liquid_pupil[LIQ_PALETTES];

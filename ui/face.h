@@ -14,6 +14,7 @@ typedef struct {
     float smile;             /* 0..1, lower edge cut by an arc -> ^ ^ */
     float look_x, look_y;    /* pupil direction on the ball relative to its front, rad */
     float pw, ph;            /* pupil half size, fraction of the ball radius */
+    float pupil_roll;        /* extra pupil rotation in tangent plane, rad (site: +-6 deg counter-tilt) */
     float square;            /* pupil shape: 0 round .. 1 square */
     float heart;             /* pupil morph into a heart, 0..1, also tints it to heart_color */
     float wobble, wob_t;     /* living outline: amplitude px, and its own clock in s */
