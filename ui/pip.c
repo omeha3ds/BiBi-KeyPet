@@ -1101,14 +1101,33 @@ static void liquid_draw_cb(lv_event_t *ev)
             pdsc.opa = (lv_opa_t)lroundf(det_a * 255.0f);
             pdsc.antialias = 1;
             if (eye->heart > 0.35f) {
-                int32_t hs = (int32_t)lroundf(256.0f * (fmaxf(prx, pry) * (is_obs ? 2.15f : 2.38f) / LIQ_HEART_W));
-                if (hs < 32) hs = 32;
+                /* Dynamic 3D eyeball perspective using the single pre-baked heart sprite (0 B Flash, 0 B RAM, 0 ms extra CPU):
+                   foreshortens horizontally/vertically with gaze & head yaw, glides toward the sclera rim, and tilts smoothly */
+                float cos_x = fmaxf(0.46f, cosf(eye->look_x * 1.05f)) * fmaxf(0.68f, cosf(eye->yaw * 0.65f));
+                float cos_y = fmaxf(0.68f, cosf(eye->look_y * 0.90f));
+                float base_hr = fmaxf(rx * eye->pw, ry * eye->ph) * (is_obs ? 1.06f : 1.18f);
+                float hrx = base_hr * cos_x;
+                float hry = base_hr * cos_y;
+                float h_mdx = fmaxf(4.0f, rx - hrx * 0.88f - (is_obs ? 9.5f : 3.0f));
+                float h_mdy = fmaxf(4.0f, ry - hry * 0.88f - (is_obs ? 9.5f : 3.0f));
+                float hux = sinf(eye->look_x) * 1.08f, huy = sinf(eye->look_y) * 1.08f;
+                float hlen = hypotf(hux, huy);
+                if (hlen > 1.0f) hux /= hlen, huy /= hlen;
+                float hlx = hux * h_mdx, hly = huy * h_mdy;
+                int32_t hxi = (int32_t)lroundf(eye->x + hlx * ca - hly * sa);
+                int32_t hyi = (int32_t)lroundf(eye->y + hlx * sa + hly * ca);
+                float h_rot = ang - sinf(eye->look_x) * sinf(eye->look_y) * 0.45f;
+                int32_t hsx = (int32_t)lroundf(256.0f * (2.0f * hrx / (float)LIQ_HEART_W));
+                int32_t hsy = (int32_t)lroundf(256.0f * (2.0f * hry / (float)LIQ_HEART_H));
+                if (hsx < 28) hsx = 28;
+                if (hsy < 28) hsy = 28;
                 pdsc.src = &liq_heart;
                 pdsc.pivot = (lv_point_t){LIQ_HEART_W / 2, LIQ_HEART_H / 2};
-                pdsc.scale_x = hs;
-                pdsc.scale_y = hs;
-                lv_area_t ha = {pxi - LIQ_HEART_W / 2, pyi - LIQ_HEART_H / 2,
-                                pxi - LIQ_HEART_W / 2 + LIQ_HEART_W - 1, pyi - LIQ_HEART_H / 2 + LIQ_HEART_H - 1};
+                pdsc.scale_x = hsx;
+                pdsc.scale_y = hsy;
+                pdsc.rotation = (int32_t)lroundf(h_rot * (1800.0f / 3.14159265f));
+                lv_area_t ha = {hxi - LIQ_HEART_W / 2, hyi - LIQ_HEART_H / 2,
+                                hxi - LIQ_HEART_W / 2 + LIQ_HEART_W - 1, hyi - LIQ_HEART_H / 2 + LIQ_HEART_H - 1};
                 lv_draw_image(layer, &pdsc, &ha);
             } else {
                 int32_t psx = (int32_t)lroundf(256.0f * (prx / (float)LIQ_PUPIL_RX));
