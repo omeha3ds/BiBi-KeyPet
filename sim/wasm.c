@@ -76,6 +76,9 @@ EMSCRIPTEN_KEEPALIVE void sim_set_menu_style(int style) { shell_set_menu_style(s
 EMSCRIPTEN_KEEPALIVE int sim_menu_style(void) { return shell_menu_style(); }
 EMSCRIPTEN_KEEPALIVE void sim_set_theme(int t) { shell_set_theme(t); }
 EMSCRIPTEN_KEEPALIVE int sim_theme(void) { return theme_index(); }
+EMSCRIPTEN_KEEPALIVE void sim_set_eye_style(int st) { pip_set_eye_style(st); }
+EMSCRIPTEN_KEEPALIVE int sim_eye_style(void) { return pip_eye_style(); }
+EMSCRIPTEN_KEEPALIVE void sim_eco(int on) { pip_eco(on != 0); }
 EMSCRIPTEN_KEEPALIVE int sim_mood_count(void) { return PIP_MOOD_COUNT; }
 EMSCRIPTEN_KEEPALIVE void sim_set_mood(int i) { pip_set_mood(i); }
 EMSCRIPTEN_KEEPALIVE const char *sim_mood_name(int i) { return i >= 0 && i < PIP_MOOD_COUNT ? pip_mood_name(i) : ""; }

@@ -194,9 +194,9 @@ static void json_str(char *b, size_t n, const char *s) /* a JSON string, quoted,
 static void config(void) /* @C: everything the settings page shows */
 {
     static char b[1600], t[260];
-    int n = snprintf(b, sizeof b, "@C {\"ver\":\"%s\",\"power\":%d,\"bright\":%d,\"eco\":%d,\"theme\":%d,\"privacy\":%d,\"feat\":[",
-                     esp_app_get_description()->version, pip_power_after(), settings_brightness(), pip_eco_on(), theme_index(),
-                     phone_privacy());
+    int n = snprintf(b, sizeof b, "@C {\"ver\":\"%s\",\"power\":%d,\"bright\":%d,\"eco\":%d,\"eyes\":%d,\"theme\":%d,\"privacy\":%d,\"feat\":[",
+                     esp_app_get_description()->version, pip_power_after(), settings_brightness(), pip_eco_on(), pip_eye_style(),
+                     theme_index(), phone_privacy());
     for (int f = 0; f < PIP_F_COUNT; f++) n += snprintf(b + n, sizeof b - n, "%s%d", f ? "," : "", pip_feature_on(f));
     const char *names[3] = {profile.first, profile.last, profile.org}, *keys[3] = {"first", "last", "org"};
     n += snprintf(b + n, sizeof b - n, "]");
@@ -273,6 +273,9 @@ static void command(char *line)
     else if (!strcmp(c, "feat") && n > 2) pip_feature((int)a1, a2 != 0), settings_save();
     else if (!strcmp(c, "power") && n > 1) pip_power((int)a1), settings_save();      /* seconds to sleep, 0 never */
     else if (!strcmp(c, "eco") && n > 1) pip_eco(a1 != 0), settings_save();              /* energy saving */
+    else if (!strcmp(c, "eyes") && n > 1) { /* 0 = plain, 1 = liquid; unknown/corrupt values calmly ignored */
+        if (!strcmp(arg[1], "0") || !strcmp(arg[1], "1")) pip_set_eye_style(arg[1][0] - '0'), settings_save();
+    }
     else if (!strcmp(c, "bright") && n > 1) settings_bright((int)a1), settings_save(); /* % */
     else if (!strcmp(c, "privacy") && n > 1) phone_set_privacy((int)a1), settings_save();
     else if (!strcmp(c, "theme") && n > 1) shell_set_theme((int)a1);                   /* kept by main.c theme_keep */

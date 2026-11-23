@@ -1463,7 +1463,26 @@ static void style_apply(void *i) { shell_set_theme((int)(intptr_t)i); }
 static void style_pick(lv_event_t *e) { lv_async_call(style_apply, lv_event_get_user_data(e)); } /* after this screen is gone */
 
 /* the themes on offer (some are hidden for now), in order */
-static struct { int focus, n, ids[TH_COUNT]; lv_obj_t *rows[TH_COUNT], *labels[TH_COUNT], *cursors[TH_COUNT]; th_cell_t swatch[TH_COUNT * 3]; } st;
+static struct { int focus, n, ids[TH_COUNT]; lv_obj_t *rows[TH_COUNT], *labels[TH_COUNT], *cursors[TH_COUNT], *eye_btns[2]; th_cell_t swatch[TH_COUNT * 3]; } st;
+
+static void style_eye_refresh(void)
+{
+    int cur = pip_eye_style();
+    for (int i = 0; i < 2; i++) {
+        if (!st.eye_btns[i]) continue;
+        bool on = cur == i;
+        lv_obj_set_style_bg_opa(st.eye_btns[i], on ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+        lv_obj_set_style_bg_color(st.eye_btns[i], lv_color_hex(th->accent), 0);
+        lv_obj_set_style_text_color(lv_obj_get_child(st.eye_btns[i], 0), lv_color_hex(on ? th->on_accent : th->dim), 0);
+    }
+}
+
+static void style_eye_pick(lv_event_t *e)
+{
+    int v = (int)(intptr_t)lv_event_get_user_data(e);
+    pip_set_eye_style(v);
+    style_eye_refresh();
+}
 
 static void style_list(void)
 {
@@ -1550,6 +1569,17 @@ static void style_open(lv_obj_t *scr)
             lv_obj_t *l = th_text(b, th->small, on ? themes[i].on_accent : th->text, themes[i].name);
             lv_obj_align(l, LV_ALIGN_LEFT_MID, 40, 0);
         }
+        /* Compact segmented switcher for eye style (Plain / Liquid) right below the 6 palettes */
+        lv_obj_t *seg = th_box(scr, 109, 356, 248, 48, LV_RADIUS_CIRCLE, th->panel);
+        static const char *const eye_names[2] = {"Звичайні", "Liquid"};
+        for (int m = 0; m < 2; m++) {
+            lv_obj_t *eb = st.eye_btns[m] = th_box(seg, 4 + m * 120, 4, 120, 40, LV_RADIUS_CIRCLE, th->accent);
+            lv_obj_add_flag(eb, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_add_event_cb(eb, style_eye_pick, LV_EVENT_CLICKED, (void *)(intptr_t)m);
+            lv_obj_t *el = th_text(eb, th->tiny, th->dim, eye_names[m]);
+            lv_obj_center(el);
+        }
+        style_eye_refresh();
         return;
     }
     for (int k = 0; k < st.n; k++) {

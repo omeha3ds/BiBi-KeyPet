@@ -462,6 +462,7 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
   display:inline-flex;align-items:center;gap:3px;
   background:var(--surface-2);padding:4px;border-radius:999px;
 }
+.seg.disabled{opacity:.42;pointer-events:none}
 .seg button{
   min-height:32px;padding:6px 13px;border-radius:999px;
   font:600 12.5px/1 var(--font-sans);
@@ -1246,7 +1247,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
             <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
           </div>
           <div class="seg-row">
-            <div><div class="toggle-title">Стиль очей</div><small>стосується лише режиму «Очі» на сторінці</small></div>
+            <div><div class="toggle-title">Стиль очей</div><small id="eyeStyleHint">синхронізується з брелоком; у режимі енергозбереження брелок переходить на плоскі очі</small></div>
             <div class="seg" id="eyeStyleSettings" role="group" aria-label="Стиль очей у налаштуваннях">
               <button type="button" data-eye-style="plain" aria-pressed="false">Звичайні</button>
               <button type="button" data-eye-style="liquid" aria-pressed="true">Liquid</button>
@@ -1396,6 +1397,10 @@ $('swatches').onclick = e => {
   if (btn) {
     if (twinMode === 'qr') setTwinMode('eyes');
     setPixel(btn.dataset.setPixel, twinMode === 'eyes');
+    if (cfg && cfg.eyes !== undefined) {
+      const idx = PIXELS.indexOf(btn.dataset.setPixel);
+      if (idx >= 0) send('theme ' + (4 + idx));
+    }
   }
 };
 $('pipOrb').onclick = e => {
@@ -1427,7 +1432,7 @@ $('pipOrb').addEventListener('pointerup', e => {
 const simpleMode = () => reducedMotion() || document.documentElement.dataset.fx === 'simple';
 const isLiquidEyes = () => !simpleMode() && document.documentElement.dataset.eyeStyle !== 'plain';
 
-function setEyeStyle(style, persist = true) {
+function setEyeStyle(style, persist = true, syncDevice = false) {
   const s = style === 'plain' ? 'plain' : 'liquid';
   document.documentElement.dataset.eyeStyle = s;
   document.querySelectorAll('[data-eye-style]').forEach(b =>
@@ -1435,6 +1440,19 @@ function setEyeStyle(style, persist = true) {
   if (persist) { try { localStorage.setItem('pip-eye-style', s); } catch (e) {} }
   if (s === 'plain') resetLiquidGeometry();
   else if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
+  if (syncDevice && cfg && (cfg.eyes === 0 || cfg.eyes === 1)) {
+    send('eyes ' + (s === 'liquid' ? 1 : 0));
+  }
+}
+function syncEyeStyleAvailability() {
+  const seg = $('eyeStyleSettings'), hint = $('eyeStyleHint');
+  if (!seg || !hint) return;
+  const oldDevice = !!(cfg && cfg.eyes === undefined);
+  seg.classList.toggle('disabled', oldDevice);
+  seg.querySelectorAll('button').forEach(b => { b.disabled = oldDevice; });
+  hint.textContent = oldDevice
+    ? 'Стиль очей на брелоку доступний із новою прошивкою (поточна версія працює у звичайному режимі).'
+    : 'синхронізується з брелоком; у режимі енергозбереження брелок переходить на плоскі очі';
 }
 function setSimpleFx(on, persist = true) {
   const mode = on || reducedMotion() ? 'simple' : 'full';
@@ -1446,7 +1464,7 @@ function setSimpleFx(on, persist = true) {
 ['eyeStyleBar', 'eyeStyleSettings'].forEach(id => {
   $(id)?.addEventListener('click', e => {
     const b = e.target.closest('[data-eye-style]');
-    if (b) { setTwinMode('eyes'); setEyeStyle(b.dataset.eyeStyle, true); boopEyes(); }
+    if (b && !b.disabled) { setTwinMode('eyes'); setEyeStyle(b.dataset.eyeStyle, true, true); boopEyes(); }
   });
 });
 if ($('simpleFx')) {
@@ -2110,6 +2128,7 @@ function state(text, on, busy = false) {
   $('state').textContent = text;
   document.body.classList.toggle('linked', on);
   document.body.classList.toggle('linking', !!busy && !on);
+  if (!on) { cfg = null; syncEyeStyleAvailability(); }
   updateEyeMood($('mood').textContent, false);
 }
 $('usb').onclick = async () => {
@@ -2179,6 +2198,11 @@ function fill() {
   $('bright').value = cfg.bright; syncBright(cfg.bright);
   $('eco').checked = !!cfg.eco;
   $('theme').value = cfg.theme; $('privacy').value = cfg.privacy;
+  if (cfg.eyes === 0 || cfg.eyes === 1) {
+    setEyeStyle(cfg.eyes ? 'liquid' : 'plain', true, false);
+    if (cfg.theme >= 4 && cfg.theme < 4 + PIXELS.length) setPixel(PIXELS[cfg.theme - 4], false);
+  }
+  syncEyeStyleAvailability();
   for (const [f] of FEATS) $('f' + f).checked = !!cfg.feat[f];
   $('ver').textContent = cfg.ver || '—';
   $('needlink').textContent = 'Зміни зберігаються в самому брелоку одразу.';

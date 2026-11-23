@@ -146,6 +146,7 @@
     <button id="pwr">Верхняя · меню / открыть</button>
     <button id="boot">Нижняя · назад / знакомство</button>
     <button id="menustyle">Меню: соты</button>
+    <button id="eyestyle">Очі: Liquid</button>
   </div>
 
   <h2>Настроение</h2>
@@ -240,9 +241,34 @@ function writeSimStr(s) {
   M.HEAPU8.set(bytes.subarray(0, n), p);
   M.HEAPU8[p + n] = 0;
 }
-if (simQ.get('shot') === '1') {
+if (simQ.get('bench') === '1') {
+  const moods = [['neutral', 0], ['happy', 1], ['angry', 3], ['asleep', 6], ['love', 9]];
+  const run = (th, ey, mid) => {
+    M._sim_set_theme(th); M._sim_eco(0); M._sim_set_eye_style(ey); M._sim_set_mood(mid);
+    for (let i = 0; i < 60; i++) M._sim_frame(16);
+    const ts = [];
+    for (let i = 0; i < 160; i++) { const t0 = performance.now(); M._sim_frame(16); ts.push(performance.now() - t0); }
+    ts.sort((a, b) => a - b);
+    return { avg: +(ts.reduce((a, b) => a + b, 0) / ts.length).toFixed(2), p95: +ts[Math.floor(ts.length * 0.95)].toFixed(2) };
+  };
+  const out = {};
+  for (const [pal, th] of [['peony', 4], ['obsidian', 5]]) {
+    for (const [st, ey] of [['plain', 0], ['liquid', 1]]) {
+      const m = {}; let sA = 0, sP = 0;
+      for (const [mn, mid] of moods) { const r = run(th, ey, mid); m[mn] = r; sA += r.avg; sP += r.p95; }
+      out[`${pal}_${st}`] = { avg: +(sA / moods.length).toFixed(2), p95: +(sP / moods.length).toFixed(2), moods: m };
+    }
+  }
+  M._sim_set_eye_style(1); M._sim_eco(1); const ecoSaved = M._sim_eye_style();
+  M._sim_set_eye_style(99); const corruptSaved = M._sim_eye_style();
+  M._sim_eco(0);
+  out.checks = { ecoSaved, corruptSaved };
+  document.body.innerHTML = `<pre id="benchOut">${JSON.stringify(out, null, 2)}</pre>`;
+} else if (simQ.get('shot') === '1') {
   const thId = +(simQ.get('theme') || 4);
   M._sim_set_theme(thId);
+  if (simQ.has('eyes')) M._sim_set_eye_style(+simQ.get('eyes'));
+  if (simQ.has('eco')) M._sim_eco(+simQ.get('eco'));
   if (simQ.has('name')) { writeSimStr(simQ.get('name')); M._sim_set_badge_buf(); }
   if (simQ.has('qr')) simQ.getAll('qr').forEach((v, i) => { writeSimStr(v); M._sim_set_link_buf(i); });
   if (simQ.has('mood')) M._sim_set_mood(+simQ.get('mood'));
@@ -256,6 +282,7 @@ if (simQ.get('shot') === '1') {
   screenCanvas.style.cssText = 'position:fixed;inset:0;margin:auto;width:476px;height:476px;border-radius:50%;box-shadow:0 0 0 1px #242424';
   document.body.style.background = '#000';
   document.body.append(screenCanvas);
+  window.__M = M;
 } else {
 /* ---------- 3D device ---------- */
 const view = document.getElementById('view');
@@ -462,6 +489,10 @@ THEMES.forEach(([i, name]) => {
 const savedTheme = +(simQ.get('theme') || store.get('keypet.theme') || 4);
 M._sim_set_theme(THEMES.some(([i]) => i === savedTheme) ? savedTheme : 4);
 showTheme();
+const eyeStyleBtn = document.getElementById('eyestyle');
+const showEyeStyle = () => { eyeStyleBtn.textContent = 'Очі: ' + (M._sim_eye_style() ? 'Liquid' : 'Звичайні'); };
+eyeStyleBtn.onclick = () => { M._sim_set_eye_style(M._sim_eye_style() ? 0 : 1); showEyeStyle(); };
+showEyeStyle();
 if (simQ.has('name')) { writeSimStr(simQ.get('name')); M._sim_set_badge_buf(); }
 if (simQ.has('qr')) simQ.getAll('qr').forEach((v, i) => { writeSimStr(v); M._sim_set_link_buf(i); });
 if (simQ.get('screen')) {

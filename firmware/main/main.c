@@ -61,6 +61,7 @@ static void pet_load(void)
 /* the style picked in the Style app, kept across restarts */
 #define DEV_MODE 0 /* temporary, for the making-of video: the developer overlay over Pip from boot (debug page: dev 0/1) */
 static int theme_saved = -1;
+static int eyes_saved = -1;
 static void theme_load(void)
 {
     nvs_handle_t h;
@@ -106,9 +107,11 @@ void settings_save(void)
     nvs_set_u8(h, "feat", feat);
     nvs_set_u8(h, "bright", (uint8_t)bright);
     nvs_set_u8(h, "eco", pip_eco_on());
+    nvs_set_u8(h, "eyes", (uint8_t)pip_eye_style());
     nvs_set_i8(h, "privacy", (int8_t)phone_privacy());
     nvs_commit(h);
     nvs_close(h);
+    eyes_saved = pip_eye_style();
 }
 
 static void profile_save(void)
@@ -124,27 +127,39 @@ static void settings_load(void)
     nvs_handle_t h;
     if (nvs_open("keypet", NVS_READONLY, &h) == ESP_OK) {
         int16_t power;
-        uint8_t feat, b, eco;
+        uint8_t feat, b, eco, eyes;
         size_t n = sizeof profile;
         if (nvs_get_i16(h, "power", &power) == ESP_OK) pip_power(power);
         if (nvs_get_u8(h, "feat", &feat) == ESP_OK)
             for (int f = 0; f < PIP_F_COUNT && f < 8; f++) pip_feature(f, feat >> f & 1);
         if (nvs_get_u8(h, "bright", &b) == ESP_OK) bright = b < 10 ? 10 : b > 100 ? 100 : b;
         if (nvs_get_u8(h, "eco", &eco) == ESP_OK) pip_eco(eco);
+        if (nvs_get_u8(h, "eyes", &eyes) == ESP_OK) pip_set_eye_style(eyes); /* absent/corrupt -> PIP_EYE_STYLE_DEFAULT */
         if (nvs_get_blob(h, "profile", &profile, &n) != ESP_OK || n != sizeof profile) n = 0; /* a size of its own: the defaults stay */
         nvs_close(h);
     }
+    eyes_saved = pip_eye_style();
     profile_on_change(profile_save);
 }
 
 static void theme_keep(void)
 {
     int v = theme_index();
-    if (v == theme_saved) return;
-    nvs_handle_t h;
-    if (nvs_open("keypet", NVS_READWRITE, &h) != ESP_OK) return;
-    if (nvs_set_i8(h, "theme", (int8_t)v) == ESP_OK) nvs_commit(h), theme_saved = v;
-    nvs_close(h);
+    if (v != theme_saved) {
+        nvs_handle_t h;
+        if (nvs_open("keypet", NVS_READWRITE, &h) == ESP_OK) {
+            if (nvs_set_i8(h, "theme", (int8_t)v) == ESP_OK) nvs_commit(h), theme_saved = v;
+            nvs_close(h);
+        }
+    }
+    int ev = pip_eye_style();
+    if (ev != eyes_saved) {
+        nvs_handle_t h;
+        if (nvs_open("keypet", NVS_READWRITE, &h) == ESP_OK) {
+            if (nvs_set_u8(h, "eyes", (uint8_t)ev) == ESP_OK) nvs_commit(h), eyes_saved = ev;
+            nvs_close(h);
+        }
+    }
 }
 
 static void pet_save(void)
