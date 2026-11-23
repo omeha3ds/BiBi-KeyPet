@@ -10,6 +10,11 @@ static float ellipse(float x, float y, float rx, float ry) /* approximate SDF, f
     float k = sqrtf(x * x / (rx * rx) + y * y / (ry * ry));
     return (k - 1) * fminf(rx, ry);
 }
+static float rot_ellipse(float x, float y, float cx, float cy, float rx, float ry, float c, float s)
+{
+    float dx = x - cx, dy = y - cy;
+    return ellipse(dx * c + dy * s, -dx * s + dy * c, rx, ry);
+}
 /* smooth union: puffs of a cloud melt into one shape */
 static float smin(float a, float b, float k)
 {
@@ -121,10 +126,13 @@ static float glyph(int icon, float x, float y)
         float rim = box(x, y - 16, 30, 4, 4), clapper = circle(x, y, 0, 26, 6);
         return fminf(fminf(dome, rim), clapper);
     }
-    case ICON_MUSIC: {
-        float heads = fminf(ellipse(x + 20, y - 22, 10, 8), ellipse(x - 16, y - 16, 10, 8));
-        float stems = fminf(box(x + 11, y + 6, 3, 28, 1), box(x - 25, y + 0, 3, 28, 1));
-        float beam = box(x + 3, y + 30, 21, 5, 1);
+    case ICON_MUSIC: { /* clean flat rounded double eighth-note (tilted heads, rounded stems & angled beam) */
+        const float c18 = 0.95106f, s18 = 0.30902f; /* -18 deg musical head slant */
+        float heads = fminf(rot_ellipse(x, y, -18.0f, 23.0f, 11.5f, 8.8f, c18, -s18),
+                            rot_ellipse(x, y, 16.0f, 16.0f, 11.5f, 8.8f, c18, -s18));
+        float stems = fminf(segment(x, y, -9.5f, 20.5f, -9.5f, -22.5f, 4.2f),
+                            segment(x, y, 24.5f, 13.5f, 24.5f, -29.5f, 4.2f));
+        float beam = segment(x, y, -9.5f, -22.5f, 24.5f, -29.5f, 5.6f);
         return fminf(fminf(heads, stems), beam);
     }
     case ICON_CAMERA: {
@@ -202,11 +210,6 @@ void doodle_icon_mask(int icon, uint8_t *a8, int stride, int size)
 }
 
 /* Flat tilted Pixel mini eyes for the minimalist Badge (exact 1:1 match with web Digital Twin) */
-static float rot_ellipse(float x, float y, float cx, float cy, float rx, float ry, float c, float s)
-{
-    float dx = x - cx, dy = y - cy;
-    return ellipse(dx * c + dy * s, -dx * s + dy * c, rx, ry);
-}
 void doodle_mini_eyes(uint32_t *px, int w, int h, uint32_t sclera, uint32_t pupil, uint32_t stroke, bool slim_pupil)
 {
     memset(px, 0, (size_t)w * h * 4);
