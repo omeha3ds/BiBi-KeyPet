@@ -992,9 +992,10 @@ float pip_frame_worst(int secs, const char **mood, const char **reaction)
 /* ---------- Liquid sprite eyes: pre-baked Flash sprites drawn by LVGL (zero per-frame gradient math) ---------- */
 static void liquid_eye_geom(const eye_t *e, int idx, float *eff_w, float *eh, float *ang)
 {
-    /* Elastic squash for blink & sleep: gently widens horizontally while squashing down to a sleek bead */
+    /* Elastic squash for blink, sleep and heavy lids: gently widens horizontally for organic softness */
     float squeeze = e->h < 32.0f ? 1.0f + 0.08f * (1.0f - fmaxf(e->h, 0.0f) / 32.0f) : 1.0f;
-    *eff_w = fmaxf(e->w * squeeze * fmaxf(0.55f, cosf(e->yaw * 0.75f)), 18.0f);
+    float lid_push = e->lid > 0.05f ? 1.0f + 0.05f * fminf(1.0f, e->lid) : 1.0f;
+    *eff_w = fmaxf(e->w * squeeze * lid_push * fmaxf(0.55f, cosf(e->yaw * 0.75f)), 18.0f);
     *eh = fmaxf(e->h, 11.0f);
     float awake_k = fminf(1.0f, fmaxf(0.0f, (e->h - 24.0f) / 60.0f));
     float rest_tilt = (idx == 0 ? -0.14f : 0.14f) * awake_k; /* subtle +-8 deg Pixel droplet lean */
@@ -1133,7 +1134,7 @@ static void liquid_draw_cb(lv_event_t *ev)
             lv_draw_image(layer, &sdsc, &spa);
         }
 
-        /* 4. Black eyelid & smile overlays clipped tightly to this eye so they never touch its neighbour */
+        /* 4. Soft curved eyelid & smile sprites (pre-baked A8 masks with subtle dark 3D contact shadow) */
         float lid = (eye->lid - 0.05f) / 0.95f;
         float smile = (eye->smile - 0.05f) / 0.95f;
         if (lid > 0.001f || smile > 0.001f) {
@@ -1148,35 +1149,45 @@ static void liquid_draw_cb(lv_event_t *ev)
                 layer->_clip_area = inter;
                 float cr = cosf(eye->roll), sr = sinf(eye->roll);
                 if (lid > 0.001f) {
-                    /* Single wide black triangle covers the entire clipped upper half-plane (zero diagonal AA seam) */
+                    /* Curved upper eyelid sprite pivoted right on its arched rim center */
                     float lid_y = -ry + lid * 2.0f * ry;
-                    float hw = rx + 240.0f;
-                    float ux3[3] = {0.0f, hw, -hw};
-                    float uy3[3] = {-ry - 520.0f, lid_y + eye->tilt * hw, lid_y - eye->tilt * hw};
-                    lv_draw_triangle_dsc_t td;
-                    lv_draw_triangle_dsc_init(&td);
-                    td.color = lv_color_black();
-                    td.opa = LV_OPA_COVER;
-                    for (int k = 0; k < 3; k++) {
-                        td.p[k].x = eye->x + ux3[k] * cr - uy3[k] * sr;
-                        td.p[k].y = eye->y + ux3[k] * sr + uy3[k] * cr;
-                    }
-                    lv_draw_triangle(layer, &td);
+                    int32_t lx_p = (int32_t)lroundf(eye->x - sr * lid_y);
+                    int32_t ly_p = (int32_t)lroundf(eye->y + cr * lid_y);
+                    float lid_ang = eye->roll + atanf(eye->tilt);
+                    lv_draw_image_dsc_t ld;
+                    lv_draw_image_dsc_init(&ld);
+                    ld.src = &liq_lid;
+                    ld.pivot = (lv_point_t){LIQ_LID_W / 2, LIQ_LID_EDGE_Y};
+                    ld.scale_x = (int32_t)lroundf(256.0f * (eff_w * 1.48f / LIQ_LID_W));
+                    ld.scale_y = (int32_t)lroundf(256.0f * (fmaxf(eh * 1.35f, 160.0f) / LIQ_LID_EDGE_Y));
+                    ld.rotation = (int32_t)lroundf(lid_ang * (1800.0f / 3.14159265f));
+                    ld.recolor = lv_color_black();
+                    ld.recolor_opa = LV_OPA_COVER;
+                    ld.opa = LV_OPA_COVER;
+                    ld.antialias = 1;
+                    lv_area_t la = {lx_p - LIQ_LID_W / 2, ly_p - LIQ_LID_EDGE_Y,
+                                    lx_p - LIQ_LID_W / 2 + LIQ_LID_W - 1, ly_p - LIQ_LID_EDGE_Y + LIQ_LID_H - 1};
+                    lv_draw_image(layer, &ld, &la);
                 }
                 if (smile > 0.001f) {
-                    float cut_r = rx * 1.6f;
-                    float cut_y = ry + 1.5f - smile * 1.7f * ry + cut_r;
-                    float cx_s = eye->x - sr * cut_y, cy_s = eye->y + cr * cut_y;
-                    lv_draw_rect_dsc_t rd;
-                    lv_draw_rect_dsc_init(&rd);
-                    rd.bg_color = lv_color_black();
-                    rd.bg_opa = LV_OPA_COVER;
-                    rd.radius = LV_RADIUS_CIRCLE;
-                    lv_area_t sa_ = {
-                        (int32_t)floorf(cx_s - cut_r), (int32_t)floorf(cy_s - cut_r),
-                        (int32_t)ceilf(cx_s + cut_r), (int32_t)ceilf(cy_s + cut_r),
-                    };
-                    lv_draw_rect(layer, &rd, &sa_);
+                    /* Soft curved lower cheek-smile sprite pivoted on its upward-arching peak */
+                    float sm_y = ry + 1.5f - smile * 1.7f * ry;
+                    int32_t sx_p = (int32_t)lroundf(eye->x - sr * sm_y);
+                    int32_t sy_p = (int32_t)lroundf(eye->y + cr * sm_y);
+                    lv_draw_image_dsc_t sd;
+                    lv_draw_image_dsc_init(&sd);
+                    sd.src = &liq_smile;
+                    sd.pivot = (lv_point_t){LIQ_SMILE_W / 2, LIQ_SMILE_EDGE_Y};
+                    sd.scale_x = (int32_t)lroundf(256.0f * (eff_w * 1.48f / LIQ_SMILE_W));
+                    sd.scale_y = (int32_t)lroundf(256.0f * (fmaxf(eh * 0.95f, 120.0f) / (LIQ_SMILE_H - LIQ_SMILE_EDGE_Y)));
+                    sd.rotation = (int32_t)lroundf(eye->roll * (1800.0f / 3.14159265f));
+                    sd.recolor = lv_color_black();
+                    sd.recolor_opa = LV_OPA_COVER;
+                    sd.opa = LV_OPA_COVER;
+                    sd.antialias = 1;
+                    lv_area_t sa_ = {sx_p - LIQ_SMILE_W / 2, sy_p - LIQ_SMILE_EDGE_Y,
+                                     sx_p - LIQ_SMILE_W / 2 + LIQ_SMILE_W - 1, sy_p - LIQ_SMILE_EDGE_Y + LIQ_SMILE_H - 1};
+                    lv_draw_image(layer, &sd, &sa_);
                 }
                 layer->_clip_area = saved;
             }

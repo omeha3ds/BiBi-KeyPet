@@ -75,6 +75,8 @@ PUPIL_RX, PUPIL_RY = 26.0, 38.0    # 12 px margin around ellipse for Obsidian pu
 SPEC_W, SPEC_H = 76, 64
 HEART_W, HEART_H = 88, 84
 BLUSH_W, BLUSH_H = 104, 42
+LID_W, LID_H, LID_EDGE_Y = 240, 216, 182
+SMILE_W, SMILE_H, SMILE_EDGE_Y = 240, 152, 28
 
 
 def hex_rgb(c: int) -> tuple[float, float, float]:
@@ -355,6 +357,55 @@ def render_blush() -> list[float]:
     return out
 
 
+def render_lid() -> list[float]:
+    """Curved upper eyelid A8 mask (black): follows eye dome curvature + soft feathered rim & 3D contact shadow."""
+    w, h = LID_W, LID_H
+    cx = w * 0.5
+    out: list[float] = []
+    for y in range(h):
+        py = y + 0.5
+        for x in range(w):
+            # Normalized horizontal offset across the eye dome (-1..+1)
+            u = ((x + 0.5) - cx) / (w * 0.36)
+            # Graceful convex dome arch: center higher, outer/inner sides wrap gently down around the eye
+            y_curve = LID_EDGE_Y - 14.0 + 14.0 * min(u * u, 1.85)
+            d = py - y_curve  # <0 above lid (solid black), >0 below lid (soft contact shadow fading to 0)
+            if d <= 0.0:
+                a = 1.0
+            else:
+                # Smooth anti-aliased eyelid lip (0..4.5 px) + soft 3D shadow falloff (up to ~22 px)
+                lip = smoothstep(4.5, 0.0, d)
+                shadow = 0.44 * math.exp(-((d / 9.5) ** 1.55))
+                # Fade shadow cleanly to 0 before the bottom edge of the sprite
+                win = smoothstep(h - 1.5, h - 10.0, py)
+                a = max(lip, shadow) * win
+            out.append(clamp01(a))
+    return out
+
+
+def render_smile() -> list[float]:
+    """Curved lower cheek-smile A8 mask (black): smooth happy arc + delicate soft upper rim shadow."""
+    w, h = SMILE_W, SMILE_H
+    cx = w * 0.5
+    out: list[float] = []
+    for y in range(h):
+        py = y + 0.5
+        for x in range(w):
+            u = ((x + 0.5) - cx) / (w * 0.34)
+            # Cheerful upward-arching smile crescent (^ ^): center highest, slopes smoothly down at sides
+            y_curve = SMILE_EDGE_Y + 22.0 * min(u * u, 2.2)
+            d = y_curve - py  # <0 below arc (solid black cheek), >0 above arc (soft rim shadow fading to 0)
+            if d <= 0.0:
+                a = 1.0
+            else:
+                lip = smoothstep(4.2, 0.0, d)
+                shadow = 0.34 * math.exp(-((d / 7.8) ** 1.5))
+                win = smoothstep(1.5, 9.0, py)
+                a = max(lip, shadow) * win
+            out.append(clamp01(a))
+    return out
+
+
 def write_png(path: str, w: int, h: int, rgba_bytes: bytes) -> None:
     def chunk(tag: bytes, data: bytes) -> bytes:
         return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
@@ -459,6 +510,20 @@ def main() -> None:
     c_parts.append(format_img_dsc("liq_blush", "liq_blush_map", BLUSH_W, BLUSH_H,
                                   "LV_COLOR_FORMAT_A8", BLUSH_W, len(blush_data)) + "\n")
 
+    lid_a = render_lid()
+    lid_data = encode_a8(LID_W, LID_H, lid_a)
+    total_bytes += len(lid_data)
+    c_parts.append(format_c_array("liq_lid_map", lid_data) + "\n")
+    c_parts.append(format_img_dsc("liq_lid", "liq_lid_map", LID_W, LID_H,
+                                  "LV_COLOR_FORMAT_A8", LID_W, len(lid_data)) + "\n")
+
+    smile_a = render_smile()
+    smile_data = encode_a8(SMILE_W, SMILE_H, smile_a)
+    total_bytes += len(smile_data)
+    c_parts.append(format_c_array("liq_smile_map", smile_data) + "\n")
+    c_parts.append(format_img_dsc("liq_smile", "liq_smile_map", SMILE_W, SMILE_H,
+                                  "LV_COLOR_FORMAT_A8", SMILE_W, len(smile_data)) + "\n")
+
     c_parts.append(f"const lv_image_dsc_t *const liquid_sclera[{len(PALETTES)}] = {{{', '.join(sclera_refs)}}};\n")
     c_parts.append(f"const lv_image_dsc_t *const liquid_pupil[{len(PALETTES)}] = {{{', '.join(pupil_refs)}}};\n")
 
@@ -481,12 +546,20 @@ def main() -> None:
         f"#define LIQ_HEART_H {HEART_H}\n"
         f"#define LIQ_BLUSH_W {BLUSH_W}\n"
         f"#define LIQ_BLUSH_H {BLUSH_H}\n"
+        f"#define LIQ_LID_W {LID_W}\n"
+        f"#define LIQ_LID_H {LID_H}\n"
+        f"#define LIQ_LID_EDGE_Y {LID_EDGE_Y}\n"
+        f"#define LIQ_SMILE_W {SMILE_W}\n"
+        f"#define LIQ_SMILE_H {SMILE_H}\n"
+        f"#define LIQ_SMILE_EDGE_Y {SMILE_EDGE_Y}\n"
         f"#define LIQ_FLASH_BYTES {total_bytes}\n\n"
         "extern const lv_image_dsc_t *const liquid_sclera[LIQ_PALETTES];\n"
         "extern const lv_image_dsc_t *const liquid_pupil[LIQ_PALETTES];\n"
         "extern const lv_image_dsc_t liq_specular;\n"
         "extern const lv_image_dsc_t liq_heart;\n"
         "extern const lv_image_dsc_t liq_blush;\n"
+        "extern const lv_image_dsc_t liq_lid;\n"
+        "extern const lv_image_dsc_t liq_smile;\n"
     )
 
     with open(h_path, "w", encoding="utf-8", newline="\n") as f:
@@ -500,7 +573,9 @@ def main() -> None:
         f"  6x pupil  ({PUPIL_W}x{PUPIL_H} RGB565A8): {6 * PUPIL_W * PUPIL_H * 3 / 1024:.1f} KB\n"
         f"  specular  ({SPEC_W}x{SPEC_H} A8): {len(spec_data) / 1024:.1f} KB\n"
         f"  heart     ({HEART_W}x{HEART_H} RGB565A8): {len(heart_data) / 1024:.1f} KB\n"
-        f"  blush     ({BLUSH_W}x{BLUSH_H} A8): {len(blush_data) / 1024:.1f} KB"
+        f"  blush     ({BLUSH_W}x{BLUSH_H} A8): {len(blush_data) / 1024:.1f} KB\n"
+        f"  lid       ({LID_W}x{LID_H} A8): {len(lid_data) / 1024:.1f} KB\n"
+        f"  smile     ({SMILE_W}x{SMILE_H} A8): {len(smile_data) / 1024:.1f} KB"
     )
 
 
