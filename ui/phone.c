@@ -220,14 +220,15 @@ static const char *const privacy_word[PHONE_PRIV_COUNT] = {"відкрито", "
 void phone_on_privacy(void (*cb)(int)) { privacy_cb = cb; }
 int phone_privacy(void) { return privacy; }
 
-static void lower(char *d, size_t n, const char *s) /* UTF-8 lower case for Latin and Russian, to search in */
+static void lower(char *d, size_t n, const char *s) /* UTF-8 lower case for Latin, Ukrainian and Russian, to search in */
 {
     size_t k = 0;
     for (const unsigned char *p = (const unsigned char *)s; *p && k + 2 < n;) {
         if (*p >= 'A' && *p <= 'Z') d[k++] = (char)(*p++ + 32);
         else if (p[0] == 0xD0 && p[1] >= 0x90 && p[1] <= 0x9F) d[k++] = (char)0xD0, d[k++] = (char)(p[1] + 0x20), p += 2;
         else if (p[0] == 0xD0 && p[1] >= 0xA0 && p[1] <= 0xAF) d[k++] = (char)0xD1, d[k++] = (char)(p[1] - 0x20), p += 2;
-        else if (p[0] == 0xD0 && p[1] == 0x81) d[k++] = (char)0xD1, d[k++] = (char)0x91, p += 2;
+        else if (p[0] == 0xD0 && p[1] >= 0x80 && p[1] <= 0x8F) d[k++] = (char)0xD1, d[k++] = (char)(p[1] + 0x10), p += 2; /* Ё, Є, І, Ї */
+        else if (p[0] == 0xD2 && p[1] == 0x90) d[k++] = (char)0xD2, d[k++] = (char)0x91, p += 2;                         /* Ґ */
         else d[k++] = (char)*p++;
     }
     d[k] = 0;
@@ -236,10 +237,11 @@ static void lower(char *d, size_t n, const char *s) /* UTF-8 lower case for Lati
 static bool sensitive(const char *app, const char *title, const char *text)
 {
     static const char *const words[] = {
-        "код", "code", "парол", "password", "passcode", "pin", "otp", "2fa", "одноразов", "подтвержд", "verif",
+        "код", "code", "парол", "password", "passcode", "pin", "otp", "2fa", "одноразов", "подтвержд", "підтвердж", "verif",
         "құпиясөз", "банк", "bank", "kaspi", "каспи", "halyk", "халык", "jusan", "freedom", "forte", "форте", "bcc",
         "центркредит", "bereke", "береке", "eurasian", "евразийск", "home credit", "хоум кредит", "egov", "revolut",
-        "paypal", "wise", "списан", "зачислен", "перевод", "баланс", "покупка", "оплата", "₸", "тенге", "kzt",
+        "paypal", "wise", "списан", "зачислен", "перевод", "переказ", "картк", "рахун", "платіж", "платеж",
+        "баланс", "покупка", "оплата", "₸", "тенге", "kzt",
     };
     char all[600], low[600];
     snprintf(all, sizeof all, "%s\n%s\n%s", app, title, text);
