@@ -7,6 +7,9 @@
 
 enum { PIP_BTN_PWR, PIP_BTN_BOOT };
 enum { PIP_ACT_FEED, PIP_ACT_PLAY };
+enum { PIP_EYES_PLAIN = 0, PIP_EYES_LIQUID = 1 };
+/* Default eye style on first boot and after firmware update (one constant to flip after real-board battery tests). */
+#define PIP_EYE_STYLE_DEFAULT PIP_EYES_LIQUID
 
 typedef struct {
     const char *mood;     /* what the face shows now */
@@ -41,8 +44,11 @@ void pip_power(int seconds);             /* fall asleep (screen off, no drawing)
 int pip_power_after(void);
 void pip_hold_awake(bool on);              /* an app that is there to be looked at keeps him awake */
 int pip_display_level(void);               /* the panel: 0 off, 25 dimmed (about to sleep), 100 */
-void pip_eco(bool on);                     /* energy saving: fewer frames, the eyes ignore the tilt, no listening for breath or bangs */
+void pip_eco(bool on);                     /* energy saving: flat eyes, fewer frames, no tilt/mic */
 bool pip_eco_on(void);
+void pip_set_eye_style(int style);         /* PIP_EYES_PLAIN (0) or PIP_EYES_LIQUID (1); invalid values ignored */
+int pip_eye_style(void);                   /* saved user preference (kept even while eco mode forces flat eyes) */
+bool pip_eyes_liquid_now(void);            /* true when Liquid sprites are actively drawn right now */
 bool pip_mic_wanted(void);                 /* Pip listens: the host may switch the microphone off when he does not */
 void pip_wake(void);                       /* something to look at: wake up */
 void pip_wake_up(void);                   /* power-on: eyes open out of black, sleepy, a shake, playful */

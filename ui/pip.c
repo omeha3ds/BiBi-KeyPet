@@ -1,6 +1,7 @@
 #include "pip.h"
 #include "face.h"
 #include "imu.h"
+#include "liquid_sprites.h"
 #include "mic.h"
 #include "theme.h"
 #include <stdio.h>
@@ -147,11 +148,14 @@ static void spring(spring_t *s, float to, float stiff, float zeta, float dt)
 }
 
 static struct {
-    lv_obj_t *canvas, *text;
+    lv_obj_t *canvas, *liquid, *text;
     lv_draw_buf_t *buf, *back; /* back: a second canvas when the face renders in the background (face_start) */
     face_t rface;              /* the frame being drawn in the background: a snapshot of face */
-    face_rect_t front_rects[4], back_rects[4];
-    bool pending;
+    face_rect_t front_rects[4], back_rects[4], liq_rects[4];
+    bool pending, liq_was;
+    int eye_style;             /* PIP_EYES_PLAIN (0) or PIP_EYES_LIQUID (1), preserved across eco mode */
+    lv_color_t liq_tint_col;
+    lv_opa_t liq_tint_opa;
     uint32_t last_swap;
     face_t face;
     imu_t imu;
@@ -192,7 +196,15 @@ static struct {
     float fx, fy, path, frame_ms;
     uint32_t last_tick, press_tick, last_draw;
     bool eco;
-} s = {.bat_pct = -1, .intro = -1, .last_bang = -10}; /* the battery is unknown until the power chip says */
+} s = {.bat_pct = -1, .intro = -1, .last_bang = -10, .eye_style = PIP_EYE_STYLE_DEFAULT}; /* the battery is unknown until the power chip says */
+
+void pip_set_eye_style(int style)
+{
+    if (style != PIP_EYES_PLAIN && style != PIP_EYES_LIQUID) return; /* calmly ignore unknown/corrupted values */
+    s.eye_style = style;
+}
+int pip_eye_style(void) { return s.eye_style; }
+bool pip_eyes_liquid_now(void) { return s.eye_style == PIP_EYES_LIQUID && !s.eco && TH_PIXEL; }
 
 static float frand(float a, float b) { return a + (b - a) * (float)lv_rand(0, 10000) / 10000.0f; }
 static void blink(void) { s.blink_t = 0; }
@@ -715,7 +727,12 @@ static void update(float dt)
     s.tgy = fmaxf(-1.0f, fminf(1.0f, s.tgy));
 
     for (float left = dt; left > 0; left -= 1.0f / 120) step(fminf(left, 1.0f / 120), m, mood == PIP_DIZZY && s.intro < 0);
-    lv_obj_set_flag(s.canvas, LV_OBJ_FLAG_HIDDEN, s.intro >= 0 && s.intro < 0.8f); /* black until he stirs */
+    {
+        bool hide = s.intro >= 0 && s.intro < 0.8f; /* black until he stirs */
+        bool liq = pip_eyes_liquid_now();
+        lv_obj_set_flag(s.canvas, LV_OBJ_FLAG_HIDDEN, hide || liq);
+        if (s.liquid) lv_obj_set_flag(s.liquid, LV_OBJ_FLAG_HIDDEN, hide || !liq);
+    }
     if (s.intro >= 3.0f) { /* the shake: the head whips side to side, fading out */
         float k = 1 - (s.intro - 3.0f) / 0.8f;
         s.head_yaw.x = sinf(s.intro * 34) * 0.45f * k, s.head_roll.x = sinf(s.intro * 27) * 0.25f * k;
@@ -782,6 +799,9 @@ static void update(float dt)
     }
     s.face.pupil_color = TH_PIXEL ? lv_color_to_u16(lv_color_hex(th->eye_pupil)) : 0x18C3;
     s.face.blush = fmaxf(s.blush.x, 0);
+    /* Subtle emotional tint for Liquid sprites on explicit mood tints (e.g. rage red, nauseous green) */
+    s.liq_tint_col = lv_color_hex(m->tint ? m->tint : 0xFFFFFF);
+    s.liq_tint_opa = m->tint ? LV_OPA_50 : 0;
     /* the screen is dark: no rain, no bobbing "?" - they would keep LVGL drawing for nobody */
     effects(s.dark ? FX_NONE : m->fx, dt);
     const char *text = s.dark ? NULL : m->text;
@@ -969,6 +989,225 @@ float pip_frame_worst(int secs, const char **mood, const char **reaction)
     return k < 0 ? 0 : worst[k].ms;
 }
 
+/* ---------- Liquid sprite eyes: pre-baked Flash sprites drawn by LVGL (zero per-frame gradient math) ---------- */
+static void liquid_eye_geom(const eye_t *e, int idx, float *eff_w, float *eh, float *ang)
+{
+    /* Elastic squash for blink & sleep: gently widens horizontally while squashing down to a sleek bead */
+    float squeeze = e->h < 32.0f ? 1.0f + 0.08f * (1.0f - fmaxf(e->h, 0.0f) / 32.0f) : 1.0f;
+    *eff_w = fmaxf(e->w * squeeze * fmaxf(0.55f, cosf(e->yaw * 0.75f)), 18.0f);
+    *eh = fmaxf(e->h, 11.0f);
+    float awake_k = fminf(1.0f, fmaxf(0.0f, (e->h - 24.0f) / 60.0f));
+    float rest_tilt = (idx == 0 ? -0.14f : 0.14f) * awake_k; /* subtle +-8 deg Pixel droplet lean */
+    *ang = e->roll + rest_tilt;
+}
+
+static void liquid_bounds(face_rect_t out[4])
+{
+    face_rect_t none = {0, 0, -1, -1};
+    for (int i = 0; i < 2; i++) {
+        const eye_t *e = &s.face.eye[i];
+        float eff_w, eh, ang;
+        liquid_eye_geom(e, i, &eff_w, &eh, &ang);
+        float hw = (LIQ_SCLERA_W * 0.5f) * (eff_w / (2.0f * LIQ_SCLERA_RX));
+        float hh = (LIQ_SCLERA_H * 0.5f) * (eh / (2.0f * LIQ_SCLERA_RY));
+        float ca = fabsf(cosf(ang)), sa = fabsf(sinf(ang));
+        float bx = ca * hw + sa * hh + 8.0f, by = sa * hw + ca * hh + 8.0f;
+        out[i] = (face_rect_t){
+            LV_MAX(0, (int)floorf(e->x - bx)), LV_MAX(0, (int)floorf(e->y - by)),
+            LV_MIN(SCR - 1, (int)ceilf(e->x + bx)), LV_MIN(SCR - 1, (int)ceilf(e->y + by)),
+        };
+        if (s.face.blush > 0.01f) {
+            float brx = e->w * 0.38f + 4.0f, bry = e->h * 0.10f + 8.0f;
+            float bcy = e->y + eh * 0.5f + bry * 0.45f;
+            out[2 + i] = (face_rect_t){
+                LV_MAX(0, (int)floorf(e->x - brx)), LV_MAX(0, (int)floorf(bcy - bry)),
+                LV_MIN(SCR - 1, (int)ceilf(e->x + brx)), LV_MIN(SCR - 1, (int)ceilf(bcy + bry)),
+            };
+        } else out[2 + i] = none;
+    }
+}
+
+static void liquid_draw_cb(lv_event_t *ev)
+{
+    lv_layer_t *layer = lv_event_get_layer(ev);
+    int pidx = theme_index() - TH_PEONY;
+    if (pidx < 0 || pidx >= LIQ_PALETTES) pidx = 0;
+    const lv_image_dsc_t *scl_img = liquid_sclera[pidx];
+    const lv_image_dsc_t *pup_img = liquid_pupil[pidx];
+    bool is_obs = (theme_index() == TH_OBSIDIAN);
+
+    /* Smaller (farther) eye first, larger (nearer) eye on top */
+    int first = s.face.eye[0].w * s.face.eye[0].h < s.face.eye[1].w * s.face.eye[1].h ? 0 : 1;
+    for (int n = 0; n < 2; n++) {
+        int idx = n ? 1 - first : first;
+        const eye_t *eye = &s.face.eye[idx];
+        float eff_w, eh, ang;
+        liquid_eye_geom(eye, idx, &eff_w, &eh, &ang);
+        float rx = eff_w * 0.5f, ry = eh * 0.5f;
+        int32_t sx = (int32_t)lroundf(256.0f * (eff_w / (2.0f * LIQ_SCLERA_RX)));
+        int32_t sy = (int32_t)lroundf(256.0f * (eh / (2.0f * LIQ_SCLERA_RY)));
+        if (sx < 24) sx = 24;
+        if (sy < 14) sy = 14;
+        int32_t rot10 = (int32_t)lroundf(ang * (1800.0f / 3.14159265f));
+        float ca = cosf(ang), sa = sinf(ang);
+
+        /* 1. Pre-baked glossy sclera droplet (with soft inner shadow, caustic & Obsidian cyan rim glow) */
+        lv_draw_image_dsc_t dsc;
+        lv_draw_image_dsc_init(&dsc);
+        dsc.src = scl_img;
+        dsc.pivot = (lv_point_t){LIQ_SCLERA_W / 2, LIQ_SCLERA_H / 2};
+        dsc.scale_x = sx;
+        dsc.scale_y = sy;
+        dsc.rotation = rot10;
+        dsc.antialias = 1;
+        if (s.liq_tint_opa > 0 && !is_obs) {
+            dsc.recolor = s.liq_tint_col;
+            dsc.recolor_opa = s.liq_tint_opa;
+        }
+        int32_t exi = (int32_t)lroundf(eye->x), eyi = (int32_t)lroundf(eye->y);
+        lv_area_t sc_a = {exi - LIQ_SCLERA_W / 2, eyi - LIQ_SCLERA_H / 2,
+                          exi - LIQ_SCLERA_W / 2 + LIQ_SCLERA_W - 1, eyi - LIQ_SCLERA_H / 2 + LIQ_SCLERA_H - 1};
+        lv_draw_image(layer, &dsc, &sc_a);
+
+        /* 2. Volumetric pupil (or glossy heart in PIP_LOVE), fading cleanly during deep blink/sleep */
+        float det_a = fminf(1.0f, fmaxf(0.0f, (eye->h - 18.0f) / 26.0f));
+        if (det_a > 0.05f) {
+            float prx = rx * eye->pw * (is_obs ? 0.90f : 1.04f) * fmaxf(0.68f, cosf(eye->look_x * 0.65f));
+            float pry = ry * eye->ph * (is_obs ? 1.18f : 1.12f);
+            float max_dx = fmaxf(2.0f, rx - prx * 0.92f - (is_obs ? 10.0f : 5.0f));
+            float max_dy = fmaxf(2.0f, ry - pry * 0.92f - (is_obs ? 10.0f : 5.0f));
+            float ux = sinf(eye->look_x) * 1.05f, uy = sinf(eye->look_y) * 1.05f;
+            float ulen = hypotf(ux, uy);
+            if (ulen > 1.0f) ux /= ulen, uy /= ulen;
+            float lx = ux * max_dx, ly = uy * max_dy;
+            int32_t pxi = (int32_t)lroundf(eye->x + lx * ca - ly * sa);
+            int32_t pyi = (int32_t)lroundf(eye->y + lx * sa + ly * ca);
+
+            lv_draw_image_dsc_t pdsc;
+            lv_draw_image_dsc_init(&pdsc);
+            pdsc.rotation = rot10;
+            pdsc.opa = (lv_opa_t)lroundf(det_a * 255.0f);
+            pdsc.antialias = 1;
+            if (eye->heart > 0.35f) {
+                int32_t hs = (int32_t)lroundf(256.0f * (fmaxf(prx, pry) * (is_obs ? 2.15f : 2.38f) / LIQ_HEART_W));
+                if (hs < 32) hs = 32;
+                pdsc.src = &liq_heart;
+                pdsc.pivot = (lv_point_t){LIQ_HEART_W / 2, LIQ_HEART_H / 2};
+                pdsc.scale_x = hs;
+                pdsc.scale_y = hs;
+                lv_area_t ha = {pxi - LIQ_HEART_W / 2, pyi - LIQ_HEART_H / 2,
+                                pxi - LIQ_HEART_W / 2 + LIQ_HEART_W - 1, pyi - LIQ_HEART_H / 2 + LIQ_HEART_H - 1};
+                lv_draw_image(layer, &pdsc, &ha);
+            } else {
+                int32_t psx = (int32_t)lroundf(256.0f * (prx / (float)LIQ_PUPIL_RX));
+                int32_t psy = (int32_t)lroundf(256.0f * (pry / (float)LIQ_PUPIL_RY));
+                if (psx < 24) psx = 24;
+                if (psy < 24) psy = 24;
+                pdsc.src = pup_img;
+                pdsc.pivot = (lv_point_t){LIQ_PUPIL_W / 2, LIQ_PUPIL_H / 2};
+                pdsc.scale_x = psx;
+                pdsc.scale_y = psy;
+                lv_area_t pa = {pxi - LIQ_PUPIL_W / 2, pyi - LIQ_PUPIL_H / 2,
+                                pxi - LIQ_PUPIL_W / 2 + LIQ_PUPIL_W - 1, pyi - LIQ_PUPIL_H / 2 + LIQ_PUPIL_H - 1};
+                lv_draw_image(layer, &pdsc, &pa);
+            }
+
+            /* 3. Moving liquid glass specular highlight (tracks gaze smoothly across the droplet) */
+            float slx = -rx * 0.24f + sinf(eye->look_x) * rx * 0.22f;
+            float sly = -ry * 0.38f + sinf(eye->look_y) * ry * 0.18f;
+            int32_t spx = (int32_t)lroundf(eye->x + slx * ca - sly * sa);
+            int32_t spy = (int32_t)lroundf(eye->y + slx * sa + sly * ca);
+            lv_draw_image_dsc_t sdsc;
+            lv_draw_image_dsc_init(&sdsc);
+            sdsc.src = &liq_specular;
+            sdsc.pivot = (lv_point_t){LIQ_SPEC_W / 2, LIQ_SPEC_H / 2};
+            sdsc.scale_x = sx;
+            sdsc.scale_y = sy;
+            sdsc.rotation = rot10;
+            sdsc.recolor = lv_color_white();
+            sdsc.recolor_opa = LV_OPA_COVER;
+            sdsc.opa = (lv_opa_t)lroundf(det_a * (is_obs ? 165.0f : 225.0f));
+            sdsc.antialias = 1;
+            lv_area_t spa = {spx - LIQ_SPEC_W / 2, spy - LIQ_SPEC_H / 2,
+                             spx - LIQ_SPEC_W / 2 + LIQ_SPEC_W - 1, spy - LIQ_SPEC_H / 2 + LIQ_SPEC_H - 1};
+            lv_draw_image(layer, &sdsc, &spa);
+        }
+
+        /* 4. Black eyelid & smile overlays clipped tightly to this eye so they never touch its neighbour */
+        float lid = (eye->lid - 0.05f) / 0.95f;
+        float smile = (eye->smile - 0.05f) / 0.95f;
+        if (lid > 0.001f || smile > 0.001f) {
+            lv_area_t saved = layer->_clip_area;
+            float pad = 24.0f;
+            lv_area_t ec = {
+                (int32_t)floorf(eye->x - rx - pad), (int32_t)floorf(eye->y - ry - pad),
+                (int32_t)ceilf(eye->x + rx + pad), (int32_t)ceilf(eye->y + ry + (smile > 0.001f ? 18.0f : pad)),
+            };
+            lv_area_t inter = {LV_MAX(saved.x1, ec.x1), LV_MAX(saved.y1, ec.y1), LV_MIN(saved.x2, ec.x2), LV_MIN(saved.y2, ec.y2)};
+            if (inter.x1 <= inter.x2 && inter.y1 <= inter.y2) {
+                layer->_clip_area = inter;
+                float cr = cosf(eye->roll), sr = sinf(eye->roll);
+                if (lid > 0.001f) {
+                    /* Single wide black triangle covers the entire clipped upper half-plane (zero diagonal AA seam) */
+                    float lid_y = -ry + lid * 2.0f * ry;
+                    float hw = rx + 240.0f;
+                    float ux3[3] = {0.0f, hw, -hw};
+                    float uy3[3] = {-ry - 520.0f, lid_y + eye->tilt * hw, lid_y - eye->tilt * hw};
+                    lv_draw_triangle_dsc_t td;
+                    lv_draw_triangle_dsc_init(&td);
+                    td.color = lv_color_black();
+                    td.opa = LV_OPA_COVER;
+                    for (int k = 0; k < 3; k++) {
+                        td.p[k].x = eye->x + ux3[k] * cr - uy3[k] * sr;
+                        td.p[k].y = eye->y + ux3[k] * sr + uy3[k] * cr;
+                    }
+                    lv_draw_triangle(layer, &td);
+                }
+                if (smile > 0.001f) {
+                    float cut_r = rx * 1.6f;
+                    float cut_y = ry + 1.5f - smile * 1.7f * ry + cut_r;
+                    float cx_s = eye->x - sr * cut_y, cy_s = eye->y + cr * cut_y;
+                    lv_draw_rect_dsc_t rd;
+                    lv_draw_rect_dsc_init(&rd);
+                    rd.bg_color = lv_color_black();
+                    rd.bg_opa = LV_OPA_COVER;
+                    rd.radius = LV_RADIUS_CIRCLE;
+                    lv_area_t sa_ = {
+                        (int32_t)floorf(cx_s - cut_r), (int32_t)floorf(cy_s - cut_r),
+                        (int32_t)ceilf(cx_s + cut_r), (int32_t)ceilf(cy_s + cut_r),
+                    };
+                    lv_draw_rect(layer, &rd, &sa_);
+                }
+                layer->_clip_area = saved;
+            }
+        }
+    }
+
+    /* 5. Soft pink blush cheeks under the eyes (drawn after clipped smile cutouts so cheeks stay intact) */
+    if (s.face.blush > 0.01f) {
+        lv_opa_t bopa = (lv_opa_t)lroundf(fminf(1.0f, s.face.blush) * 215.0f);
+        for (int i = 0; i < 2; i++) {
+            const eye_t *eye = &s.face.eye[i];
+            float eh = fmaxf(eye->h, 11.0f);
+            float brx = eye->w * 0.36f, bry = eye->h * 0.10f + 5.0f;
+            int32_t bcx = (int32_t)lroundf(eye->x), bcy = (int32_t)lroundf(eye->y + eh * 0.5f + bry * 0.45f);
+            lv_draw_image_dsc_t bd;
+            lv_draw_image_dsc_init(&bd);
+            bd.src = &liq_blush;
+            bd.pivot = (lv_point_t){LIQ_BLUSH_W / 2, LIQ_BLUSH_H / 2};
+            bd.scale_x = (int32_t)lroundf(256.0f * (2.0f * brx / LIQ_BLUSH_W));
+            bd.scale_y = (int32_t)lroundf(256.0f * (2.0f * bry / LIQ_BLUSH_H));
+            bd.recolor = lv_color_hex(0xFF7AA0);
+            bd.recolor_opa = LV_OPA_COVER;
+            bd.opa = bopa;
+            bd.antialias = 1;
+            lv_area_t ba = {bcx - LIQ_BLUSH_W / 2, bcy - LIQ_BLUSH_H / 2,
+                            bcx - LIQ_BLUSH_W / 2 + LIQ_BLUSH_W - 1, bcy - LIQ_BLUSH_H / 2 + LIQ_BLUSH_H - 1};
+            lv_draw_image(layer, &bd, &ba);
+        }
+    }
+}
+
 static void tick_cb(lv_timer_t *t)
 {
     (void)t;
@@ -978,6 +1217,34 @@ static void tick_cb(lv_timer_t *t)
     if (s.dark || lv_obj_get_screen(s.canvas) != lv_screen_active()) { /* dark, or an app is open: keep living, skip drawing */
         s.last_swap = lv_tick_get(); /* and the time away is no slow frame */
         return;
+    }
+    if (pip_eyes_liquid_now()) {
+        if (face_start && face_busy) return; /* let any in-flight background plain frame finish first */
+        s.pending = false;
+        if (lv_tick_elaps(s.last_draw) < 16) return; /* cap at 60 fps */
+        s.last_draw = lv_tick_get();
+        face_rect_t now[4];
+        liquid_bounds(now);
+        if (!s.liq_was) {
+            s.liq_was = true;
+            lv_obj_invalidate(s.liquid);
+        } else {
+            for (int i = 0; i < 4; i++) {
+                face_rect_t a = s.liq_rects[i].x2 >= s.liq_rects[i].x1 ? s.liq_rects[i] : now[i];
+                face_rect_t b = now[i].x2 >= now[i].x1 ? now[i] : a;
+                if (a.x2 < a.x1) continue;
+                lv_area_t r = {LV_MIN(a.x1, b.x1), LV_MIN(a.y1, b.y1), LV_MAX(a.x2, b.x2), LV_MAX(a.y2, b.y2)};
+                lv_obj_invalidate_area(s.liquid, &r);
+            }
+        }
+        memcpy(s.liq_rects, now, sizeof s.liq_rects);
+        frame_took((float)lv_tick_elaps(s.last_swap));
+        s.last_swap = lv_tick_get();
+        return;
+    }
+    if (s.liq_was) {
+        s.liq_was = false;
+        lv_obj_invalidate(s.canvas);
     }
     if (face_start) { /* the firmware draws the next frame in the background while LVGL shows this one */
         if (face_busy) return;
@@ -1067,7 +1334,25 @@ void pip_create(lv_obj_t *parent)
     lv_obj_add_event_cb(s.canvas, touch_cb, LV_EVENT_PRESSING, NULL);
     lv_obj_add_event_cb(s.canvas, touch_cb, LV_EVENT_RELEASED, NULL);
     lv_obj_add_event_cb(s.canvas, touch_cb, LV_EVENT_PRESS_LOST, NULL);
-    dev_create(parent); /* over the canvas */
+
+    /* Liquid sprite layer (active when pip_eyes_liquid_now() is true; plain canvas hidden) */
+    s.liquid = lv_obj_create(parent);
+    lv_obj_remove_style_all(s.liquid);
+    lv_obj_set_size(s.liquid, SCR, SCR);
+    lv_obj_set_pos(s.liquid, 0, 0);
+    lv_obj_set_style_bg_color(s.liquid, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(s.liquid, LV_OPA_COVER, 0);
+    lv_obj_add_flag(s.liquid, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(s.liquid, liquid_draw_cb, LV_EVENT_DRAW_MAIN, NULL);
+    lv_obj_add_event_cb(s.liquid, touch_cb, LV_EVENT_PRESSED, NULL);
+    lv_obj_add_event_cb(s.liquid, touch_cb, LV_EVENT_PRESSING, NULL);
+    lv_obj_add_event_cb(s.liquid, touch_cb, LV_EVENT_RELEASED, NULL);
+    lv_obj_add_event_cb(s.liquid, touch_cb, LV_EVENT_PRESS_LOST, NULL);
+    for (int i = 0; i < 4; i++) s.liq_rects[i] = (face_rect_t){0, 0, -1, -1};
+    lv_obj_set_flag(s.canvas, LV_OBJ_FLAG_HIDDEN, pip_eyes_liquid_now());
+    lv_obj_set_flag(s.liquid, LV_OBJ_FLAG_HIDDEN, !pip_eyes_liquid_now());
+
+    dev_create(parent); /* over the canvas / liquid layer */
 
     uint32_t base = TH_PIXEL ? (th->eye_stroke ? th->eye_stroke : th->eye_sclera) : 0xFFFFFF;
     s.face.color = TH_PIXEL ? lv_color_to_u16(lv_color_hex(th->eye_sclera)) : 0xFFFF;
