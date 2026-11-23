@@ -8,12 +8,6 @@
 
 LV_FONT_DECLARE(font_pixel_16) LV_FONT_DECLARE(font_pixel_20) LV_FONT_DECLARE(font_pixel_28)
 LV_FONT_DECLARE(font_pixel_40) LV_FONT_DECLARE(font_pixel_52) LV_FONT_DECLARE(font_pixel_96)
-LV_FONT_DECLARE(font_silence_20) LV_FONT_DECLARE(font_silence_28) LV_FONT_DECLARE(font_silence_96)
-LV_FONT_DECLARE(font_instr_20) LV_FONT_DECLARE(font_instr_28) LV_FONT_DECLARE(font_instr_96) LV_FONT_DECLARE(font_instr_56) LV_FONT_DECLARE(font_instr_40)
-LV_FONT_DECLARE(font_apple_20) LV_FONT_DECLARE(font_apple_28) LV_FONT_DECLARE(font_apple_96)
-LV_FONT_DECLARE(font_diag_16) LV_FONT_DECLARE(font_diag_16b) LV_FONT_DECLARE(font_diag_20) LV_FONT_DECLARE(font_diag_20b)
-LV_FONT_DECLARE(font_diag_28)
-LV_FONT_DECLARE(font_diag_96) LV_FONT_DECLARE(font_diag_56) LV_FONT_DECLARE(font_diag_40)
 
 #define PIXEL_BASE \
     .bg = 0x000000, .text = 0xFFFFFF, .dim = 0xA4A4A4, .faint = 0x242424, .panel = 0x141414, .good = 0x46D178, \
@@ -21,33 +15,30 @@ LV_FONT_DECLARE(font_diag_96) LV_FONT_DECLARE(font_diag_56) LV_FONT_DECLARE(font
     .body = &font_pixel_28, .title = &font_pixel_40, .big = &font_pixel_52, .digits = &font_pixel_96,          \
     .caps = false, .radius = 24, .icons = ICONS_FLAT, .clock = CLOCK_BIG, .meter = METER_BAR, .menu = MENU_LIST
 
+#define PIXEL_OBSIDIAN \
+    PIXEL_BASE, .accent = 0x66D4FF, .on_accent = 0x041016, .eye_sclera = 0x000000, .eye_pupil = 0x7CE8FF, .eye_stroke = 0x4DD0FF
+
 const theme_t themes[TH_COUNT] = {
-    [TH_SILENCE] = {.name = "Тишина", .bg = 0x000000, .text = 0xF2F2F2, .dim = 0x8C8C8C, .faint = 0x262626, .panel = 0x1A1A1A,
-                    .accent = 0xFF3B30, .good = 0xF2F2F2, .small = &font_silence_20, .tiny = &font_silence_20, .tiny_bold = &font_silence_20, .body = &font_silence_28,
-                    .digits = &font_silence_96, .caps = true, .radius = LV_RADIUS_CIRCLE, .icons = ICONS_OUTLINE,
-                    .clock = CLOCK_DOTS, .meter = METER_DOTS, .menu = MENU_HONEYCOMB, .hidden = true},
-    [TH_INSTRUMENT] = {.name = "Приборка", .bg = 0x000000, .text = 0xE8E6E1, .dim = 0xA3A09A, .faint = 0x2A2A2A, .panel = 0x1C1C1C,
-                       .accent = 0xFF5A1F, .good = 0xE8E6E1, .small = &font_instr_20, .tiny = &font_instr_20, .tiny_bold = &font_instr_20, .body = &font_instr_28,
-                       .digits = &font_instr_96, .big = &font_instr_56, .title = &font_instr_40, .caps = true, .radius = 6, .icons = ICONS_OUTLINE, .clock = CLOCK_DIAL,
-                       .meter = METER_SEGMENTS, .menu = MENU_LIST, .hidden = true},
-    [TH_APPLE] = {.name = "Apple", .bg = 0x000000, .text = 0xFFFFFF, .dim = 0x8E8E93, .faint = 0x3A3A3C, .panel = 0x1C1C1E,
-                  .accent = 0x0091FF, .good = 0x30D158, .small = &font_apple_20, .tiny = &font_apple_20, .tiny_bold = &font_apple_20, .body = &font_apple_28, .digits = &font_apple_96,
-                  .caps = false, .radius = LV_RADIUS_CIRCLE, .icons = ICONS_GLASS, .clock = CLOCK_BIG, .meter = METER_BAR,
-                  .menu = MENU_HONEYCOMB, .hidden = true},
-    [TH_DIAG] = {.name = "Диагностика", .bg = 0x3A1F1B, .text = 0xE6D8C3, .dim = 0xB9A592, .faint = 0x5A3530, .panel = 0x4A2A26,
-                 .accent = 0xE6D8C3, .good = 0xE6D8C3, .grid = 0x5A3530, .mute = 0x8A6A60, .off = 0x4F2B26, .small = &font_diag_20, .body = &font_diag_28,
-                 .digits = &font_diag_96, .big = &font_diag_56, .title = &font_diag_40, .tiny = &font_diag_16, .tiny_bold = &font_diag_16b, .button = &font_diag_20b, .caps = true, .radius = 0, .icons = ICONS_BLOCKS, .clock = CLOCK_BLOCKS,
-                 .meter = METER_BLOCKS, .menu = MENU_LIST, .hidden = true},
-    [TH_PEONY]     = {.name = "Півонія",   PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E},
-    [TH_OBSIDIAN]  = {.name = "Обсидіан",  PIXEL_BASE, .accent = 0x66D4FF, .on_accent = 0x041016, .eye_sclera = 0x000000, .eye_pupil = 0x7CE8FF, .eye_stroke = 0x4DD0FF},
-    [TH_BAY]       = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4},
-    [TH_HAZEL]     = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42},
-    [TH_CORAL]     = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16},
-    [TH_PORCELAIN] = {.name = "Порцеляна", PIXEL_BASE, .accent = 0xF0DFB2, .on_accent = 0x1A1407, .eye_sclera = 0xF3E3B8, .eye_pupil = 0xBD4C16},
+    /* Hidden legacy indices 0..3 map to Obsidian so old NVS values or `theme 0..3` stay valid and 4..9 numbering never shifts */
+    [TH_SILENCE]    = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
+    [TH_INSTRUMENT] = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
+    [TH_APPLE]      = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
+    [TH_DIAG]       = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
+    [TH_PEONY]      = {.name = "Півонія",   PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E},
+    [TH_OBSIDIAN]   = {.name = "Обсидіан",  PIXEL_OBSIDIAN},
+    [TH_BAY]        = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4},
+    [TH_HAZEL]      = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42},
+    [TH_CORAL]      = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16},
+    [TH_PORCELAIN]  = {.name = "Порцеляна", PIXEL_BASE, .accent = 0xF0DFB2, .on_accent = 0x1A1407, .eye_sclera = 0xF3E3B8, .eye_pupil = 0xBD4C16},
 };
 
 const theme_t *th = &themes[TH_DEFAULT];
-void theme_select(int i) { th = &themes[i >= 0 && i < TH_COUNT ? i : TH_DEFAULT]; }
+void theme_select(int i)
+{
+    if (i < 0 || i >= TH_COUNT) i = TH_DEFAULT;
+    else if (themes[i].hidden) i = TH_OBSIDIAN;
+    th = &themes[i];
+}
 uint32_t th_mute(void) { return th->mute ? th->mute : th->dim; } /* the terminal's extra inks, or the nearest */
 uint32_t th_off(void) { return th->off ? th->off : th->faint; }
 int theme_index(void) { return (int)(th - themes); }
