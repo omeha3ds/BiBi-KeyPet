@@ -8,7 +8,7 @@ void doodle_rain_cloud(uint32_t *px, int w, int h); /* dark rain cloud, about 17
 /* App icons, about 150x150: glass disc, thin outline, cell mosaic, or flat minimal */
 enum { ICON_STYLE_GLASS, ICON_STYLE_OUTLINE, ICON_STYLE_BLOCKS, ICON_STYLE_FLAT };
 enum { ICON_CLOCK, ICON_TIMER, ICON_TORCH, ICON_QR, ICON_PIP, ICON_GAME, ICON_BELL, ICON_MUSIC, ICON_CAMERA,
-       ICON_STOPWATCH, ICON_BADGE, ICON_THEME, ICON_NOISE, ICON_XO, ICON_EIGHT, ICON_COIN, ICON_DICE, ICON_MAZE, ICON_REMOTE, ICON_BT, ICON_COUNT };
+       ICON_STOPWATCH, ICON_BADGE, ICON_THEME, ICON_NOISE, ICON_XO, ICON_EIGHT, ICON_COIN, ICON_DICE, ICON_MAZE, ICON_REMOTE, ICON_BT, ICON_INFO, ICON_COUNT };
 void doodle_icon(int icon, int style, uint32_t color, uint32_t ink, uint32_t line, uint32_t *px, int w, int h);
 void doodle_icon_mask(int icon, uint8_t *a8, int stride, int size); /* just the symbol as coverage, for a menu row */
 void doodle_mini_eyes(uint32_t *px, int w, int h, uint32_t sclera, uint32_t pupil, uint32_t stroke, bool slim_pupil);

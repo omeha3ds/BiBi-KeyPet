@@ -2301,6 +2301,50 @@ static void dc_open(lv_obj_t *scr)
     dc.timer = lv_timer_create(dc_step, 16, NULL);
 }
 
+/* ================= about: device name, version, open-source licenses QR ================= */
+#ifndef BIBI_VERSION
+#define BIBI_VERSION "1.2.0"
+#endif
+#define ABOUT_URL "https://omeha3ds.github.io/BiBi-KeyPet/#licenses"
+#define ABOUT_QR  184
+
+static lv_draw_buf_t *about_qr_buf;
+
+static void about_close(void)
+{
+    if (about_qr_buf) lv_draw_buf_destroy(about_qr_buf), about_qr_buf = NULL;
+}
+
+static void about_open(lv_obj_t *scr)
+{
+    th_text_at(scr, th->body, th->text, "bibi", -1, 46);
+    th_text_at(scr, th->tiny, th->dim, "версія " BIBI_VERSION, -1, 86);
+
+    about_qr_buf = lv_draw_buf_create(ABOUT_QR, ABOUT_QR, LV_COLOR_FORMAT_ARGB8888, 0);
+    if (about_qr_buf) {
+        static uint8_t code[qrcodegen_BUFFER_LEN_FOR_VERSION(10)], tmp[qrcodegen_BUFFER_LEN_FOR_VERSION(10)];
+        uint32_t *px = (uint32_t *)about_qr_buf->data;
+        for (int k = 0; k < ABOUT_QR * ABOUT_QR; k++) px[k] = 0xFFFFFFFF;
+        if (qrcodegen_encodeText(ABOUT_URL, tmp, code, qrcodegen_Ecc_MEDIUM, 1, 10, qrcodegen_Mask_AUTO, true)) {
+            int n = qrcodegen_getSize(code), m = (ABOUT_QR - 16) / n, off = (ABOUT_QR - m * n) / 2;
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                    if (qrcodegen_getModule(code, x, y))
+                        for (int dy = 0; dy < m; dy++)
+                            for (int dx = 0; dx < m; dx++)
+                                px[(off + y * m + dy) * ABOUT_QR + off + x * m + dx] = 0xFF000000;
+        }
+        lv_obj_t *card = th_box(scr, (SCR - ABOUT_QR - 12) / 2, 118, ABOUT_QR + 12, ABOUT_QR + 12, 18, 0xFFFFFF);
+        lv_obj_t *img = lv_image_create(card);
+        lv_image_set_src(img, about_qr_buf);
+        lv_obj_center(img);
+    }
+
+    th_text_at(scr, th->small, th->text, "Відкриті ліцензії", -1, 326);
+    th_text_at(scr, th->tiny, th->dim, "MIT · Apache-2.0 · FTL · OFL", -1, 358);
+    th_text_at(scr, th->tiny, th->accent, "© saint · David Novikov", -1, 386);
+}
+
 /* ================= the list: the first one sits in the middle of the honeycomb ================= */
 
 const app_t apps[] = {
@@ -2326,6 +2370,7 @@ const app_t apps[] = {
     {.id = "remote", .name = "Пульт", .icon = ICON_REMOTE, .color = 0x5E5CE6, .open = phone_remote_open, .close = phone_remote_close,
      .button = phone_remote_button,
      .button_up = phone_remote_button_up, .imu = phone_remote_imu, .gyro = phone_remote_gyro, .awake = true},
+    {.id = "about", .name = "Про пристрій", .icon = ICON_INFO, .color = 0x8E8E93, .open = about_open, .close = about_close, .awake = true},
     /* the games, listed by "games" and not in the menu */
     {.id = "ball", .name = "Кулька", .icon = ICON_GAME, .color = 0xDB34F2, .open = game_open, .close = game_close, .imu = game_imu,
      .button = game_button, .group = "games"},

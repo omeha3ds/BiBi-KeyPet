@@ -197,6 +197,12 @@ static float glyph(int icon, float x, float y)
         for (int i = 0; i < 5; i++) d = fminf(d, box(x - (i - 2) * 16.0f, y, 4.5f, hs[i], 4.5f));
         return d;
     }
+    case ICON_INFO: { /* clean flat circle with 'i' */
+        float ring = fabsf(hypotf(x, y) - 34.0f) - 4.5f;
+        float stem = box(x, y - 9.0f, 4.5f, 14.0f, 4.5f);
+        float dot = hypotf(x, y + 16.5f) - 5.2f;
+        return fminf(ring, fminf(stem, dot));
+    }
     }
     return 1e9f;
 }

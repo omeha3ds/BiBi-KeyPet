@@ -5,3 +5,4 @@ idf_component_register(SRCS main.c ble.c debug.c ../../ui/face.c ../../ui/imu.c 
 # the face renderer: its per-pixel loop in IRAM (FACE_HOT); no errno from the little libm it still calls
 set_source_files_properties(../../ui/face.c PROPERTIES COMPILE_OPTIONS "-fno-math-errno;-O2"
                             COMPILE_DEFINITIONS "FACE_HOT=__attribute__((section(\".iram1.face\")))")
+target_compile_definitions(${COMPONENT_LIB} PRIVATE BIBI_VERSION=\"${PROJECT_VER}\")
