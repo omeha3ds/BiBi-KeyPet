@@ -222,6 +222,11 @@ a:hover{text-decoration:underline}
   grid-template-rows:auto 1fr auto;
   padding:22px 32px calc(26px + env(safe-area-inset-bottom));
   position:relative;
+  overflow:hidden;
+}
+.wake-fx{
+  position:fixed;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:6;
 }
 .stage-center{
   display:grid;
@@ -390,9 +395,14 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
 
 /* Liquid SVG layers (gradients & highlights live strictly inside #pipSvg) */
 .goo-body{filter:url(#liquid-goo)}
+.goo-body.no-goo{filter:none}
 .obs-goo-rim{display:none;filter:url(#liquid-goo-obs)}
+.obs-goo-rim.no-goo{filter:drop-shadow(0 0 7px rgba(77,208,255,.82))}
 :root[data-pixel="obsidian"] .obs-goo-rim{display:inline}
 .obs-rim-shape{fill:var(--eye-stroke)}
+:root[data-pixel="obsidian"] .obs-rim-shape.liq-dash{fill:url(#gradPupilL)}
+:root[data-pixel="obsidian"] #pipSvg.closed-dash .eye-sclera-l,
+:root[data-pixel="obsidian"] #pipSvg.closed-dash .eye-sclera-r{fill:var(--eye-stroke)}
 
 .eye-sclera-l{fill:url(#gradScleraL)}
 .eye-sclera-r{fill:url(#gradScleraR)}
@@ -481,20 +491,33 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
 }
 .seg-row .seg{background:var(--surface-1)}
 
-/* Eyelid blink & sleep/charging expression */
+/* Eyelid blink, mood eyelids, blush & lower-lid smile expression */
 .eye-lid{
   transform-origin:200px 200px;
 }
-.eye-lid.sleepy{transform:scaleY(.78);transition:transform 260ms var(--spring-fast)}
-.eye-lid.alert{transform:scaleY(1.03);transition:transform 260ms var(--spring-fast)}
+.mood-lid{
+  fill:#000000;pointer-events:none;
+}
+.eye-blush{
+  fill:#ff7aa0;opacity:0;pointer-events:none;
+  filter:blur(7px);
+  transition:opacity 260ms var(--ease-std);
+}
+.eye-heart{
+  display:none;pointer-events:none;
+}
+#pipSvg.mood-love .eye-pupil{display:none}
+#pipSvg.mood-love .eye-heart{display:inline}
+:root[data-eye-style="plain"] .eye-heart,
+:root[data-fx="simple"] .eye-heart{fill:#ff4479}
+:root[data-eye-style="liquid"]:not([data-fx="simple"]) .eye-heart{fill:url(#gradHeart)}
 
-/* Charging happy lower-lid cheek cover */
+/* Happy / charging lower-lid cheek cover (driven smoothly by JS moodSmile) */
 .charge-cheek{
   fill:#000000;
-  opacity:0;transform:translateY(38px);
-  transition:opacity 280ms var(--ease-std),transform 320ms var(--spring-spatial);
+  opacity:0;
+  pointer-events:none;
 }
-body.charging .charge-cheek{opacity:1;transform:translateY(0)}
 
 /* ---- 4 Radial Editorial Callouts (aligned directly to leader shelves) ---- */
 .callout{
@@ -933,6 +956,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 </head>
 <body>
 <div class="stage">
+  <canvas class="wake-fx" id="wakeFx" aria-hidden="true"></canvas>
   <header class="topbar">
     <div class="brand"><h1>bibi</h1><span>панель брелока</span></div>
     <div class="top-right">
@@ -1072,39 +1096,60 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
                 <stop offset="45%" stop-color="#ffffff" stop-opacity="0.12"/>
                 <stop offset="100%" stop-color="#ffffff" stop-opacity="0.35"/>
               </linearGradient>
+
+              <!-- Volumetric heart gradient for love mood -->
+              <radialGradient id="gradHeart" cx="42%" cy="34%" r="65%">
+                <stop offset="0%" stop-color="#ff9ebb"/>
+                <stop offset="48%" stop-color="#ff4479"/>
+                <stop offset="100%" stop-color="#b81447"/>
+              </radialGradient>
             </defs>
 
             <g id="eyeShift">
               <g class="eye-lid" id="eyeLid">
+                <!-- Soft pink blush under eyes (love / shy moods) -->
+                <ellipse id="blushL" class="eye-blush" cx="96" cy="296" rx="44" ry="15"/>
+                <ellipse id="blushR" class="eye-blush" cx="304" cy="296" rx="44" ry="15"/>
+
                 <g id="liquidScale">
-                  <!-- Obsidian luminous cyan outer gooey silhouette (merges smoothly on blink) -->
-                  <g class="obs-goo-rim">
-                    <ellipse id="obsOutL" class="obs-rim-shape" cx="112" cy="200" rx="75.5" ry="99.5" transform="rotate(-13 112 200)"/>
-                    <ellipse id="obsOutR" class="obs-rim-shape" cx="288" cy="200" rx="75.5" ry="99.5" transform="rotate(13 288 200)"/>
+                  <!-- Obsidian luminous cyan outer gooey silhouette (starts closed as horizontal dash) -->
+                  <g class="obs-goo-rim no-goo" id="obsGooGroup">
+                    <ellipse id="obsOutL" class="obs-rim-shape liq-dash" cx="112" cy="200" rx="42" ry="5.5" transform="rotate(0 112 200)"/>
+                    <ellipse id="obsOutR" class="obs-rim-shape liq-dash" cx="288" cy="200" rx="42" ry="5.5" transform="rotate(0 288 200)"/>
                     <ellipse id="obsBridge" class="obs-rim-shape" cx="200" cy="200" rx="0" ry="0"/>
                   </g>
 
-                  <!-- Main liquid sclera droplets through gooey filter -->
-                  <g class="goo-body">
-                    <ellipse id="scleraL" class="eye-sclera-l" cx="112" cy="200" rx="70" ry="94" transform="rotate(-13 112 200)"/>
-                    <ellipse id="scleraR" class="eye-sclera-r" cx="288" cy="200" rx="70" ry="94" transform="rotate(13 288 200)"/>
+                  <!-- Main liquid sclera droplets (starts closed as two short horizontal dashes) -->
+                  <g class="goo-body no-goo" id="gooBodyGroup">
+                    <ellipse id="scleraL" class="eye-sclera-l" cx="112" cy="200" rx="42" ry="5.5" transform="rotate(0 112 200)"/>
+                    <ellipse id="scleraR" class="eye-sclera-r" cx="288" cy="200" rx="42" ry="5.5" transform="rotate(0 288 200)"/>
                     <ellipse id="gooBridge" class="eye-bridge liquid-only" cx="200" cy="200" rx="0" ry="0"/>
                   </g>
 
-                  <!-- Pupils + moving liquid specular & caustic layers clipped inside each eye -->
-                  <g id="eyeDetails">
+                  <!-- Soft glass edge sheen (works on both closed Liquid dashes and open Liquid eyes) -->
+                  <ellipse id="edgeL" class="eye-edge-sheen liquid-only" cx="112" cy="200" rx="41" ry="4.8" transform="rotate(0 112 200)"/>
+                  <ellipse id="edgeR" class="eye-edge-sheen liquid-only" cx="288" cy="200" rx="41" ry="4.8" transform="rotate(0 288 200)"/>
+
+                  <!-- Clean rim for Plain / simple mode -->
+                  <ellipse id="simpleRimL" class="simple-rim" cx="112" cy="200" rx="42" ry="5.5" transform="rotate(0 112 200)"/>
+                  <ellipse id="simpleRimR" class="simple-rim" cx="288" cy="200" rx="42" ry="5.5" transform="rotate(0 288 200)"/>
+
+                  <!-- Pupils + moving liquid specular, caustic & mood eyelids clipped inside each eye -->
+                  <g id="eyeDetails" style="opacity:0">
                     <!-- Left eye interior -->
                     <g clip-path="url(#clipL)">
                       <g id="causticL" class="liquid-only">
                         <ellipse class="eye-caustic" cx="126" cy="262" rx="54" ry="29" transform="rotate(-16 126 262)"/>
                       </g>
                       <g id="pupilL">
-                        <ellipse class="eye-pupil eye-pupil-l" cx="118" cy="202" rx="40" ry="82" transform="rotate(-7 118 202)"/>
+                        <ellipse id="pupilEllL" class="eye-pupil eye-pupil-l" cx="118" cy="202" rx="40" ry="82" transform="rotate(-7 118 202)"/>
+                        <path id="heartL" class="eye-heart" d="M 118 236 C 108 225, 84 208, 84 188 C 84 174, 95 165, 106 165 C 113 165, 116 170, 118 175 C 120 170, 123 165, 130 165 C 141 165, 152 174, 152 188 C 152 208, 128 225, 118 236 Z"/>
                       </g>
                       <g id="specL" class="liquid-only">
                         <ellipse class="eye-spec" cx="95" cy="148" rx="32" ry="17" transform="rotate(-32 95 148)"/>
                         <ellipse class="eye-dot" cx="78" cy="176" rx="6.5" ry="4.2" transform="rotate(-24 78 176)"/>
                       </g>
+                      <path id="moodLidL" class="mood-lid" d="M 10 70 L 220 70 L 220 70 L 10 70 Z"/>
                     </g>
 
                     <!-- Right eye interior -->
@@ -1113,26 +1158,20 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
                         <ellipse class="eye-caustic" cx="274" cy="262" rx="54" ry="29" transform="rotate(16 274 262)"/>
                       </g>
                       <g id="pupilR">
-                        <ellipse class="eye-pupil eye-pupil-r" cx="282" cy="202" rx="40" ry="82" transform="rotate(7 282 202)"/>
+                        <ellipse id="pupilEllR" class="eye-pupil eye-pupil-r" cx="282" cy="202" rx="40" ry="82" transform="rotate(7 282 202)"/>
+                        <path id="heartR" class="eye-heart" d="M 282 236 C 272 225, 248 208, 248 188 C 248 174, 259 165, 270 165 C 277 165, 280 170, 282 175 C 284 170, 287 165, 294 165 C 305 165, 316 174, 316 188 C 316 208, 292 225, 282 236 Z"/>
                       </g>
                       <g id="specR" class="liquid-only">
                         <ellipse class="eye-spec" cx="266" cy="146" rx="32" ry="17" transform="rotate(-22 266 146)"/>
                         <ellipse class="eye-dot" cx="250" cy="174" rx="6.5" ry="4.2" transform="rotate(-14 250 174)"/>
                       </g>
+                      <path id="moodLidR" class="mood-lid" d="M 180 70 L 390 70 L 390 70 L 180 70 Z"/>
                     </g>
-
-                    <!-- Soft glass edge sheen (liquid mode, non-Obsidian) -->
-                    <ellipse id="edgeL" class="eye-edge-sheen liquid-only" cx="112" cy="200" rx="68.5" ry="92.5" transform="rotate(-13 112 200)"/>
-                    <ellipse id="edgeR" class="eye-edge-sheen liquid-only" cx="288" cy="200" rx="68.5" ry="92.5" transform="rotate(13 288 200)"/>
-
-                    <!-- Clean rim for simple no-filter fallback mode -->
-                    <ellipse class="simple-rim" cx="112" cy="200" rx="70" ry="94" transform="rotate(-13 112 200)"/>
-                    <ellipse class="simple-rim" cx="288" cy="200" rx="70" ry="94" transform="rotate(13 288 200)"/>
                   </g>
                 </g>
 
-                <!-- Happy charging cheek cover -->
-                <path class="charge-cheek" d="M 30 258 Q 120 220 200 258 Q 280 220 370 258 L 370 340 L 30 340 Z"/>
+                <!-- Happy / charging curved lower-lid cheek cover -->
+                <path class="charge-cheek" id="chargeCheek" d="M 30 258 Q 116 216 200 258 Q 284 216 370 258 L 370 350 L 30 350 Z"/>
               </g>
             </g>
           </svg>
@@ -1400,12 +1439,13 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 <script src="firmware/firmware.js"></script>
 <script type="module">
 const $ = id => document.getElementById(id);
-const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).get('reduced') === '1';
 
 /* ---------- Pixel seed palette + expressive eye sync ---------- */
 const PIXELS = ['peony', 'obsidian', 'bay', 'hazel', 'coral', 'porcelain'];
+let isLinked = false, eyesReady = false;
 function boopEyes() {
-  if (reducedMotion()) return;
+  if (!isLinked || reducedMotion()) return;
   const svg = $('pipSvg');
   svg.classList.remove('squish');
   void svg.offsetWidth;
@@ -1420,7 +1460,8 @@ function setPixel(name, animate = false) {
     b.setAttribute('aria-pressed', String(active));
     if (active) $('pixelName').textContent = b.dataset.label;
   });
-  if (animate) boopEyes();
+  if (eyesReady) renderCurrentEyes();
+  if (animate && isLinked) boopEyes();
   try { localStorage.setItem('pip-pixel', name); } catch (e) {}
 }
 const urlPixel = new URLSearchParams(location.search).get('pixel');
@@ -1471,8 +1512,7 @@ function setEyeStyle(style, persist = true, syncDevice = false) {
   document.querySelectorAll('[data-eye-style]').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.eyeStyle === s)));
   if (persist) { try { localStorage.setItem('pip-eye-style', s); } catch (e) {} }
-  if (s === 'plain') resetLiquidGeometry();
-  else if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
+  if (eyesReady) renderCurrentEyes();
   if (syncDevice && cfg && (cfg.eyes === 0 || cfg.eyes === 1)) {
     send('eyes ' + (s === 'liquid' ? 1 : 0));
   }
@@ -1833,109 +1873,348 @@ function syncTwinBrightness(pct) {
   $('twinScreen').style.filter = `brightness(${lvl})`;
 }
 
-/* ---------- Living Liquid Eyes: 2nd-order spring physics, gooey blink merge & moving specular ---------- */
+/* ---------- Digital Twin Eyes: Disconnected Dashes, Wakeup Wave & Live Firmware Moods ---------- */
 const params = new URLSearchParams(location.search);
 const previewBlink = params.has('blink') ? Math.max(0, Math.min(1, Number(params.get('blink')) || 0)) : null;
 const previewAim = params.get('aim') ? params.get('aim').split(',').map(Number) : null;
 
-let targetX = previewAim ? (previewAim[0] || 0) : -0.35;
-let targetY = previewAim ? (previewAim[1] || 0) : -0.28;
+let targetX = previewAim ? (previewAim[0] || 0) : 0;
+let targetY = previewAim ? (previewAim[1] || 0) : 0;
 let curX = targetX, curY = targetY, velX = 0, velY = 0;
 let lightX = targetX, lightY = targetY;
 let blinkPos = previewBlink ?? 0, blinkVel = 0, blinkTarget = previewBlink ?? 0;
+/* Start closed (horizontal dashes) until connected to keychain */
+let eyeOpen = 0, eyeOpenVel = 0, openTarget = 0;
 let lastPointer = previewAim ? 1e12 : 0;
 let slowFrames = 0, lastFrameTime = performance.now();
 
-function setEyeX(el, cx, rot) {
-  el.setAttribute('cx', cx.toFixed(1));
-  el.setAttribute('transform', `rotate(${rot} ${cx.toFixed(1)} 200)`);
-}
-function resetLiquidGeometry() {
-  setEyeX($('scleraL'), 112, -13); setEyeX($('scleraR'), 288, 13);
-  setEyeX($('obsOutL'), 112, -13); setEyeX($('obsOutR'), 288, 13);
-  setEyeX($('clipEllL'), 112, -13); setEyeX($('clipEllR'), 288, 13);
-  setEyeX($('edgeL'), 112, -13); setEyeX($('edgeR'), 288, 13);
-  $('edgeL').style.opacity = ''; $('edgeR').style.opacity = '';
-  $('gooBridge').setAttribute('rx', '0'); $('gooBridge').setAttribute('ry', '0');
-  $('obsBridge').setAttribute('rx', '0'); $('obsBridge').setAttribute('ry', '0');
-  $('liquidScale').setAttribute('transform', '');
-  $('eyeDetails').style.opacity = '1';
-  $('pupilL').setAttribute('transform', '');
-  $('pupilR').setAttribute('transform', '');
-  $('eyeShift').setAttribute('transform', '');
+/* Live mood state received from @S on the keychain */
+let devMood = 'neutral', devAsleep = false, devCharging = false;
+let mLidL = 0, mLidR = 0, mTilt = 0, mSmile = 0, mBlush = 0, mPScale = 1, mScaleY = 1;
+let toLidL = 0, toLidR = 0, toTilt = 0, toSmile = 0, toBlush = 0, toPScale = 1, toScaleY = 1;
+
+function moodTargets(mood, asleep, charging) {
+  const m = String(mood || 'neutral').toLowerCase();
+  const out = { open: 1, lidL: 0, lidR: 0, tilt: 0, smile: charging ? 0.88 : 0, blush: 0, pScale: 1, scaleY: 1, love: false };
+  if (asleep || m === 'asleep') { out.open = 0; return out; }
+  if (m === 'ouch') { out.open = 0.22; out.pScale = 0.72; return out; }
+  switch (m) {
+    case 'happy': out.smile = Math.max(out.smile, 0.82); out.scaleY = 0.96; break;
+    case 'content': out.smile = Math.max(out.smile, 0.95); out.scaleY = 0.94; break;
+    case 'comfy': out.lidL = 0.32; out.lidR = 0.32; out.smile = Math.max(out.smile, 0.45); break;
+    case 'smug': out.lidL = 0.34; out.lidR = 0.26; out.smile = Math.max(out.smile, 0.55); break;
+    case 'yes': out.smile = Math.max(out.smile, 0.52); out.pScale = 1.05; break;
+    case 'love': out.love = true; out.smile = Math.max(out.smile, 0.48); out.blush = 0.78; break;
+    case 'shy': out.lidL = 0.16; out.lidR = 0.16; out.tilt = -0.18; out.smile = Math.max(out.smile, 0.35); out.blush = 0.85; break;
+    case 'angry': case 'belligerent': case 'swearing':
+      out.lidL = 0.32; out.lidR = 0.32; out.tilt = 0.52; out.pScale = 0.78; break;
+    case 'annoyed': case 'no':
+      out.lidL = 0.22; out.lidR = 0.22; out.tilt = 0.28; out.pScale = 0.9; break;
+    case 'furious': case 'rage':
+      out.lidL = 0.38; out.lidR = 0.38; out.tilt = 0.68; out.pScale = 0.64; break;
+    case 'indignant':
+      out.lidL = 0.18; out.lidR = 0.18; out.tilt = 0.42; out.pScale = 0.82; out.scaleY = 1.04; break;
+    case 'sad': case 'hurt': case 'despondent': case 'lonely':
+      out.lidL = 0.26; out.lidR = 0.26; out.tilt = -0.44; out.pScale = 1.12; break;
+    case 'dismayed':
+      out.lidL = 0.16; out.lidR = 0.16; out.tilt = -0.46; out.pScale = 0.86; out.scaleY = 1.04; break;
+    case 'afraid': case 'nervous':
+      out.lidL = 0.10; out.lidR = 0.10; out.tilt = -0.32; out.pScale = 0.68; out.scaleY = 1.08; break;
+    case 'sleepy': case 'tired': case 'bored': case 'gloomy': case 'dull':
+      out.lidL = 0.46; out.lidR = 0.46; out.tilt = -0.06; break;
+    case 'exhausted':
+      out.lidL = 0.62; out.lidR = 0.62; out.tilt = -0.14; break;
+    case 'stoned':
+      out.lidL = 0.42; out.lidR = 0.42; out.smile = Math.max(out.smile, 0.42); out.pScale = 1.08; break;
+    case 'sick': case 'nauseous':
+      out.lidL = 0.36; out.lidR = 0.44; out.tilt = -0.18; out.pScale = 0.92; break;
+    case 'pinkeye':
+      out.lidL = 0.22; out.lidR = 0.56; out.tilt = -0.10; break;
+    case 'surprised':
+      out.scaleY = 1.08; out.pScale = 0.72; break;
+    case 'shocked':
+      out.scaleY = 1.12; out.pScale = 0.56; break;
+    case 'amazed': case 'curious':
+      out.scaleY = 1.07; out.pScale = 1.14; break;
+    case 'skeptical':
+      out.lidL = 0.16; out.lidR = 0.46; out.scaleY = 0.84; break;
+    case 'suspicious': case 'cynical':
+      out.lidL = 0.42; out.lidR = 0.48; out.tilt = 0.08; out.scaleY = 0.88; break;
+    case 'puzzled':
+      out.lidL = 0.06; out.lidR = 0.38; break;
+    case 'cheeky':
+      out.lidL = 0.34; out.lidR = 0.08; out.tilt = 0.32; out.smile = Math.max(out.smile, 0.34); break;
+  }
+  return out;
 }
 
-function applyLiquidFrame(x, y, vx, vy, b, lx, ly) {
-  const bClamped = Math.max(-0.14, Math.min(1, b));
-  const bPos = Math.max(0, bClamped);
-  const liquid = isLiquidEyes();
-
-  /* Plain style: crisp vertical blink + smooth gaze tracking without gooey merge or specular gradients */
-  if (!liquid) {
-    const sy = Math.max(0.06, 1 - bPos * 0.94);
-    $('liquidScale').setAttribute('transform', `translate(200 200) scale(1 ${sy.toFixed(3)}) translate(-200 -200)`);
-    const px = (x * 20).toFixed(2), py = (y * 15).toFixed(2);
-    const ex = (x * 6).toFixed(2), ey = (y * 4.5).toFixed(2);
-    $('pupilL').setAttribute('transform', `translate(${px} ${py})`);
-    $('pupilR').setAttribute('transform', `translate(${px} ${py})`);
-    $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
+function syncMoodTargets() {
+  if (!isLinked) {
+    openTarget = 0;
+    toLidL = 0; toLidR = 0; toTilt = 0; toSmile = 0; toBlush = 0; toPScale = 1; toScaleY = 1;
+    $('pipSvg').classList.remove('mood-love');
     return;
   }
+  const t = moodTargets(devMood, devAsleep, devCharging);
+  openTarget = t.open;
+  toLidL = t.lidL; toLidR = t.lidR; toTilt = t.tilt;
+  toSmile = t.smile; toBlush = t.blush; toPScale = t.pScale; toScaleY = t.scaleY;
+  $('pipSvg').classList.toggle('mood-love', t.love);
+}
 
-  /* Elastic squash-and-stretch from gaze velocity + volume-conserving liquid blink */
-  const speed = Math.min(1, Math.hypot(vx, vy) * 2.2);
-  const sx = 1 + bPos * 0.16 + speed * 0.055 - Math.max(0, -bClamped) * 0.06;
-  const sy = Math.max(0.2, 1 - bPos * 0.72 - speed * 0.04 + Math.max(0, -bClamped) * 0.12);
-  $('liquidScale').setAttribute('transform', `translate(200 200) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(-200 -200)`);
+/* ---------- Wakeup expanding glowing line -> thin white stage border fade ---------- */
+const WAKE_RING_MS = 640;
+const WAKE_BORDER_START = 420;
+const WAKE_BORDER_PEAK = 550;
+const WAKE_TOTAL_MS = 1580; /* 1.58 s total: ~0.55 s wave + ~1.03 s border fade */
+let wakeStart = -1, wakeRaf = 0;
 
-  /* Gooey droplet merge: cleanly separated at rest, fuse into viscous bridge mid-blink */
-  const pinch = bPos * 35;
+function drawWakeAt(elapsed) {
+  const cv = $('wakeFx');
+  if (!cv) return false;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = document.documentElement.clientWidth || window.innerWidth;
+  const H = document.documentElement.clientHeight || window.innerHeight;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) {
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+  }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  if (elapsed < 0 || elapsed >= WAKE_TOTAL_MS) return false;
+
+  const orb = $('pipOrb').getBoundingClientRect();
+  const cx = orb.left + orb.width / 2;
+  const cy = orb.top + orb.height / 2;
+  const r0 = orb.width * 0.5;
+  const rMax = Math.max(
+    Math.hypot(cx, cy), Math.hypot(W - cx, cy),
+    Math.hypot(cx, H - cy), Math.hypot(W - cx, H - cy)
+  ) + 6;
+
+  /* 1) Single expanding glowing white line from orb ring to stage edges */
+  if (elapsed < WAKE_RING_MS) {
+    const p = Math.max(0, Math.min(1, elapsed / WAKE_RING_MS));
+    const ease = 1 - Math.pow(1 - p, 2.5);
+    const r = r0 + (rMax - r0) * ease;
+    const fadeIn = Math.min(1, elapsed / 50);
+    const fadeOut = p < 0.66 ? 1 : Math.max(0, 1 - (p - 0.66) / 0.34);
+    const a = fadeIn * fadeOut;
+    if (a > 0.005) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${(0.22 * a).toFixed(3)})`;
+      ctx.lineWidth = 7;
+      ctx.shadowColor = `rgba(255,255,255,${(0.85 * a).toFixed(3)})`;
+      ctx.shadowBlur = 18;
+      ctx.stroke();
+
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = `rgba(255,255,255,${(0.95 * a).toFixed(3)})`;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* 2) Thin glowing white contour along the black stage perimeter, fading smoothly over ~1 s */
+  if (elapsed >= WAKE_BORDER_START) {
+    let ba = 0;
+    if (elapsed <= WAKE_BORDER_PEAK) {
+      ba = (elapsed - WAKE_BORDER_START) / (WAKE_BORDER_PEAK - WAKE_BORDER_START);
+    } else {
+      const fp = (elapsed - WAKE_BORDER_PEAK) / (WAKE_TOTAL_MS - WAKE_BORDER_PEAK);
+      ba = Math.pow(Math.max(0, 1 - fp), 1.55);
+    }
+    if (ba > 0.004) {
+      ctx.save();
+      const pad = 3;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(pad, pad, W - pad * 2, H - pad * 2, 4);
+      else ctx.rect(pad, pad, W - pad * 2, H - pad * 2);
+
+      ctx.strokeStyle = `rgba(255,255,255,${(0.28 * ba).toFixed(3)})`;
+      ctx.lineWidth = 7;
+      ctx.shadowColor = `rgba(255,255,255,${(0.92 * ba).toFixed(3)})`;
+      ctx.shadowBlur = 22;
+      ctx.stroke();
+
+      ctx.shadowBlur = 9;
+      ctx.strokeStyle = `rgba(255,255,255,${(0.96 * ba).toFixed(3)})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+  return true;
+}
+
+function stepWakeLoop(now) {
+  if (wakeStart < 0) return;
+  if (drawWakeAt(now - wakeStart)) {
+    wakeRaf = requestAnimationFrame(stepWakeLoop);
+  } else {
+    wakeStart = -1;
+    wakeRaf = 0;
+  }
+}
+
+function triggerWakeup() {
+  targetX = 0; targetY = 0; curX = 0; curY = 0; velX = 0; velY = 0;
+  lightX = -0.18; lightY = -0.22;
+  blinkPos = 0; blinkVel = 0; blinkTarget = 0;
+  syncMoodTargets();
+  if (reducedMotion()) {
+    eyeOpen = openTarget;
+    eyeOpenVel = 0;
+    renderCurrentEyes();
+    return;
+  }
+  if (wakeRaf) cancelAnimationFrame(wakeRaf);
+  wakeStart = performance.now();
+  drawWakeAt(0);
+  wakeRaf = requestAnimationFrame(stepWakeLoop);
+}
+
+function setEll(el, cx, rx, ry, rot) {
+  el.setAttribute('cx', cx.toFixed(1));
+  el.setAttribute('rx', Math.max(0, rx).toFixed(1));
+  el.setAttribute('ry', Math.max(0, ry).toFixed(1));
+  el.setAttribute('transform', `rotate(${rot.toFixed(2)} ${cx.toFixed(1)} 200)`);
+}
+
+function setUpperLidPath(el, cx, isRight, drop, tilt) {
+  if (drop <= 0.005 && Math.abs(tilt) <= 0.005) {
+    el.setAttribute('d', 'M 0 0 L 0 0 Z');
+    return;
+  }
+  const yBase = 104 + drop * 150;
+  const dy = tilt * 44 * (isRight ? -1 : 1);
+  const xL = cx - 96, xR = cx + 96;
+  const yL = yBase - dy, yR = yBase + dy;
+  const yMid = (yL + yR) * 0.5 + 10 * drop;
+  el.setAttribute('d', `M ${xL} 60 L ${xR} 60 L ${xR} ${yR.toFixed(1)} Q ${cx} ${yMid.toFixed(1)} ${xL} ${yL.toFixed(1)} Z`);
+}
+
+function applyEyeFrame(x, y, vx, vy, b, lx, ly, openVal) {
+  const o = Math.max(0, Math.min(1.08, openVal));
+  const oClamped = Math.max(0, Math.min(1, o));
+  const bClamped = Math.max(-0.14, Math.min(1, b * oClamped));
+  const bPos = Math.max(0, bClamped);
+  const liquid = isLiquidEyes();
+  const isObs = document.documentElement.dataset.pixel === 'obsidian';
+
+  /* Toggle crisp non-gooey filter when closed or half-closed so horizontal dashes never erode */
+  const useGoo = liquid && oClamped > 0.86 && bPos > 0.04;
+  $('gooBodyGroup').classList.toggle('no-goo', !useGoo);
+  $('obsGooGroup').classList.toggle('no-goo', !useGoo);
+  $('pipSvg').classList.toggle('closed-dash', oClamped < 0.22);
+  $('obsOutL').classList.toggle('liq-dash', liquid && oClamped < 0.28);
+  $('obsOutR').classList.toggle('liq-dash', liquid && oClamped < 0.28);
+
+  /* Smooth morph: short horizontal dashes (rx=42, ry=5.5, rot=0°) <-> tilted oval eyes (rx=70, ry=94, rot=∓13°) */
+  const baseRx = 42 + (70 - 42) * oClamped;
+  const openRy = 94 * mScaleY * (liquid ? Math.max(0.2, 1 - bPos * 0.72) : Math.max(0.08, 1 - bPos * 0.92));
+  const baseRy = 5.5 + (openRy - 5.5) * o;
+  const pinch = liquid ? bPos * 35 * oClamped : 0;
   const cxL = 112 + pinch, cxR = 288 - pinch;
-  const rotL = (-13 * (1 - bPos * 0.55)).toFixed(1);
-  const rotR = (13 * (1 - bPos * 0.55)).toFixed(1);
-  setEyeX($('scleraL'), cxL, rotL); setEyeX($('scleraR'), cxR, rotR);
-  setEyeX($('obsOutL'), cxL, rotL); setEyeX($('obsOutR'), cxR, rotR);
-  setEyeX($('clipEllL'), cxL, rotL); setEyeX($('clipEllR'), cxR, rotR);
-  setEyeX($('edgeL'), cxL, rotL); setEyeX($('edgeR'), cxR, rotR);
+  const rotMag = 13 * oClamped * (1 - bPos * 0.55);
+  const rotL = -rotMag, rotR = rotMag;
 
-  const edgeOp = document.documentElement.dataset.pixel === 'obsidian' ? 0 : Math.max(0, 0.55 * (1 - bPos * 2.8));
+  if (isObs && liquid) {
+    /* Closed Onyx dash = solid luminous cyan; opening hollows out black liquid dome inside cyan rim */
+    const rimPad = 5.5 * oClamped;
+    setEll($('obsOutL'), cxL, baseRx + rimPad, Math.max(7, baseRy + rimPad), rotL);
+    setEll($('obsOutR'), cxR, baseRx + rimPad, Math.max(7, baseRy + rimPad), rotR);
+    const innerT = Math.max(0, Math.min(1, (oClamped - 0.18) / 0.82));
+    setEll($('scleraL'), cxL, baseRx * innerT, Math.max(0, baseRy * innerT), rotL);
+    setEll($('scleraR'), cxR, baseRx * innerT, Math.max(0, baseRy * innerT), rotR);
+  } else {
+    setEll($('obsOutL'), cxL, baseRx + 5.5 * oClamped, Math.max(7, baseRy + 5.5 * oClamped), rotL);
+    setEll($('obsOutR'), cxR, baseRx + 5.5 * oClamped, Math.max(7, baseRy + 5.5 * oClamped), rotR);
+    setEll($('scleraL'), cxL, baseRx, Math.max(5.5, baseRy), rotL);
+    setEll($('scleraR'), cxR, baseRx, Math.max(5.5, baseRy), rotR);
+  }
+
+  setEll($('clipEllL'), cxL, Math.max(0, baseRx - 1), Math.max(0, baseRy - 1), rotL);
+  setEll($('clipEllR'), cxR, Math.max(0, baseRx - 1), Math.max(0, baseRy - 1), rotR);
+  setEll($('edgeL'), cxL, Math.max(0, baseRx - 1.2), Math.max(0, baseRy - 1.0), rotL);
+  setEll($('edgeR'), cxR, Math.max(0, baseRx - 1.2), Math.max(0, baseRy - 1.0), rotR);
+  setEll($('simpleRimL'), cxL, baseRx, Math.max(5.5, baseRy), rotL);
+  setEll($('simpleRimR'), cxR, baseRx, Math.max(5.5, baseRy), rotR);
+  $('simpleRimL').style.strokeOpacity = isObs && oClamped < 0.22 ? '0' : '1';
+  $('simpleRimR').style.strokeOpacity = isObs && oClamped < 0.22 ? '0' : '1';
+
+  const edgeOp = isObs ? 0 : (liquid ? Math.max(0, (0.38 + 0.17 * oClamped) * (1 - bPos * 2.8)) : 0);
   $('edgeL').style.opacity = edgeOp.toFixed(2);
   $('edgeR').style.opacity = edgeOp.toFixed(2);
 
-  const br = Math.max(0, bPos - 0.14) / 0.86;
-  const brX = (br * 76).toFixed(1), brY = (br * 56).toFixed(1);
-  $('gooBridge').setAttribute('rx', brX); $('gooBridge').setAttribute('ry', brY);
-  $('obsBridge').setAttribute('rx', (br * 82).toFixed(1)); $('obsBridge').setAttribute('ry', (br * 62).toFixed(1));
+  if (liquid && oClamped > 0.86) {
+    const speed = Math.min(1, Math.hypot(vx, vy) * 2.2);
+    const sx = 1 + bPos * 0.16 + speed * 0.055;
+    $('liquidScale').setAttribute('transform', `translate(200 200) scale(${sx.toFixed(3)} 1) translate(-200 -200)`);
+    const br = Math.max(0, bPos - 0.14) / 0.86;
+    $('gooBridge').setAttribute('rx', (br * 76).toFixed(1)); $('gooBridge').setAttribute('ry', (br * 56).toFixed(1));
+    $('obsBridge').setAttribute('rx', (br * 82).toFixed(1)); $('obsBridge').setAttribute('ry', (br * 62).toFixed(1));
+  } else {
+    $('liquidScale').setAttribute('transform', '');
+    $('gooBridge').setAttribute('rx', '0'); $('gooBridge').setAttribute('ry', '0');
+    $('obsBridge').setAttribute('rx', '0'); $('obsBridge').setAttribute('ry', '0');
+  }
 
-  /* Fade pupils gently right at the peak of the liquid merge */
-  const detOp = bPos > 0.72 ? Math.max(0.12, 1 - (bPos - 0.72) * 3.1) : 1;
-  $('eyeDetails').style.opacity = detOp.toFixed(2);
+  /* Interior pupils, highlights & mood eyelids emerge smoothly as eyes open */
+  const openReveal = Math.max(0, Math.min(1, (oClamped - 0.24) / 0.52));
+  const blinkFade = liquid && bPos > 0.72 ? Math.max(0.12, 1 - (bPos - 0.72) * 3.1) : 1;
+  $('eyeDetails').style.opacity = (openReveal * blinkFade).toFixed(3);
 
-  /* Gaze offset */
-  const px = (x * 20).toFixed(2), py = (y * 15).toFixed(2);
-  const ex = (x * 6).toFixed(2), ey = (y * 4.5).toFixed(2);
-  $('pupilL').setAttribute('transform', `translate(${(Number(px) + pinch).toFixed(2)} ${py})`);
-  $('pupilR').setAttribute('transform', `translate(${(Number(px) - pinch).toFixed(2)} ${py})`);
+  const px = (x * 20 * oClamped).toFixed(2), py = (y * 15 * oClamped).toFixed(2);
+  const ex = (x * 6 * oClamped).toFixed(2), ey = (y * 4.5 * oClamped).toFixed(2);
+  const ps = mPScale.toFixed(3);
+  $('pupilL').setAttribute('transform', `translate(${(Number(px) + pinch).toFixed(2)} ${py}) translate(118 202) scale(${ps}) translate(-118 -202)`);
+  $('pupilR').setAttribute('transform', `translate(${(Number(px) - pinch).toFixed(2)} ${py}) translate(282 202) scale(${ps}) translate(-282 -202)`);
   $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
 
-  /* Dynamic specular highlight, 3D volume gradient focal point & opposite-rim caustic refraction */
-  const fx = (46 + lx * 26).toFixed(1) + '%';
-  const fy = (40 + ly * 24).toFixed(1) + '%';
-  $('gradScleraL').setAttribute('fx', fx); $('gradScleraL').setAttribute('fy', fy);
-  $('gradScleraR').setAttribute('fx', fx); $('gradScleraR').setAttribute('fy', fy);
-  $('gradPupilL').setAttribute('fx', fx); $('gradPupilL').setAttribute('fy', fy);
-  $('gradPupilR').setAttribute('fx', fx); $('gradPupilR').setAttribute('fy', fy);
+  /* Mood eyelids, lower smile cheek & blush (active when open) */
+  setUpperLidPath($('moodLidL'), cxL, false, mLidL * openReveal, mTilt * openReveal);
+  setUpperLidPath($('moodLidR'), cxR, true, mLidR * openReveal, mTilt * openReveal);
+  const sm = mSmile * openReveal;
+  const cheek = $('chargeCheek');
+  if (sm > 0.01) {
+    cheek.style.opacity = Math.min(1, sm * 1.4).toFixed(3);
+    cheek.setAttribute('transform', `translate(0 ${((1 - sm) * 44).toFixed(1)})`);
+  } else {
+    cheek.style.opacity = '0';
+  }
+  const blOp = (mBlush * openReveal).toFixed(3);
+  $('blushL').style.opacity = blOp;
+  $('blushR').style.opacity = blOp;
 
-  const spX = (lx * 18).toFixed(2), spY = (ly * 14).toFixed(2);
-  $('specL').setAttribute('transform', `translate(${(Number(spX) + pinch).toFixed(2)} ${spY})`);
-  $('specR').setAttribute('transform', `translate(${(Number(spX) - pinch).toFixed(2)} ${spY})`);
+  if (liquid) {
+    const fx = (46 + lx * 26 * oClamped).toFixed(1) + '%';
+    const fy = (40 + ly * 24 * oClamped).toFixed(1) + '%';
+    $('gradScleraL').setAttribute('fx', fx); $('gradScleraL').setAttribute('fy', fy);
+    $('gradScleraR').setAttribute('fx', fx); $('gradScleraR').setAttribute('fy', fy);
+    $('gradPupilL').setAttribute('fx', fx); $('gradPupilL').setAttribute('fy', fy);
+    $('gradPupilR').setAttribute('fx', fx); $('gradPupilR').setAttribute('fy', fy);
 
-  const caX = (-lx * 14).toFixed(2), caY = (-ly * 10).toFixed(2);
-  $('causticL').setAttribute('transform', `translate(${(Number(caX) + pinch).toFixed(2)} ${caY})`);
-  $('causticR').setAttribute('transform', `translate(${(Number(caX) - pinch).toFixed(2)} ${caY})`);
+    const spX = (lx * 18 * oClamped).toFixed(2), spY = (ly * 14 * oClamped).toFixed(2);
+    $('specL').setAttribute('transform', `translate(${(Number(spX) + pinch).toFixed(2)} ${spY})`);
+    $('specR').setAttribute('transform', `translate(${(Number(spX) - pinch).toFixed(2)} ${spY})`);
+
+    const caX = (-lx * 14 * oClamped).toFixed(2), caY = (-ly * 10 * oClamped).toFixed(2);
+    $('causticL').setAttribute('transform', `translate(${(Number(caX) + pinch).toFixed(2)} ${caY})`);
+    $('causticR').setAttribute('transform', `translate(${(Number(caX) - pinch).toFixed(2)} ${caY})`);
+  }
+}
+
+function renderCurrentEyes() {
+  applyEyeFrame(curX, curY, velX, velY, blinkPos, lightX, lightY, eyeOpen);
 }
 
 function aimAt(clientX, clientY) {
+  if (!isLinked) return;
   const r = $('pipOrb').getBoundingClientRect();
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
   const dx = (clientX - cx) / Math.max(window.innerWidth * 0.42, 220);
@@ -1952,57 +2231,87 @@ window.addEventListener('touchmove', e => {
 }, {passive: true});
 
 function blinkOnce() {
-  if (simpleMode() || previewBlink !== null) return;
+  if (!isLinked || openTarget < 0.5 || simpleMode() || previewBlink !== null) return;
   blinkTarget = 1;
   setTimeout(() => { blinkTarget = 0; }, 145);
 }
 function scheduleBlink() {
   setTimeout(() => {
-    if (!document.hidden && !simpleMode() && previewBlink === null) blinkOnce();
+    if (isLinked && openTarget > 0.5 && !document.hidden && !simpleMode() && previewBlink === null) blinkOnce();
     scheduleBlink();
   }, 4200 + Math.random() * 3400);
 }
 scheduleBlink();
 
-function updateEyeMood(moodText, charging) {
-  document.body.classList.toggle('charging', !!charging);
-  const lid = $('eyeLid');
-  const sleepy = /asleep|sleepy|tired/i.test(moodText || '');
-  lid.classList.toggle('sleepy', sleepy);
-  lid.classList.toggle('alert', document.body.classList.contains('linked') && !sleepy);
+function updateEyeMood(moodText, charging, asleep = false) {
+  devMood = moodText && moodText !== '—' ? moodText : 'neutral';
+  devCharging = !!charging;
+  devAsleep = !!asleep;
+  syncMoodTargets();
+  if (reducedMotion()) {
+    eyeOpen = openTarget; eyeOpenVel = 0;
+    mLidL = toLidL; mLidR = toLidR; mTilt = toTilt;
+    mSmile = toSmile; mBlush = toBlush; mPScale = toPScale; mScaleY = toScaleY;
+    renderCurrentEyes();
+  }
 }
 
-/* Initial render so first frame already matches chosen eye style & liquid angle */
+/* Initial render: disconnected -> closed horizontal dashes in active palette & eye style */
+eyesReady = true;
 setEyeStyle(document.documentElement.dataset.eyeStyle || 'liquid', false);
-if (!simpleMode()) applyLiquidFrame(curX, curY, 0, 0, blinkPos, lightX, lightY);
+renderCurrentEyes();
 
-let lastEcoDraw = 0;
+let lastEcoDraw = 0, wakeFreeze = false;
 function animateEyes(now) {
-  const dt = now - lastFrameTime;
+  const dt = Math.min(64, Math.max(1, now - lastFrameTime));
   lastFrameTime = now;
   const ecoOn = !!$('eco')?.checked;
-  if (!simpleMode() && twinMode === 'eyes') {
-    /* Auto-fallback to simple mode if device consistently drops below ~20 fps */
-    if (!ecoOn && !document.hidden && dt > 52 && dt < 400 && previewBlink === null) {
+  if (!wakeFreeze && twinMode === 'eyes') {
+    if (reducedMotion()) {
+      eyeOpen = openTarget; eyeOpenVel = 0;
+      mLidL = toLidL; mLidR = toLidR; mTilt = toTilt;
+      mSmile = toSmile; mBlush = toBlush; mPScale = toPScale; mScaleY = toScaleY;
+      renderCurrentEyes();
+      return requestAnimationFrame(animateEyes);
+    }
+
+    const needTransition = Math.abs(openTarget - eyeOpen) > 0.002 || Math.abs(eyeOpenVel) > 0.002;
+    if (!isLinked && !needTransition) {
+      return requestAnimationFrame(animateEyes);
+    }
+
+    /* Auto-fallback to simple mode if device consistently drops below ~20 fps while linked */
+    if (isLinked && !simpleMode() && !ecoOn && !document.hidden && dt > 52 && dt < 400 && previewBlink === null) {
       if (++slowFrames >= 14) { setSimpleFx(true, false); return requestAnimationFrame(animateEyes); }
     } else if (dt < 38) slowFrames = 0;
 
-    if (previewBlink !== null) {
-      applyLiquidFrame(targetX, targetY, 0, 0, previewBlink, targetX, targetY);
-      return;
-    }
-    /* Real firmware eco mode: <= 20 fps and gaze ignores tilt/cursor */
-    if (ecoOn) {
-      if (now - lastEcoDraw < 50) return requestAnimationFrame(animateEyes);
+    if (!isLinked) {
+      targetX = 0; targetY = 0;
+    } else if (ecoOn) {
+      if (!needTransition && now - lastEcoDraw < 50) return requestAnimationFrame(animateEyes);
       lastEcoDraw = now;
       targetX = 0; targetY = 0;
-    } else if (document.body.classList.contains('linking')) {
-      targetX = Math.sin(now / 360) * 0.72;
-      targetY = -0.1;
     } else if (now - lastPointer > 3600) {
       targetX = Math.sin(now / 2800) * 0.32 - 0.12;
       targetY = Math.cos(now / 3600) * 0.18 - 0.16;
     }
+
+    /* Smooth spring opening (wake) & closing (disconnect / asleep) */
+    const oStiff = openTarget > eyeOpen ? 0.095 : 0.12;
+    const oDamp = openTarget > eyeOpen ? 0.76 : 0.72;
+    eyeOpenVel = (eyeOpenVel + (openTarget - eyeOpen) * oStiff) * oDamp;
+    eyeOpen += eyeOpenVel;
+    if (!openTarget && eyeOpen < 0.003 && Math.abs(eyeOpenVel) < 0.003) { eyeOpen = 0; eyeOpenVel = 0; }
+
+    /* Smooth mood shape interpolation */
+    const mk = 0.14;
+    mLidL += (toLidL - mLidL) * mk;
+    mLidR += (toLidR - mLidR) * mk;
+    mTilt += (toTilt - mTilt) * mk;
+    mSmile += (toSmile - mSmile) * mk;
+    mBlush += (toBlush - mBlush) * mk;
+    mPScale += (toPScale - mPScale) * mk;
+    mScaleY += (toScaleY - mScaleY) * mk;
 
     /* 2nd-order elastic springs for gaze, light reflection & liquid blink merge */
     velX = (velX + (targetX - curX) * 0.16) * 0.72;
@@ -2017,7 +2326,7 @@ function animateEyes(now) {
     blinkVel = (blinkVel + (blinkTarget - blinkPos) * bStiff) * bDamp;
     blinkPos += blinkVel;
 
-    applyLiquidFrame(curX, curY, velX, velY, blinkPos, lightX, lightY);
+    applyEyeFrame(curX, curY, velX, velY, previewBlink ?? blinkPos, lightX, lightY, eyeOpen);
   }
   requestAnimationFrame(animateEyes);
 }
@@ -2106,11 +2415,14 @@ async function send(c) {
 }
 function onLine(l) {
   if (l.startsWith('@S ')) {
+    const wasTimedOut = alive > 0 && !isLinked && (port || ble);
     alive = Date.now();
+    if (wasTimedOut) state(port ? 'По кабелю' : 'По Bluetooth', true);
     const s = JSON.parse(l.slice(3));
-    $('mood').textContent = s.m;
+    const shownMood = s.r || s.m;
+    $('mood').textContent = shownMood;
     $('bat').textContent = s.bat >= 0 ? `${s.bat}%${s.ch ? ' · заряджається' : ''}` : '—';
-    updateEyeMood(s.m, s.ch);
+    updateEyeMood(shownMood, s.ch, s.sl);
   } else if (l.startsWith('@C ')) { cfg = JSON.parse(l.slice(3)); fill(); }
   else if (l.startsWith('@B ') && batRows) {
     if (l === '@B end') {
@@ -2128,9 +2440,10 @@ function onLine(l) {
 async function readLoop() {
   const dec = new TextDecoder();
   let acc = '';
+  const activePort = port;
   try {
-    while (port && port.readable) {
-      reader = port.readable.getReader();
+    while (port === activePort && activePort.readable) {
+      reader = activePort.readable.getReader();
       for (;;) {
         const {value, done} = await reader.read();
         if (done) break;
@@ -2142,14 +2455,28 @@ async function readLoop() {
     }
   } catch (e) { /* unplugged */ }
   reader = null;
+  if (port === activePort) {
+    try { await activePort.close(); } catch (e) {}
+    port = null;
+    state('Не підключено', false);
+  }
 }
+navigator.serial?.addEventListener('disconnect', e => {
+  if (port && e.target === port) {
+    port = null;
+    reader = null;
+    state('Не підключено', false);
+  }
+});
 async function openPort(p) {
   port = p;
+  alive = Date.now();
   await port.open({baudRate: 115200});
   try { await port.setSignals({dataTerminalReady: false, requestToSend: false}); } catch (e) {}
   readLoop();
   state('По кабелю', true);
   cfg = null;
+  send('config');
   const ask = setInterval(() => { if (cfg || !port) clearInterval(ask); else send('config'); }, 1000);
 }
 async function closePort() {
@@ -2162,11 +2489,24 @@ async function closePort() {
   return p;
 }
 function state(text, on, busy = false) {
+  const wasLinked = isLinked;
+  isLinked = !!on;
   $('state').textContent = text;
-  document.body.classList.toggle('linked', on);
-  document.body.classList.toggle('linking', !!busy && !on);
-  if (!on) { cfg = null; syncEyeStyleAvailability(); }
-  updateEyeMood($('mood').textContent, false);
+  document.body.classList.toggle('linked', isLinked);
+  document.body.classList.toggle('linking', !!busy && !isLinked);
+  if (!isLinked) {
+    cfg = null;
+    alive = 0;
+    if (wakeRaf) { cancelAnimationFrame(wakeRaf); wakeRaf = 0; wakeStart = -1; drawWakeAt(-1); }
+    $('mood').textContent = '—';
+    $('bat').textContent = '—';
+    $('ver').textContent = '—';
+    syncEyeStyleAvailability();
+    updateEyeMood('neutral', false, false);
+  } else if (!wasLinked) {
+    if (twinMode !== 'eyes') setTwinMode('eyes');
+    triggerWakeup();
+  }
 }
 $('usb').onclick = async () => {
   state('Підключаю по кабелю...', false, true);
@@ -2317,13 +2657,73 @@ $('flash').onclick = async () => {
     await transport.setRTS(false);
     await transport.disconnect();
     $('prog').style.width = '100%';
-    $('flashState').textContent = 'Готово! bibi перезавантажується. За кілька секунд натисни «Підключити по кабелю», щоб налаштувати його.';
+    $('flashState').textContent = 'Готово! bibi перезавантажується...';
     state('Не підключено', false);
+    /* Automatically reconnect once ESP32-S3 finishes rebooting so wakeup animation plays seamlessly */
+    for (let attempt = 0; attempt < 5 && !port && !ble; attempt++) {
+      await new Promise(r => setTimeout(r, 1200));
+      try {
+        const ports = await navigator.serial.getPorts();
+        const cand = ports.find(x => x.getInfo?.().usbVendorId === 0x303a) || ports[0];
+        if (cand) {
+          await openPort(cand);
+          $('flashState').textContent = 'Готово! bibi оновлено та підключено.';
+          break;
+        }
+      } catch (e) {}
+    }
+    if (!port && !ble) {
+      $('flashState').textContent = 'Готово! bibi перезавантажився. Натисни «Підключити по кабелю», щоб налаштувати його.';
+    }
   } catch (e) {
     $('flashState').textContent = 'Не вийшло: ' + (e.message || e) + '. Зазирни в «Не виходить?» нижче.';
   }
   $('flash').disabled = false;
 };
+
+/* ---------- Simulator / Test Harness for Digital Twin connection & @S/@C telemetry ---------- */
+window.__bibiSim = {
+  connect(via = 'По кабелю', mood = 'neutral', bat = 92, ch = 0) {
+    wakeFreeze = false;
+    state(via, true);
+    onLine(`@C {"ver":"1.2.0","power":30,"bright":80,"eco":0,"eyes":${document.documentElement.dataset.eyeStyle === 'plain' ? 0 : 1},"theme":${4 + Math.max(0, PIXELS.indexOf(document.documentElement.dataset.pixel))},"privacy":1,"feat":[1,1,1,1,1,0,1],"first":"Твоє","last":"Ім'я","org":"bibi","links":[["","",""],["","",""],["","",""],["","",""]]}`);
+    onLine(`@S {"m":${JSON.stringify(mood)},"r":"","sl":${mood === 'asleep' ? 1 : 0},"bat":${bat},"ch":${ch}}`);
+  },
+  status(mood = 'neutral', bat = 92, ch = 0, sl = 0, react = '') {
+    onLine(`@S {"m":${JSON.stringify(mood)},"r":${JSON.stringify(react)},"sl":${sl},"bat":${bat},"ch":${ch}}`);
+  },
+  disconnect() {
+    wakeFreeze = false;
+    state('Не підключено', false);
+  },
+  /* Deterministic frame snapshot helper for testing wakeup wave + eye opening at exact elapsed ms */
+  freezeWakeAt(ms, openVal) {
+    if (wakeRaf) { cancelAnimationFrame(wakeRaf); wakeRaf = 0; }
+    wakeStart = -1;
+    isLinked = true;
+    wakeFreeze = true;
+    $('state').textContent = 'По кабелю';
+    document.body.classList.add('linked');
+    $('ver').textContent = '1.2.0';
+    $('bat').textContent = '92%';
+    $('mood').textContent = devMood || 'neutral';
+    syncMoodTargets();
+    eyeOpen = openVal; eyeOpenVel = 0;
+    mLidL = toLidL; mLidR = toLidR; mTilt = toTilt;
+    mSmile = toSmile; mBlush = toBlush; mPScale = toPScale; mScaleY = toScaleY;
+    applyEyeFrame(0, 0, 0, 0, 0, -0.18, -0.22, eyeOpen);
+    drawWakeAt(ms);
+  }
+};
+if (params.has('wakeMs')) {
+  devMood = params.get('mood') || 'neutral';
+  window.__bibiSim.freezeWakeAt(Number(params.get('wakeMs')), Number(params.get('open') ?? 1));
+} else if (params.get('simdisc') === '1') {
+  isLinked = true; eyeOpen = 1; openTarget = 1; renderCurrentEyes();
+  setTimeout(() => window.__bibiSim.disconnect(), 200);
+} else if (params.get('simlink') === '1') {
+  setTimeout(() => window.__bibiSim.connect('По кабелю', params.get('mood') || 'neutral', 94, params.get('ch') === '1' ? 1 : 0), 180);
+}
 </script>
 </body>
 </html>
