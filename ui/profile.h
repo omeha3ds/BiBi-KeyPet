@@ -15,6 +15,6 @@ extern profile_t profile;
 extern int profile_rev;             /* bumps on every change: Quick QR draws its codes again */
 int profile_links(void);            /* how many links there are */
 const profile_link_t *profile_link(int i); /* the i-th one that is there */
-int profile_brand(const char *url); /* BRAND_* from the address: t.me, instagram.com */
+int profile_brand(const char *url); /* BRAND_LINK for non-empty addresses */
 void profile_changed(void);         /* call after editing profile: tells the host to keep it */
 void profile_on_change(void (*cb)(void));

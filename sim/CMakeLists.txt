@@ -17,12 +17,6 @@ file(GLOB THEME_FONTS ../ui/fonts/font_*_*.c)
 set(UI ../ui/face.c ../ui/imu.c ../ui/pip.c ../ui/doodle.c ../ui/pet.c ../ui/shell.c ../ui/apps.c ../ui/voice.c ../ui/profile.c
        ../ui/theme.c ../ui/phone.c ../ui/mic.c ../ui/maze.c ../ui/liquid_sprites.c ${THEME_FONTS})
 
-# the owner's own extras, kept out of the public repo (private/ is gitignored): the AITU mark on the badge
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../private/aitu_mark.c)
-    list(APPEND UI ../private/aitu_mark.c)
-    add_compile_definitions(KEYPET_AITU)
-endif()
-
 if(EMSCRIPTEN)
     # emcmake cmake -S sim -B build-web && cmake --build build-web  ->  sim/web/pip.js + pip.wasm
     set(APP pip)

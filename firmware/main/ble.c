@@ -490,7 +490,7 @@ static int hid_access(uint16_t conn, uint16_t attr, struct ble_gatt_access_ctxt 
     case 0x2908: return read_flat(ctxt, rid ? host_ref[rid - 1] : ref, 2);   /* report reference: id, input */
     case 0x2A4E: return read_flat(ctxt, &protocol, 1);                        /* protocol mode: report */
     case 0x2A50: return read_flat(ctxt, pnp, 7);                              /* PnP id */
-    case 0x2A29: return read_flat(ctxt, "KeyPet", 6);                         /* manufacturer */
+    case 0x2A29: return read_flat(ctxt, "bibi", 4);                           /* manufacturer */
     case 0x2A19: {                                                            /* battery level */
         int pct = shell_battery_level(NULL);
         uint8_t v = pct < 0 ? 100 : (uint8_t)pct;
@@ -937,7 +937,7 @@ static void advertise(void)
     static const uint8_t adv[] = {2, 0x01, 0x06,          /* flags: general discoverable, LE only */
                                   3, 0x03, 0x12, 0x18,    /* services: HID */
                                   3, 0x19, 0xC1, 0x03,    /* appearance: keyboard */
-                                  4, 0x09, 'P', 'i', 'p'}; /* name */
+                                  5, 0x09, 'b', 'i', 'b', 'i'}; /* name */
     uint8_t rsp[18] = {17, 0x15};
     memcpy(rsp + 2, ANCS.value, 16);
     ble_gap_adv_set_data(adv, sizeof adv);
@@ -971,7 +971,7 @@ static void on_sync(void)
     ble_hs_id_infer_auto(0, &b.own_addr);
     gatt_layout_check();
     advertise();
-    ESP_LOGI(TAG, "advertising as Pip");
+    ESP_LOGI(TAG, "advertising as bibi");
 }
 
 static void host_task(void *arg)
@@ -1005,7 +1005,7 @@ void ble_start(void)
     ble_hs_cfg.sm_their_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
     ble_svc_gap_init();
     ble_svc_gatt_init();
-    ble_svc_gap_device_name_set("Pip");
+    ble_svc_gap_device_name_set("bibi");
     ble_svc_gap_device_appearance_set(0x03C1); /* keyboard */
     if (ble_gatts_count_cfg(services) || ble_gatts_add_svcs(services)) ESP_LOGE(TAG, "HID services did not register");
     ble_store_config_init(); /* bonds in NVS: pair once */

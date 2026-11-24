@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KeyPet Simulator</title>
+<title>bibi Simulator</title>
 <style>
   :root {
     --bg: #131417; --panel: #1b1c21; --line: #2b2d34; --btn: #262830; --btn-hover: #30333c;
@@ -60,7 +60,7 @@
 </style>
 </head>
 <body>
-<div id="view"><div id="hint">Мышь на экране — палец: свайп по Пипу — меню, двойной тап по пустому месту в меню — к Пипу, свайп вниз в приложении — назад · тяни за корпус — наклон · колесо — зум · боковые кнопки: верхняя — меню / открыть, нижняя — назад / знакомство</div></div>
+<div id="view"><div id="hint">Мышь на экране — палец: свайп по bibi — меню, двойной тап по пустому месту в меню — к bibi, свайп вниз в приложении — назад · тяни за корпус — наклон · колесо — зум · боковые кнопки: верхняя — меню / открыть, нижняя — назад / знакомство</div></div>
 <div id="panel">
   <div class="row">
     <canvas id="preview" width="476" height="476"></canvas>
@@ -87,9 +87,9 @@
 
   <h2>Стиль</h2>
   <div class="grid two" id="themes"></div>
-  <div class="note">Меняет меню и приложения (Пип остаётся прежним). На брелоке — приложение «Стиль» в меню.</div>
+  <div class="note">Меняет меню и приложения. На брелоке — приложение «Стиль» в меню.</div>
 
-  <h2>iPhone (поддельный)</h2>
+  <h2>iOS-телефон (тестовий)</h2>
   <div class="grid" id="phone">
     <button data-k="L" data-a="1">Сопряжение</button>
     <button data-k="L" data-a="2">Подключить</button>
@@ -100,7 +100,7 @@
     <button data-k="M" data-a="1">Играет трек</button>
     <button data-k="M" data-a="0">Музыка стоп</button>
   </div>
-  <div class="mono" id="phonelog">брелок → iPhone: —</div>
+  <div class="mono" id="phonelog">брелок → телефон: —</div>
   <h2>Компьютер (поддельный)</h2>
   <div class="grid" id="host">
     <button data-k="X" data-a="1">Сопряжение</button>
@@ -109,7 +109,7 @@
   </div>
   <div class="mono" id="hostlog">брелок → компьютер: —</div>
   <div class="note">Приложение «Пульт»: кнопки листают слайды (Page Down / Page Up), зажатая нижняя + наклон — скролл, палец на экране + поворот брелока — указка. «Музыка» с подключённым компьютером управляет его медиа. С зажатым Shift нажмите на экран и тяните: палец остаётся на месте, а брелок поворачивается (указка). Так же с нижней кнопкой — скролл.</div>
-  <div class="note">Так будет вести себя настоящий iPhone по Bluetooth: уведомления и звонки (ANCS), музыка (AMS), затвор камеры (клавиша «громкость +»). Приложение на телефоне не нужно.</div>
+  <div class="note">Так поводиться iOS-телефон по Bluetooth: сповіщення та дзвінки (ANCS), музика (AMS), затвор камери (клавіша «гучність +»).</div>
 
   <h2>Тамагочи</h2>
   <div id="needs"></div>
@@ -127,7 +127,7 @@
     <button id="plus8">+8 часов</button>
     <button id="newpet">Новый питомец</button>
   </div>
-  <div class="note">Пип сохраняется в браузере и живёт, пока вкладка закрыта: вернёшься через час — он проголодается.</div>
+  <div class="note">bibi зберігається в браузері й живе, поки вкладка закрита: повернешся за годину — він зголодніє.</div>
 
   <h2>Голос</h2>
   <div class="grid" id="voices"></div>
@@ -479,7 +479,7 @@ const MENU_STYLES = ['Меню: соты', 'Меню: карусель', 'Мен
 const showStyle = () => { styleBtn.textContent = MENU_STYLES[M._sim_menu_style()]; };
 styleBtn.onclick = () => { M._sim_set_menu_style((M._sim_menu_style() + 1) % 3); showStyle(); };
 showStyle();
-const THEMES = [[4, 'Півонія'], [5, 'Обсидіан'], [6, 'Затока'], [7, 'Шавлія'], [8, 'Корал'], [9, 'Туман']];
+const THEMES = [[4, 'Сакура'], [5, 'Онікс'], [6, 'Лагуна'], [7, 'М\'ята'], [8, 'Персик'], [9, 'Іній']];
 const themesEl = document.getElementById('themes');
 const showTheme = () => { [...themesEl.children].forEach((b, k) => b.classList.toggle('on', THEMES[k][0] === M._sim_theme())); showStyle(); };
 THEMES.forEach(([i, name]) => {
@@ -510,14 +510,14 @@ const hostLog = document.getElementById('hostlog');
 let hostLast = '';
 setInterval(() => { /* what the keychain asked the phone to do */
   const last = M.UTF8ToString(M._sim_phone_last()), shots = M._sim_phone_shots();
-  const text = `брелок → iPhone: ${last || '—'}   снимков: ${shots}`;
+  const text = `брелок → телефон: ${last || '—'}   снимков: ${shots}`;
   if (text !== phoneLast) phoneLog.textContent = phoneLast = text;
   const h = Object.fromEntries(M.UTF8ToString(M._sim_host_report()).split(' ').map(kv => kv.split('=')));
   const htext = `брелок → компьютер: ${{ on: 'подключён', pairing: 'сопряжение', off: 'нет' }[h.host]}   дальше: ${h.nexts}   назад: ${h.prevs}   кликов: ${h.clicks}   указка: ${h.mx}, ${h.my}   скролл: ${h.scroll}   медиа: ${h.media}`;
   if (htext !== hostLast) hostLog.textContent = hostLast = htext;
 }, 200);
 
-const SCREENS = { pair: 'сопряжение', call: 'звонок', banner: 'уведомление', style: 'стиль', pip: 'Пип', menu: 'меню', stopwatch: 'секундомер', badge: 'бейдж', clock: 'часы', care: 'Пип: забота', qr: 'Quick QR', timer: 'таймер',
+const SCREENS = { pair: 'сопряжение', call: 'звонок', banner: 'уведомление', style: 'стиль', pip: 'bibi', menu: 'меню', stopwatch: 'секундомер', badge: 'бейдж', clock: 'часы', care: 'bibi: догляд', qr: 'Quick QR', timer: 'таймер', about: 'про пристрій',
   torch: 'фонарик', ball: 'шарик', notify: 'уведомления', music: 'музыка', camera: 'камера', remote: 'пульт', maze: 'лабиринт',
   games: 'игры', xo: 'крестики-нолики', eight: 'шар-восьмёрка', coin: 'монетка', dice: 'кубик', noise: 'шумомер' };
 const NEEDS = [['food', 'Еда'], ['energy', 'Энергия'], ['fun', 'Веселье'], ['love', 'Внимание'], ['walk', 'Прогулки'], ['dayMood', 'Настроение дня']];
@@ -534,7 +534,7 @@ for (const b of document.querySelectorAll('#speeds [data-speed]')) b.onclick = (
 document.getElementById('plus1').onclick = () => { clockOffset += 3600; };
 document.getElementById('plus8').onclick = () => { clockOffset += 8 * 3600; };
 document.getElementById('newpet').onclick = () => {
-  if (!confirm('Начать с новым Пипом? Текущий забудется.')) return;
+  if (!confirm('Почати з новим bibi? Поточний забудеться.')) return;
   store.del('keypet.pet'); store.del('keypet.clockOffset'); removeEventListener('pagehide', savePet); location.reload();
 };
 const moodsEl = document.getElementById('moods'), filter = document.getElementById('filter');
@@ -648,7 +648,7 @@ function tick(now) {
     }
     const clock = new Date(simNow() * 1000).toLocaleString('ru-RU', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     document.getElementById('petinfo').textContent =
-      `время Пипа  ${clock}${timeSpeed > 1 ? '  (×' + timeSpeed + ')' : ''}\n` +
+      `час bibi  ${clock}${timeSpeed > 1 ? '  (×' + timeSpeed + ')' : ''}\n` +
       `состояние   ${st.asleep ? 'спит' : 'не спит'}, ${RU[st.mood] || st.mood}${st.auto ? '' : ' (выбрано вручную)'}\n` +
       `экран       ${SCREENS[st.screen] || st.screen}`;
     const f = v => (v >= 0 ? ' ' : '') + v.toFixed(2);

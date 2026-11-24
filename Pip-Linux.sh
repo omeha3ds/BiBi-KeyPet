@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pip's panel: flash the keychain, set it up. Opens docs/index.html in Chrome, Chromium or Edge (they can talk to USB).
+# bibi panel: flash the keychain, set it up. Opens docs/index.html in Chrome, Chromium or Edge (they can talk to USB).
 # The browser needs access to the keychain's port: once, run  sudo usermod -aG dialout $USER  and log in again.
 cd "$(dirname "$0")"
 PAGE="file://$PWD/docs/index.html"

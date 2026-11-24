@@ -158,7 +158,7 @@ static void pair_show(void)
     static th_cell_t cells[40];
     pair_hide();
     lv_obj_t *o = ph.pair_o = layer();
-    th_header(o, "піп-01 // зв'язок", 40);
+    th_header(o, "bibi // зв'язок", 40);
     if (TH_TERMINAL) th_cells(o, cells, th_pattern(cells, rune, 11, 209, 86, 7, 6, th->text));
     else { /* the Bluetooth rune as one line */
         static const lv_point_precise_t pts[] = {{0, 18}, {34, 48}, {17, 64}, {17, 0}, {34, 16}, {0, 46}};
@@ -169,7 +169,7 @@ static void pair_show(void)
         lv_obj_set_style_line_rounded(ln, true, 0);
         lv_obj_set_pos(ln, SCR / 2 - 17, 92);
     }
-    th_text_at(o, th->tiny, th->dim, ph.pair_host ? "пара з комп'ютером" : "пара з iPhone", -1, 177);
+    th_text_at(o, th->tiny, th->dim, ph.pair_host ? "пара з комп'ютером" : "пара з iOS-телефоном", -1, 177);
     char code[16];
     snprintf(code, sizeof code, "%03u %03u", (unsigned)(ph.code / 1000 % 1000), (unsigned)(ph.code % 1000));
     th_plate(o, 118, 204, 230, 52, th->body, code, false, NULL);
@@ -378,7 +378,7 @@ static void offline(lv_obj_t *scr, int icon, const char *name)
         lv_obj_t *img = lv_image_create(scr);
         lv_image_set_src(img, shell_icon(icon));
         lv_obj_align(img, LV_ALIGN_CENTER, 0, -60);
-        lv_obj_t *l = th_text(scr, th->small, th->dim, ph.link == PHONE_PAIRING ? "Звірте код на iPhone" : "Потрібен iPhone по Bluetooth.\nПідключіть його в налаштуваннях.");
+        lv_obj_t *l = th_text(scr, th->small, th->dim, ph.link == PHONE_PAIRING ? "Звірте код на iOS-телефоні" : "Потрібен iOS-телефон по Bluetooth.\nПідключіть його в налаштуваннях.");
         lv_obj_align(l, LV_ALIGN_CENTER, 0, 70);
         return;
     }
@@ -389,12 +389,12 @@ static void offline(lv_obj_t *scr, int icon, const char *name)
     };
     static th_cell_t cells[70];
     char t[48];
-    snprintf(t, sizeof t, "піп-01 // %s", name);
+    snprintf(t, sizeof t, "bibi // %s", name);
     th_header(scr, t, 40);
     int pic = icon == ICON_BELL ? 0 : icon == ICON_MUSIC ? 1 : 2;
     th_cells(scr, cells, th_pattern(cells, pics[pic], 10, 196, 88, 11, 9, th->text));
     th_text_at(scr, th->body, th->text, "немає зв'язку", -1, 214);
-    lv_obj_t *l = th_text_at(scr, th->tiny, th->dim, "потрібен iphone\nі bluetooth le", -1, 257);
+    lv_obj_t *l = th_text_at(scr, th->tiny, th->dim, "потрібен iOS-телефон\nі bluetooth le", -1, 257);
     lv_obj_set_style_text_line_space(l, 4, 0);
     lv_obj_t *row = lv_obj_create(scr);
     lv_obj_remove_style_all(row);
@@ -536,7 +536,7 @@ static void nt_build(void)
         return;
     }
     nt.detail = false;
-    th_header(scr, "піп-01 // сповіщення", 40);
+    th_header(scr, "bibi // сповіщення", 40);
     privacy_chip(scr);
     if (privacy == PHONE_PRIV_OFF) {
         th_text_at(scr, th->body, th->dim, "вимкнено", -1, 196);
@@ -732,7 +732,7 @@ static void mu_update(lv_timer_t *t)
     snprintf(s, sizeof s, "%d%s%s", playing, has ? ph.tr.title : "", ph.tr.artist);
     if (strcmp(s, mu.shown)) { /* the text only when it changes: a new text restarts the running line */
         strcpy(mu.shown, s);
-        lv_label_set_text(mu.head, th_label(!(playing || !has) ? "музика // пауза" : TH_TERMINAL ? "піп-01 // музика" : "музика"));
+        lv_label_set_text(mu.head, th_label(!(playing || !has) ? "музика // пауза" : TH_TERMINAL ? "bibi // музика" : "музика"));
         lv_label_set_text(mu.title, th_label(has ? ph.tr.title : "нічого не грає"));
         lv_label_set_text(mu.artist, has ? th_label(ph.tr.artist) : "");
         lv_obj_set_style_text_color(mu.title, lv_color_hex(playing || !has ? th->text : th->dim), 0);
@@ -837,7 +837,7 @@ void phone_music_open(lv_obj_t *scr)
     lv_obj_set_width(mu.artist, 300), lv_label_set_long_mode(mu.artist, LV_LABEL_LONG_DOT);
     lv_obj_align(mu.artist, LV_ALIGN_TOP_MID, 0, 190);
     if (mu.pc) { /* the computer: the keys and the gestures, no track */
-        lv_label_set_text(mu.head, th_label(TH_TERMINAL ? "піп-01 // комп'ютер" : "музика // комп'ютер"));
+        lv_label_set_text(mu.head, th_label(TH_TERMINAL ? "bibi // комп'ютер" : "музика // комп'ютер"));
         lv_label_set_text(mu.title, th_label("комп'ютер"));
         lv_obj_set_style_text_line_space(th_text_at(scr, th->tiny, th->dim, "свайп: трек\nвгору / вниз: гучність", -1, 236), 4, 0);
         footer(scr, TH_UP " грати / пауза   " TH_DOWN " назад", 375);
@@ -849,7 +849,7 @@ void phone_music_open(lv_obj_t *scr)
         mu.foot = footer(scr, "", 375);
     }
     if (ph.link == PHONE_ON && ph.host == HOST_ON) /* both here: a tap sends the music app to the other one */
-        th_text_at(scr, th->tiny, th_mute(), mu.pc ? "тап: iPhone" : "тап: комп'ютер", -1, TH_TERMINAL ? 330 : 318);
+        th_text_at(scr, th->tiny, th_mute(), mu.pc ? "тап: телефон" : "тап: комп'ютер", -1, TH_TERMINAL ? 330 : 318);
     /* the volume plate over the title while it changes (the computer's: what the last key did) */
     uint32_t plate = TH_TERMINAL ? th->text : th->panel, ink = TH_TERMINAL ? th->bg : th->text;
     mu.vol = th_box(scr, SCR / 2 - 130, 108, 260, 92, th->radius ? 18 : 0, plate);
@@ -1007,7 +1007,7 @@ void phone_camera_open(lv_obj_t *scr)
     /* ready: a shutter of cells in a viewfinder, the timer chips */
     lv_obj_t *r = cam.ready = th_box(scr, 0, 0, SCR, SCR, 0, 0);
     lv_obj_set_style_bg_opa(r, LV_OPA_TRANSP, 0);
-    th_header(r, "піп-01 // камера", 40);
+    th_header(r, "bibi // камера", 40);
     int n = 0;
     if (!TH_TERMINAL) { /* a shutter button: an ink ring round an accent disc */
         lv_obj_t *ring = th_box(r, SCR / 2 - 80, 96, 160, 160, LV_RADIUS_CIRCLE, th->bg);
@@ -1236,7 +1236,7 @@ void phone_remote_open(lv_obj_t *scr)
     memset(&rm, 0, sizeof rm);
     memcpy(rm.bias, bias, sizeof bias);
     rm.scr = scr;
-    th_header(scr, "піп-01 // пульт", 40);
+    th_header(scr, "bibi // пульт", 40);
     if (ph.host != HOST_ON) { /* how to get a computer here */
         if (!TH_TERMINAL) {
             lv_obj_t *img = lv_image_create(scr);
@@ -1247,7 +1247,7 @@ void phone_remote_open(lv_obj_t *scr)
         }
         lv_obj_t *l = th_text_at(scr, th->tiny, th->dim,
                                  ph.host == HOST_PAIRING ? "звірте код на комп'ютері"
-                                                         : "на комп'ютері: bluetooth,\nпристрій pip.\nпульт гортає слайди\nі водить указку",
+                                                         : "на комп'ютері: bluetooth,\nпристрій bibi.\nпульт гортає слайди\nі водить указку",
                                  -1, TH_TERMINAL ? 200 : 260);
         lv_obj_set_style_text_line_space(l, 4, 0);
         footer(scr, TH_DOWN " назад", 404);
@@ -1317,7 +1317,7 @@ static void bt_update(lv_timer_t *t)
     (void)t;
     phone_bt_t s = {0};
     if (bt.query) bt.query(&s);
-    static const char *const who[3] = {"iPhone", "комп'ютер", "налагодження"};
+    static const char *const who[3] = {"iOS-телефон", "комп'ютер", "налагодження"};
     for (int r = 0; r < 3; r++) {
         const phone_peer_t *p = NULL;
         for (int i = 0; i < s.n; i++)
@@ -1364,7 +1364,7 @@ static void bt_forget(lv_event_t *e)
 void phone_bt_open(lv_obj_t *scr)
 {
     bt.scr = scr, bt.forget_at = 0;
-    th_header(scr, "піп-01 // bluetooth", 40);
+    th_header(scr, "bibi // bluetooth", 40);
     static const int top[3] = {78, 160, 218}; /* the phone's row has a second line */
     for (int r = 0; r < 3; r++) {
         bt.rows[r][0] = th_text_at(scr, th->small, th->text, "", 66, top[r]);

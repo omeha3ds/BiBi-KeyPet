@@ -39,9 +39,7 @@ tools/pipdebug.sh                 # debug page http://localhost:8765 (USB, or th
 - Editing `firmware/sdkconfig.defaults` does nothing until `firmware/sdkconfig` is deleted (or edit both).
 - Generators: `tools/fonts.sh` (theme fonts from assets/fonts), `tools/release.sh` (the public firmware for the panel:
   `docs/firmware/firmware.js`, built with `KEYPET_PUBLIC=1` in `firmware/build-release`).
-- Public vs the owner's build: `private/` is gitignored; if `private/aitu_mark.c` exists the sim and firmware add it and
-  define `KEYPET_AITU` (the AITU mark on the badge). Without it the badge draws Pip's eyes. Nothing personal goes in git:
-  the badge name and QR links are `ui/profile.c` defaults, set per keychain from the panel and kept in NVS.
+- Defaults: nothing personal goes in git; the badge name and QR links are `ui/profile.c` defaults, set per keychain from the panel and kept in NVS.
 
 ## The panel (what end users get)
 

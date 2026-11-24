@@ -283,71 +283,39 @@ static uint32_t lerp_rgb(uint32_t a, uint32_t b, float t)
     return o;
 }
 
-/* Telegram's paper plane, flattened from its vector outline: svg units (24 to the logo), centred on its box */
-static const float PLANE[] = {
-    5.85, -5.40, 5.99, -5.39, 6.16, -5.35, 6.24, -5.31, 6.32, -5.26, 6.49, -4.93, 6.50, -4.81, 6.51, -4.64, 6.51, -4.46,
-    6.37, -3.31, 6.16, -1.85, 5.91, -0.23, 5.64, 1.41, 5.38, 2.92, 5.15, 4.17, 5.05, 4.57, 4.93, 4.88, 4.80, 5.11, 4.65,
-    5.27, 4.49, 5.36, 4.33, 5.40, 3.99, 5.38, 3.68, 5.29, 3.37, 5.14, 3.07, 4.94, 2.76, 4.72, 2.43, 4.49, 1.93, 4.17,
-    1.49, 3.87, 1.08, 3.59, 0.67, 3.31, 0.23, 3.01, -0.25, 2.69, -0.69, 2.33, -0.86, 2.01, -0.82, 1.71, -0.62, 1.42,
-    -0.33, 1.12, 0.01, 0.78, 0.31, 0.50, 0.93, -0.08, 1.71, -0.80, 2.47, -1.54, 3.06, -2.13, 3.32, -2.45, 3.31, -2.58,
-    3.26, -2.66, 3.14, -2.70, 3.01, -2.68, 2.83, -2.58, 2.38, -2.29, 1.67, -1.83, 0.69, -1.18, -0.55, -0.35, -2.05,
-    0.66, -2.29, 0.81, -2.51, 0.94, -2.74, 1.03, -2.95, 1.10, -3.15, 1.13, -3.35, 1.14, -3.60, 1.12, -3.89, 1.07, -4.22,
-    1.00, -4.56, 0.90, -4.90, 0.81, -5.22, 0.70, -5.58, 0.59, -5.90, 0.48, -6.17, 0.37, -6.37, 0.25, -6.49, 0.10, -6.51,
-    -0.08, -6.48, -0.19, -6.40, -0.30, -6.27, -0.41, -6.10, -0.52, -5.88, -0.64, -5.62, -0.75, -3.97, -1.47, -2.51,
-    -2.10, -1.25, -2.64, -0.18, -3.10, 0.70, -3.48, 1.38, -3.76, 2.83, -4.36, 3.92, -4.80, 4.70, -5.10, 5.23, -5.28,
-    5.60, -5.37, 5.85, -5.40
-};
-#define PLANE_N (int)(sizeof PLANE / sizeof PLANE[0] / 2)
-
-static float plane(float x, float y, float scale) /* signed distance to the plane, negative inside */
+/* Neutral chain-link symbol for QR codes (no third-party brand marks) */
+static float link_glyph(float fx, float fy, float k)
 {
-    x /= scale, y /= scale;
-    float d = 1e9f;
-    bool in = false;
-    for (int i = 0, j = PLANE_N - 1; i < PLANE_N; j = i++) {
-        float ax = PLANE[j * 2], ay = PLANE[j * 2 + 1], bx = PLANE[i * 2], by = PLANE[i * 2 + 1];
-        float ex = bx - ax, ey = by - ay, t = clamp01(((x - ax) * ex + (y - ay) * ey) / (ex * ex + ey * ey));
-        d = fminf(d, hypotf(x - ax - ex * t, y - ay - ey * t));
-        if ((ay > y) != (by > y) && x < ax + (y - ay) * ex / ey) in = !in;
-    }
-    return (in ? -d : d) * scale;
-}
-
-static float insta(float fx, float fy, float k) /* the camera outline, k = 1 fills about half the box */
-{
-    float g = fminf(fabsf(box(fx, fy, 24 * k, 24 * k, 8 * k)) - 3.5f * k, fabsf(hypotf(fx, fy) - 10.5f * k) - 3.5f * k);
-    return fminf(g, hypotf(fx - 13.5f * k, fy + 13.5f * k) - 3.2f * k);
+    float u = (fx + fy) * 0.7071068f, v = (-fx + fy) * 0.7071068f;
+    float left = fmaxf(fabsf(box(u + 11.5f * k, v, 10.5f * k, 7.8f * k, 7.8f * k)) - 2.8f * k, u + 3.8f * k);
+    float right = fmaxf(fabsf(box(u - 11.5f * k, v, 10.5f * k, 7.8f * k, 7.8f * k)) - 2.8f * k, -(u - 3.8f * k));
+    float bar = box(u, v, 8.8f * k, 2.7f * k, 2.7f * k);
+    return fminf(fminf(left, right), bar);
 }
 
 void doodle_brand(int brand, uint32_t *px, int stride, int x0, int y0, int size)
 {
+    if (!brand) return;
     float r = size * 0.5f, k = 100.0f / size; /* draw in a 100-unit box */
     for (int y = 0; y < size; y++)
         for (int x = 0; x < size; x++) {
             uint32_t *p = &px[(y0 + y) * stride + x0 + x];
             float fx = (x + 0.5f - r) * k, fy = (y + 0.5f - r) * k, aa = 1 / k;
             over(p, 0xFFFFFFFF, clamp01(0.5f - (hypotf(fx, fy) - 50) / k)); /* white halo keeps the code readable */
-            if (brand == BRAND_TELEGRAM) {
-                over(p, lerp_rgb(0x37BBFE, 0x1E96D4, clamp01((fy + 40) / 80)), clamp01(0.5f - (hypotf(fx, fy) - 41) * aa));
-                over(p, 0xFFFFFFFF, clamp01(0.5f - plane(fx + 2, fy - 1, 3.6f) * aa));
-            } else if (brand == BRAND_INSTAGRAM) {
-                float t = clamp01((fx - fy + 70) / 140); /* purple, bottom-left -> orange -> yellow, top-right */
-                uint32_t c = t < 0.5f ? lerp_rgb(0xFCAF45, 0xE1306C, t * 2) : lerp_rgb(0xE1306C, 0x833AB4, (t - 0.5f) * 2);
-                over(p, c, clamp01(0.5f - box(fx, fy, 38, 38, 12) * aa));
-                over(p, 0xFFFFFFFF, clamp01(0.5f - insta(fx, fy, 1) * aa));
-            }
+            over(p, 0xFF1E2428, clamp01(0.5f - (hypotf(fx, fy) - 41) * aa));
+            over(p, 0xFFFFFFFF, clamp01(0.5f - link_glyph(fx, fy, 1.0f) * aa));
         }
 }
 
 void doodle_brand_ink(int brand, uint32_t *px, int stride, int x0, int y0, int size, uint32_t ink, uint32_t paper)
 {
+    if (!brand) return;
     float r = size * 0.5f, k = 100.0f / size;
     for (int y = 0; y < size; y++)
         for (int x = 0; x < size; x++) {
             uint32_t *p = &px[(y0 + y) * stride + x0 + x];
             *p = paper; /* a clear square: no modules run into the mark */
             float fx = (x + 0.5f - r) * k, fy = (y + 0.5f - r) * k, aa = 1 / k;
-            float d = brand == BRAND_TELEGRAM ? plane(fx + 2, fy - 1, 5.6f) : insta(fx, fy, 1.45f);
-            over(p, ink, clamp01(0.5f - d * aa));
+            over(p, ink, clamp01(0.5f - link_glyph(fx, fy, 1.35f) * aa));
         }
 }

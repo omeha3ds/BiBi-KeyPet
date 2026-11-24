@@ -27,9 +27,7 @@ const profile_link_t *profile_link(int i)
 
 int profile_brand(const char *url)
 {
-    if (strstr(url, "t.me/") || strstr(url, "telegram.me/")) return BRAND_TELEGRAM;
-    if (strstr(url, "instagram.com/")) return BRAND_INSTAGRAM;
-    return BRAND_NONE;
+    return url && url[0] ? BRAND_LINK : BRAND_NONE;
 }
 
 void profile_changed(void)

@@ -25,7 +25,7 @@ BAYER4 = (
     (15.5 / 16, 7.5 / 16, 13.5 / 16, 5.5 / 16),
 )
 
-# Exact Pixel palette liquid stops matching docs/index.html (in theme order TH_PEONY..TH_PORCELAIN)
+# Palette liquid stops matching docs/index.html (in theme order TH_PEONY..TH_PORCELAIN)
 PALETTES = [
     dict(
         id="peony",
@@ -58,7 +58,7 @@ PALETTES = [
         obsidian=False, rim=0,
     ),
     dict(
-        id="porcelain",  # "Туман" (Google Pixel 11 Pro Fog)
+        id="porcelain",  # "Іній" (pale misty mint + dark graphite-green)
         eye_hi=0xEEF5F0, eye_mid=0xD2DFD6, eye_deep=0x8EA096, eye_caustic=0xE6F0EA,
         pupil_hi=0x4E6963, pupil_mid=0x263834, pupil_deep=0x101917,
         obsidian=False, rim=0,

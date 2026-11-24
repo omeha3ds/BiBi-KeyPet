@@ -489,7 +489,7 @@ static void chrome_build(void) /* the terminal's header, hints and scroll cells,
     lv_obj_clean(sh.chrome);
     if (!TH_TERMINAL) return;
     sh.head = th_header(sh.chrome, "", 40);
-    th_footer(sh.chrome, sh.group ? TH_UP " відкрити   " TH_DOWN " назад" : TH_UP " відкрити   " TH_DOWN " піп", 392);
+    th_footer(sh.chrome, sh.group ? TH_UP " відкрити   " TH_DOWN " назад" : TH_UP " відкрити   " TH_DOWN " bibi", 392);
     int top = SCR / 2 - (sh.n * 11 - 2) / 2;
     for (int i = 0; i < sh.n; i++) sh.scroll_cells[i] = (th_cell_t){405, (int16_t)(top + i * 11), 9, 9, th->off};
     sh.scroll = th_cells(sh.chrome, sh.scroll_cells, sh.n);

@@ -13,7 +13,7 @@ void doodle_icon(int icon, int style, uint32_t color, uint32_t ink, uint32_t lin
 void doodle_icon_mask(int icon, uint8_t *a8, int stride, int size); /* just the symbol as coverage, for a menu row */
 void doodle_mini_eyes(uint32_t *px, int w, int h, uint32_t sclera, uint32_t pupil, uint32_t stroke, bool slim_pupil);
 
-/* Brand marks for the middle of a QR code, composited into an ARGB buffer (stride in pixels) */
-enum { BRAND_NONE, BRAND_TELEGRAM, BRAND_INSTAGRAM };
+/* Neutral link badge for the middle of a QR code, composited into an ARGB buffer (stride in pixels) */
+enum { BRAND_NONE, BRAND_LINK };
 void doodle_brand(int brand, uint32_t *px, int stride, int x0, int y0, int size);
 void doodle_brand_ink(int brand, uint32_t *px, int stride, int x0, int y0, int size, uint32_t ink, uint32_t paper); /* one colour, no tile */

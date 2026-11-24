@@ -20,17 +20,17 @@ LV_FONT_DECLARE(font_pixel_40) LV_FONT_DECLARE(font_pixel_52) LV_FONT_DECLARE(fo
     .pupil_rx = 0.400f, .pupil_ry = 0.617f
 
 const theme_t themes[TH_COUNT] = {
-    /* Hidden legacy indices 0..3 map to Obsidian so old NVS values or `theme 0..3` stay valid and 4..9 numbering never shifts */
-    [TH_SILENCE]    = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
-    [TH_INSTRUMENT] = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
-    [TH_APPLE]      = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
-    [TH_DIAG]       = {.name = "Обсидіан",  PIXEL_OBSIDIAN, .hidden = true},
-    [TH_PEONY]      = {.name = "Півонія",   PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E, .pupil_rx = 0.600f, .pupil_ry = 0.894f},
-    [TH_OBSIDIAN]   = {.name = "Обсидіан",  PIXEL_OBSIDIAN},
-    [TH_BAY]        = {.name = "Затока",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4, .pupil_rx = 0.629f, .pupil_ry = 0.787f},
-    [TH_HAZEL]      = {.name = "Шавлія",    PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42, .pupil_rx = 0.657f, .pupil_ry = 0.681f},
-    [TH_CORAL]      = {.name = "Корал",     PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16, .pupil_rx = 0.529f, .pupil_ry = 0.851f},
-    [TH_PORCELAIN]  = {.name = "Туман",     PIXEL_BASE, .accent = 0xBCC3C6, .on_accent = 0x121716, .eye_sclera = 0xD2DFD6, .eye_pupil = 0x263834, .pupil_rx = 0.600f, .pupil_ry = 0.894f},
+    /* Hidden legacy indices 0..3 map to Onyx so old NVS values or `theme 0..3` stay valid and 4..9 numbering never shifts */
+    [TH_SILENCE]    = {.name = "Онікс",     PIXEL_OBSIDIAN, .hidden = true},
+    [TH_INSTRUMENT] = {.name = "Онікс",     PIXEL_OBSIDIAN, .hidden = true},
+    [TH_APPLE]      = {.name = "Онікс",     PIXEL_OBSIDIAN, .hidden = true},
+    [TH_DIAG]       = {.name = "Онікс",     PIXEL_OBSIDIAN, .hidden = true},
+    [TH_PEONY]      = {.name = "Сакура",    PIXEL_BASE, .accent = 0xF5B4C8, .on_accent = 0x0A0A0A, .eye_sclera = 0xF5B4C8, .eye_pupil = 0x00999E, .pupil_rx = 0.600f, .pupil_ry = 0.894f},
+    [TH_OBSIDIAN]   = {.name = "Онікс",     PIXEL_OBSIDIAN},
+    [TH_BAY]        = {.name = "Лагуна",    PIXEL_BASE, .accent = 0x8EC2FF, .on_accent = 0x071324, .eye_sclera = 0x9BC9FF, .eye_pupil = 0x154EC4, .pupil_rx = 0.629f, .pupil_ry = 0.787f},
+    [TH_HAZEL]      = {.name = "М'ята",     PIXEL_BASE, .accent = 0x9FD9A8, .on_accent = 0x08170B, .eye_sclera = 0xB9E4BC, .eye_pupil = 0x167A42, .pupil_rx = 0.657f, .pupil_ry = 0.681f},
+    [TH_CORAL]      = {.name = "Персик",    PIXEL_BASE, .accent = 0xFFA78C, .on_accent = 0x1C0904, .eye_sclera = 0xFFB096, .eye_pupil = 0xD93C16, .pupil_rx = 0.529f, .pupil_ry = 0.851f},
+    [TH_PORCELAIN]  = {.name = "Іній",      PIXEL_BASE, .accent = 0xBCC3C6, .on_accent = 0x121716, .eye_sclera = 0xD2DFD6, .eye_pupil = 0x263834, .pupil_rx = 0.600f, .pupil_ry = 0.894f},
 };
 
 const theme_t *th = &themes[TH_DEFAULT];
@@ -218,7 +218,7 @@ lv_obj_t *th_header(lv_obj_t *scr, const char *text, int y)
     lv_obj_set_style_pad_column(row, 4, 0);
     lv_obj_remove_flag(row, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(row, LV_ALIGN_TOP_MID, 0, y);
-    static const char prefix[] = "піп-01 // "; /* the terminal's device tag; the other themes just say the section */
+    static const char prefix[] = "bibi // "; /* the terminal's device tag; the other themes just say the section */
     if (!TH_TERMINAL && !strncmp(text, prefix, sizeof prefix - 1)) text += sizeof prefix - 1;
     lv_obj_t *l = th_text(row, th->tiny_bold, th->text, text);
     lv_obj_set_style_text_letter_space(l, TH_TERMINAL ? 2 : th->caps, 0);

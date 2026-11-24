@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pip's panel: flash the keychain, set it up. Opens docs/index.html in a browser that can talk to USB (Chrome, Edge...).
+# bibi panel: flash the keychain, set it up. Opens docs/index.html in a browser that can talk to USB (Chrome, Edge...).
 cd "$(dirname "$0")"
 PAGE="$PWD/docs/index.html"
 for app in "Google Chrome" "Microsoft Edge" "Chromium" "Brave Browser" "Arc" "Opera"; do
