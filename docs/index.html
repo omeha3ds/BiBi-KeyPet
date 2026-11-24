@@ -14,8 +14,7 @@ try{
   const st=stQ==='plain'||stQ==='liquid'?stQ:(stS==='plain'||stS==='liquid'?stS:'liquid');
   document.documentElement.dataset.eyeStyle=st;
   const fxQ=q.get('fx'),fxS=localStorage.getItem('pip-fx');
-  const weak=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4&&navigator.deviceMemory&&navigator.deviceMemory<=4)||matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fx=fxQ==='simple'||fxQ==='full'?fxQ:(fxS==='simple'||fxS==='full'?fxS:(weak?'simple':'full'));
+  const fx=fxQ==='simple'||fxQ==='full'?fxQ:(fxS==='simple'||fxS==='full'?fxS:'full');
   document.documentElement.dataset.fx=fx;
 }catch(e){}
 </script>
@@ -349,7 +348,7 @@ a:hover{text-decoration:underline}
   transition:opacity 220ms var(--ease-std),transform 260ms var(--spring-spatial);
 }
 .twin-layer.active{opacity:1;transform:scale(1);pointer-events:auto}
-#badgeSvg,#qrCanvas{width:100%;height:100%;display:block}
+#badgeSvg,#qrCanvas,#eyesCanvas{width:100%;height:100%;display:block}
 
 /* Subtle contextual caption under the round screen (twin controls, flat matte) */
 .twin-bar{
@@ -387,91 +386,6 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
 :root[data-pixel="coral"] .b-pupil{rx:37px;ry:80px}
 :root[data-pixel="porcelain"] .b-pupil{rx:42px;ry:84px}
 
-.pip-svg{
-  width:94%;height:94%;overflow:visible;
-  transform-origin:center;
-}
-.pip-svg.squish{animation:eyeSquish 320ms var(--spring-fast)}
-
-/* Liquid SVG layers (gradients & highlights live strictly inside #pipSvg) */
-.goo-body{filter:url(#liquid-goo)}
-.goo-body.no-goo{filter:none}
-.obs-goo-rim{display:none;filter:url(#liquid-goo-obs)}
-.obs-goo-rim.no-goo{filter:drop-shadow(0 0 7px rgba(77,208,255,.82))}
-:root[data-pixel="obsidian"] .obs-goo-rim{display:inline}
-.obs-rim-shape{fill:var(--eye-stroke)}
-:root[data-pixel="obsidian"] .obs-rim-shape.liq-dash{fill:url(#gradPupilL)}
-:root[data-pixel="obsidian"] #pipSvg.closed-dash .eye-sclera-l,
-:root[data-pixel="obsidian"] #pipSvg.closed-dash .eye-sclera-r{fill:var(--eye-stroke)}
-
-.eye-sclera-l{fill:url(#gradScleraL)}
-.eye-sclera-r{fill:url(#gradScleraR)}
-.eye-bridge{fill:var(--eye-mid);transition:fill 300ms var(--ease-std)}
-:root[data-pixel="obsidian"] .eye-bridge{fill:#030a10}
-
-.eye-pupil{transition:rx 320ms var(--spring-fast),ry 320ms var(--spring-fast)}
-.eye-pupil-l{fill:url(#gradPupilL)}
-.eye-pupil-r{fill:url(#gradPupilR)}
-:root[data-pixel="obsidian"] #pipSvg .eye-pupil{filter:url(#obs-pupil)}
-
-/* SVG stop colors wired to active Pixel CSS tokens */
-.s-hi{stop-color:var(--eye-hi);transition:stop-color 300ms var(--ease-std)}
-.s-mid{stop-color:var(--eye-mid);transition:stop-color 300ms var(--ease-std)}
-.s-deep{stop-color:var(--eye-deep);transition:stop-color 300ms var(--ease-std)}
-.s-caustic{stop-color:var(--eye-caustic);transition:stop-color 300ms var(--ease-std)}
-.p-hi{stop-color:var(--pupil-hi);transition:stop-color 300ms var(--ease-std)}
-.p-mid{stop-color:var(--pupil-mid);transition:stop-color 300ms var(--ease-std)}
-.p-deep{stop-color:var(--pupil-deep);transition:stop-color 300ms var(--ease-std)}
-
-/* Specular liquid glass highlights & opposite-edge caustic refraction */
-.eye-caustic{fill:url(#gradCaustic);opacity:.78;pointer-events:none}
-:root[data-pixel="obsidian"] .eye-caustic{opacity:.42}
-.eye-spec{fill:url(#gradSpec);opacity:.82;pointer-events:none}
-.eye-dot{fill:#ffffff;opacity:.75;pointer-events:none}
-:root[data-pixel="obsidian"] .eye-spec{opacity:.46}
-:root[data-pixel="obsidian"] .eye-dot{opacity:.58}
-.eye-edge-sheen{
-  fill:none;stroke:url(#gradEdge);stroke-width:2.4;opacity:.55;pointer-events:none;
-}
-:root[data-pixel="obsidian"] .eye-edge-sheen{opacity:0}
-
-/* Simple fallback rim (hidden in liquid mode, shown in simple mode for Obsidian) */
-.simple-rim{
-  display:none;fill:none;stroke:var(--eye-stroke);stroke-width:var(--eye-stroke-w);
-}
-
-/* Pupil shapes morph smoothly per Pixel colorway (scoped strictly to #pipSvg) */
-:root[data-pixel="peony"] #pipSvg .eye-pupil{rx:42px;ry:84px}
-:root[data-pixel="obsidian"] #pipSvg .eye-pupil{rx:28px;ry:58px}
-:root[data-pixel="bay"] #pipSvg .eye-pupil{rx:44px;ry:74px}
-:root[data-pixel="hazel"] #pipSvg .eye-pupil{rx:46px;ry:64px}
-:root[data-pixel="coral"] #pipSvg .eye-pupil{rx:37px;ry:80px}
-:root[data-pixel="porcelain"] #pipSvg .eye-pupil{rx:42px;ry:84px}
-
-/* Plain eye style (Звичайні): crisp flat vivid eyes, still tracking cursor & blinking cleanly */
-:root[data-eye-style="plain"] .goo-body{filter:none}
-:root[data-eye-style="plain"] .obs-goo-rim,
-:root[data-eye-style="plain"] .liquid-only{display:none!important}
-:root[data-eye-style="plain"] .eye-sclera-l,
-:root[data-eye-style="plain"] .eye-sclera-r{fill:var(--eye-sclera)}
-:root[data-eye-style="plain"] .eye-pupil-l,
-:root[data-eye-style="plain"] .eye-pupil-r{fill:var(--eye-pupil)}
-:root[data-eye-style="plain"] .simple-rim{display:inline}
-:root[data-eye-style="plain"][data-pixel="obsidian"] .simple-rim{filter:url(#obs-rim-plain)}
-
-/* Simplified fallback mode: zero SVG filters, flat crisp vector eyes for weak devices & reduced motion */
-:root[data-fx="simple"] .goo-body,
-:root[data-fx="simple"] .obs-goo-rim,
-:root[data-fx="simple"] .simple-rim,
-:root[data-fx="simple"] #pipSvg .eye-pupil{filter:none!important}
-:root[data-fx="simple"] .obs-goo-rim,
-:root[data-fx="simple"] .liquid-only{display:none!important}
-:root[data-fx="simple"] .eye-sclera-l,
-:root[data-fx="simple"] .eye-sclera-r{fill:var(--eye-sclera)}
-:root[data-fx="simple"] .eye-pupil-l,
-:root[data-fx="simple"] .eye-pupil-r{fill:var(--eye-pupil)}
-:root[data-fx="simple"] .simple-rim{display:inline}
-
 /* Compact flat segmented switcher (used for Eye Style) */
 .seg{
   display:inline-flex;align-items:center;gap:3px;
@@ -491,39 +405,12 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
 }
 .seg-row .seg{background:var(--surface-1)}
 
-/* Eyelid blink, mood eyelids, blush & lower-lid smile expression */
-.eye-lid{
-  transform-origin:200px 200px;
-}
-.mood-lid{
-  fill:#000000;pointer-events:none;
-}
-.eye-blush{
-  fill:#ff7aa0;opacity:0;pointer-events:none;
-  filter:blur(7px);
-  transition:opacity 260ms var(--ease-std);
-}
-.eye-heart{
-  display:none;pointer-events:none;
-}
-#pipSvg.mood-love .eye-pupil{display:none}
-#pipSvg.mood-love .eye-heart{display:inline}
-:root[data-eye-style="plain"] .eye-heart,
-:root[data-fx="simple"] .eye-heart{fill:#ff4479}
-:root[data-eye-style="liquid"]:not([data-fx="simple"]) .eye-heart{fill:url(#gradHeart)}
-
-/* Happy / charging lower-lid cheek cover (driven smoothly by JS moodSmile) */
-.charge-cheek{
-  fill:#000000;
-  opacity:0;
-  pointer-events:none;
-}
-
-/* ---- 4 Radial Editorial Callouts (aligned directly to leader shelves) ---- */
+/* ---- 4 Radial Editorial Callouts (anchored to exact 25.65% / 74.35% leader shelves) ---- */
 .callout{
   position:absolute;z-index:3;
   display:flex;flex-direction:column;gap:4px;
-  max-width:210px;
+  max-width:clamp(165px,calc(50% - 196px),232px);
+  overflow-wrap:anywhere;
   animation:calloutIn 260ms var(--spring-spatial) backwards;
   animation-delay:calc(var(--i,0) * 40ms);
 }
@@ -533,15 +420,17 @@ body[data-twin="qr"] .palette-bar{opacity:.52}
   color:var(--text-3);
 }
 .callout .v{
-  font:600 17px/1.2 var(--font-sans);
+  font:600 17px/1.22 var(--font-sans);
   color:var(--text);
   font-variant-numeric:tabular-nums;
   display:inline-flex;align-items:center;gap:8px;
 }
-.c-tl{top:64px;left:18px;text-align:left;align-items:flex-start}
-.c-tr{top:64px;right:18px;text-align:right;align-items:flex-end}
-.c-bl{bottom:64px;left:18px;text-align:left;align-items:flex-start}
-.c-br{bottom:64px;right:18px;text-align:right;align-items:flex-end}
+/* Top shelves sit at y = 118/460 (25.65% from top = 74.35% from bottom); anchor callouts 15px above the shelf */
+.c-tl{bottom:calc(74.35% + 15px);left:18px;text-align:left;align-items:flex-start}
+.c-tr{bottom:calc(74.35% + 15px);right:18px;text-align:right;align-items:flex-end}
+/* Bottom shelves sit at y = 342/460 (74.35% from top); anchor callouts 16px below the shelf so lines never touch words */
+.c-bl{top:calc(74.35% + 16px);left:18px;text-align:left;align-items:flex-start}
+.c-br{top:calc(74.35% + 16px);right:18px;text-align:right;align-items:flex-end}
 
 .dot{
   width:8px;height:8px;border-radius:50%;
@@ -907,8 +796,9 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
     width:clamp(210px,62vw,268px);margin:6px 0 12px;
   }
   .callout{
-    position:static;max-width:none;width:100%;
-    padding-top:10px;border-top:1px solid #222222;
+    position:static;top:auto;bottom:auto;left:auto;right:auto;
+    max-width:none;width:100%;
+    padding-top:12px;border-top:1px solid #222222;
   }
   .c-tl,.c-bl{text-align:left;align-items:flex-start}
   .c-tr,.c-br{text-align:right;align-items:flex-end}
@@ -918,11 +808,11 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
   .actions{display:grid;grid-template-columns:1fr;gap:8px}
   .actions button{width:100%;padding:12px 16px}
 
-  #tabs{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;border-radius:26px}
+  #tabs{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;border-radius:26px}
   .nav-btn{
     flex-direction:column;gap:4px;
-    padding:9px 4px;min-height:54px;border-radius:22px;
-    font-size:11.5px;
+    padding:9px 2px;min-height:54px;border-radius:22px;
+    font-size:10.5px;
   }
 
   .sheet{
@@ -946,11 +836,6 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}
-  .goo-body,.obs-goo-rim,#pipSvg .eye-pupil{filter:none!important}
-  .obs-goo-rim,.liquid-only{display:none!important}
-  .eye-sclera-l,.eye-sclera-r{fill:var(--eye-sclera)!important}
-  .eye-pupil-l,.eye-pupil-r{fill:var(--eye-pupil)!important}
-  .simple-rim{display:inline!important}
 }
 </style>
 </head>
@@ -1010,171 +895,9 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         <!-- Centerpiece: Digital Twin of the 466x466 round AMOLED keychain display -->
         <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Цифровий двійник екрана bibi">
           <div class="twin-screen" id="twinScreen">
-            <!-- Mode 1: Pip Eyes (Liquid / Plain / Simple applies ONLY here) -->
+            <!-- Mode 1: Pip Eyes (exact 466x466 ui/pip.c + ui/face.c + tools/liquid_sprites.py renderer) -->
             <div class="twin-layer active" id="twinEyes">
-              <svg class="pip-svg" id="pipSvg" viewBox="0 0 400 400" aria-hidden="true">
-            <defs>
-              <!-- Dynamic eye clip paths (moved along with droplets during gooey blink) -->
-              <clipPath id="clipL">
-                <ellipse id="clipEllL" cx="112" cy="200" rx="69" ry="93" transform="rotate(-13 112 200)"/>
-              </clipPath>
-              <clipPath id="clipR">
-                <ellipse id="clipEllR" cx="288" cy="200" rx="69" ry="93" transform="rotate(13 288 200)"/>
-              </clipPath>
-
-              <!-- SVG Gooey filter: viscous droplet merge during blink/squish -->
-              <filter id="liquid-goo" x="-28%" y="-28%" width="156%" height="156%" color-interpolation-filters="sRGB">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="7.5" result="blur"/>
-                <feColorMatrix in="blur" mode="matrix" values="
-                  1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 26 -12" result="goo"/>
-                <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-              </filter>
-
-              <!-- Obsidian gooey luminous cyan outer liquid glass rim -->
-              <filter id="liquid-goo-obs" x="-35%" y="-35%" width="170%" height="170%" color-interpolation-filters="sRGB">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="7.5" result="blur"/>
-                <feColorMatrix in="blur" mode="matrix" values="
-                  1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 26 -12" result="goo"/>
-                <feDropShadow in="goo" dx="0" dy="0" stdDeviation="6.5" flood-color="#4dd0ff" flood-opacity="0.88"/>
-              </filter>
-
-              <!-- Obsidian pupil liquid glow & plain rim glow -->
-              <filter id="obs-pupil" x="-45%" y="-45%" width="190%" height="190%">
-                <feDropShadow dx="0" dy="0" stdDeviation="7.5" flood-color="#4dd0ff" flood-opacity="0.95"/>
-              </filter>
-              <filter id="obs-rim-plain" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#4dd0ff" flood-opacity="0.88"/>
-              </filter>
-
-              <!-- Volumetric sclera radial gradients (focal point tracks cursor!) -->
-              <radialGradient id="gradScleraL" cx="50%" cy="50%" r="64%" fx="34%" fy="28%">
-                <stop class="s-hi" offset="0%"/>
-                <stop class="s-mid" offset="56%"/>
-                <stop class="s-deep" offset="100%"/>
-              </radialGradient>
-              <radialGradient id="gradScleraR" cx="50%" cy="50%" r="64%" fx="34%" fy="28%">
-                <stop class="s-hi" offset="0%"/>
-                <stop class="s-mid" offset="56%"/>
-                <stop class="s-deep" offset="100%"/>
-              </radialGradient>
-
-              <!-- Volumetric pupil radial gradients -->
-              <radialGradient id="gradPupilL" cx="50%" cy="50%" r="62%" fx="36%" fy="26%">
-                <stop class="p-hi" offset="0%"/>
-                <stop class="p-mid" offset="52%"/>
-                <stop class="p-deep" offset="100%"/>
-              </radialGradient>
-              <radialGradient id="gradPupilR" cx="50%" cy="50%" r="62%" fx="36%" fy="26%">
-                <stop class="p-hi" offset="0%"/>
-                <stop class="p-mid" offset="52%"/>
-                <stop class="p-deep" offset="100%"/>
-              </radialGradient>
-
-              <!-- Liquid glass top specular sheen -->
-              <linearGradient id="gradSpec" x1="15%" y1="0%" x2="55%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
-                <stop offset="48%" stop-color="#ffffff" stop-opacity="0.22"/>
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-              </linearGradient>
-
-              <!-- Opposite-edge internal liquid caustic refraction -->
-              <radialGradient id="gradCaustic" cx="50%" cy="62%" r="54%">
-                <stop class="s-caustic" offset="0%" stop-opacity="0.72"/>
-                <stop class="s-caustic" offset="58%" stop-opacity="0.18"/>
-                <stop class="s-caustic" offset="100%" stop-opacity="0"/>
-              </radialGradient>
-
-              <!-- Delicate glass top-rim specular arc -->
-              <linearGradient id="gradEdge" x1="20%" y1="0%" x2="80%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
-                <stop offset="45%" stop-color="#ffffff" stop-opacity="0.12"/>
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.35"/>
-              </linearGradient>
-
-              <!-- Volumetric heart gradient for love mood -->
-              <radialGradient id="gradHeart" cx="42%" cy="34%" r="65%">
-                <stop offset="0%" stop-color="#ff9ebb"/>
-                <stop offset="48%" stop-color="#ff4479"/>
-                <stop offset="100%" stop-color="#b81447"/>
-              </radialGradient>
-            </defs>
-
-            <g id="eyeShift">
-              <g class="eye-lid" id="eyeLid">
-                <!-- Soft pink blush under eyes (love / shy moods) -->
-                <ellipse id="blushL" class="eye-blush" cx="96" cy="296" rx="44" ry="15"/>
-                <ellipse id="blushR" class="eye-blush" cx="304" cy="296" rx="44" ry="15"/>
-
-                <g id="liquidScale">
-                  <!-- Obsidian luminous cyan outer gooey silhouette (starts closed as horizontal dash) -->
-                  <g class="obs-goo-rim no-goo" id="obsGooGroup">
-                    <ellipse id="obsOutL" class="obs-rim-shape liq-dash" cx="112" cy="200" rx="42" ry="5.5" transform="rotate(0 112 200)"/>
-                    <ellipse id="obsOutR" class="obs-rim-shape liq-dash" cx="288" cy="200" rx="42" ry="5.5" transform="rotate(0 288 200)"/>
-                    <ellipse id="obsBridge" class="obs-rim-shape" cx="200" cy="200" rx="0" ry="0"/>
-                  </g>
-
-                  <!-- Main liquid sclera droplets (starts closed as two short horizontal dashes) -->
-                  <g class="goo-body no-goo" id="gooBodyGroup">
-                    <ellipse id="scleraL" class="eye-sclera-l" cx="112" cy="200" rx="42" ry="5.5" transform="rotate(0 112 200)"/>
-                    <ellipse id="scleraR" class="eye-sclera-r" cx="288" cy="200" rx="42" ry="5.5" transform="rotate(0 288 200)"/>
-                    <ellipse id="gooBridge" class="eye-bridge liquid-only" cx="200" cy="200" rx="0" ry="0"/>
-                  </g>
-
-                  <!-- Soft glass edge sheen (works on both closed Liquid dashes and open Liquid eyes) -->
-                  <ellipse id="edgeL" class="eye-edge-sheen liquid-only" cx="112" cy="200" rx="41" ry="4.8" transform="rotate(0 112 200)"/>
-                  <ellipse id="edgeR" class="eye-edge-sheen liquid-only" cx="288" cy="200" rx="41" ry="4.8" transform="rotate(0 288 200)"/>
-
-                  <!-- Clean rim for Plain / simple mode -->
-                  <ellipse id="simpleRimL" class="simple-rim" cx="112" cy="200" rx="42" ry="5.5" transform="rotate(0 112 200)"/>
-                  <ellipse id="simpleRimR" class="simple-rim" cx="288" cy="200" rx="42" ry="5.5" transform="rotate(0 288 200)"/>
-
-                  <!-- Pupils + moving liquid specular, caustic & mood eyelids clipped inside each eye -->
-                  <g id="eyeDetails" style="opacity:0">
-                    <!-- Left eye interior -->
-                    <g clip-path="url(#clipL)">
-                      <g id="causticL" class="liquid-only">
-                        <ellipse class="eye-caustic" cx="126" cy="262" rx="54" ry="29" transform="rotate(-16 126 262)"/>
-                      </g>
-                      <g id="pupilL">
-                        <ellipse id="pupilEllL" class="eye-pupil eye-pupil-l" cx="118" cy="202" rx="40" ry="82" transform="rotate(-7 118 202)"/>
-                        <path id="heartL" class="eye-heart" d="M 118 236 C 108 225, 84 208, 84 188 C 84 174, 95 165, 106 165 C 113 165, 116 170, 118 175 C 120 170, 123 165, 130 165 C 141 165, 152 174, 152 188 C 152 208, 128 225, 118 236 Z"/>
-                      </g>
-                      <g id="specL" class="liquid-only">
-                        <ellipse class="eye-spec" cx="95" cy="148" rx="32" ry="17" transform="rotate(-32 95 148)"/>
-                        <ellipse class="eye-dot" cx="78" cy="176" rx="6.5" ry="4.2" transform="rotate(-24 78 176)"/>
-                      </g>
-                      <path id="moodLidL" class="mood-lid" d="M 10 70 L 220 70 L 220 70 L 10 70 Z"/>
-                    </g>
-
-                    <!-- Right eye interior -->
-                    <g clip-path="url(#clipR)">
-                      <g id="causticR" class="liquid-only">
-                        <ellipse class="eye-caustic" cx="274" cy="262" rx="54" ry="29" transform="rotate(16 274 262)"/>
-                      </g>
-                      <g id="pupilR">
-                        <ellipse id="pupilEllR" class="eye-pupil eye-pupil-r" cx="282" cy="202" rx="40" ry="82" transform="rotate(7 282 202)"/>
-                        <path id="heartR" class="eye-heart" d="M 282 236 C 272 225, 248 208, 248 188 C 248 174, 259 165, 270 165 C 277 165, 280 170, 282 175 C 284 170, 287 165, 294 165 C 305 165, 316 174, 316 188 C 316 208, 292 225, 282 236 Z"/>
-                      </g>
-                      <g id="specR" class="liquid-only">
-                        <ellipse class="eye-spec" cx="266" cy="146" rx="32" ry="17" transform="rotate(-22 266 146)"/>
-                        <ellipse class="eye-dot" cx="250" cy="174" rx="6.5" ry="4.2" transform="rotate(-14 250 174)"/>
-                      </g>
-                      <path id="moodLidR" class="mood-lid" d="M 180 70 L 390 70 L 390 70 L 180 70 Z"/>
-                    </g>
-                  </g>
-                </g>
-
-                <!-- Happy / charging curved lower-lid cheek cover -->
-                <path class="charge-cheek" id="chargeCheek" d="M 30 258 Q 116 216 200 258 Q 284 216 370 258 L 370 350 L 30 350 Z"/>
-              </g>
-            </g>
-          </svg>
+              <canvas id="eyesCanvas" width="466" height="466" aria-hidden="true"></canvas>
             </div>
 
             <!-- Mode 2: Real Firmware Badge (exact ui/apps.c + ui/theme.c rendering) -->
@@ -1446,10 +1169,6 @@ const PIXELS = ['peony', 'obsidian', 'bay', 'hazel', 'coral', 'porcelain'];
 let isLinked = false, eyesReady = false;
 function boopEyes() {
   if (!isLinked || reducedMotion()) return;
-  const svg = $('pipSvg');
-  svg.classList.remove('squish');
-  void svg.offsetWidth;
-  svg.classList.add('squish');
   blinkOnce();
 }
 function setPixel(name, animate = false) {
@@ -1502,9 +1221,9 @@ $('pipOrb').addEventListener('pointerup', e => {
   orbTouchX = null;
 });
 
-/* ---------- Eye style (Звичайні / Liquid) & Simplified no-SVG-filter fallback ---------- */
-const simpleMode = () => reducedMotion() || document.documentElement.dataset.fx === 'simple';
-const isLiquidEyes = () => !simpleMode() && document.documentElement.dataset.eyeStyle !== 'plain';
+/* ---------- Eye style (Звичайні / Liquid) & Simplified flat fallback ---------- */
+const simpleMode = () => document.documentElement.dataset.fx === 'simple';
+const isLiquidEyes = () => !simpleMode() && !$('eco')?.checked && document.documentElement.dataset.eyeStyle !== 'plain';
 
 function setEyeStyle(style, persist = true, syncDevice = false) {
   const s = style === 'plain' ? 'plain' : 'liquid';
@@ -1528,11 +1247,11 @@ function syncEyeStyleAvailability() {
     : 'синхронізується з брелоком; у режимі енергозбереження брелок переходить на плоскі очі';
 }
 function setSimpleFx(on, persist = true) {
-  const mode = on || reducedMotion() ? 'simple' : 'full';
+  const mode = on ? 'simple' : 'full';
   document.documentElement.dataset.fx = mode;
   if ($('simpleFx')) $('simpleFx').checked = mode === 'simple';
   if (persist) { try { localStorage.setItem('pip-fx', mode); } catch (e) {} }
-  if (mode === 'simple') resetLiquidGeometry();
+  if (eyesReady) renderCurrentEyes();
 }
 ['eyeStyleBar', 'eyeStyleSettings'].forEach(id => {
   $(id)?.addEventListener('click', e => {
@@ -1873,93 +1592,1281 @@ function syncTwinBrightness(pct) {
   $('twinScreen').style.filter = `brightness(${lvl})`;
 }
 
-/* ---------- Digital Twin Eyes: Disconnected Dashes, Wakeup Wave & Live Firmware Moods ---------- */
+/* ---------- Digital Twin Eyes: 1:1 Firmware Engine (ui/pip.c + ui/face.c + tools/liquid_sprites.py) ---------- */
 const params = new URLSearchParams(location.search);
-const previewBlink = params.has('blink') ? Math.max(0, Math.min(1, Number(params.get('blink')) || 0)) : null;
-const previewAim = params.get('aim') ? params.get('aim').split(',').map(Number) : null;
+const EYE_SCR = 466;
+const SPREAD = 0.55;
+const REST_SPACING = 205.0;
+const HEAD_R = REST_SPACING / (2 * 0.5227);
+const EYE_SCALE = 1.45;
+const SITE_W_K = 0.980;
+const SITE_H_K = 1.095;
 
-let targetX = previewAim ? (previewAim[0] || 0) : 0;
-let targetY = previewAim ? (previewAim[1] || 0) : 0;
-let curX = targetX, curY = targetY, velX = 0, velY = 0;
-let lightX = targetX, lightY = targetY;
-let blinkPos = previewBlink ?? 0, blinkVel = 0, blinkTarget = previewBlink ?? 0;
-/* Start closed (horizontal dashes) until connected to keychain */
-let eyeOpen = 0, eyeOpenVel = 0, openTarget = 0;
-let lastPointer = previewAim ? 1e12 : 0;
-let slowFrames = 0, lastFrameTime = performance.now();
+const LIQ_SCLERA_W = 152, LIQ_SCLERA_H = 198, LIQ_SCLERA_RX = 66, LIQ_SCLERA_RY = 88, SCLERA_RY_F = 88.6;
+const LIQ_PUPIL_W = 84, LIQ_PUPIL_H = 132, LIQ_PUPIL_RX = 30, LIQ_PUPIL_RY = 54;
+const LIQ_SPEC_W = 76, LIQ_SPEC_H = 64;
+const LIQ_HEART_W = 88, LIQ_HEART_H = 84;
+const LIQ_BLUSH_W = 104, LIQ_BLUSH_H = 42;
+const LIQ_LID_W = 240, LIQ_LID_H = 216, LIQ_LID_EDGE_Y = 182;
+const LIQ_SMILE_W = 240, LIQ_SMILE_H = 152, LIQ_SMILE_EDGE_Y = 28;
+const LIQ_WET_W = 136, LIQ_WET_H = 52;
+const LIQ_VEINS_W = 128, LIQ_VEINS_H = 172, LIQ_VEINS_RX = 62, LIQ_VEINS_RY = 83, VEINS_RY_F = 83.2;
 
-/* Live mood state received from @S on the keychain */
-let devMood = 'neutral', devAsleep = false, devCharging = false;
-let mLidL = 0, mLidR = 0, mTilt = 0, mSmile = 0, mBlush = 0, mPScale = 1, mScaleY = 1;
-let toLidL = 0, toLidR = 0, toTilt = 0, toSmile = 0, toBlush = 0, toPScale = 1, toScaleY = 1;
+const BAYER4 = [
+  [0.5 / 16, 8.5 / 16, 2.5 / 16, 10.5 / 16],
+  [12.5 / 16, 4.5 / 16, 14.5 / 16, 6.5 / 16],
+  [3.5 / 16, 11.5 / 16, 1.5 / 16, 9.5 / 16],
+  [15.5 / 16, 7.5 / 16, 13.5 / 16, 5.5 / 16],
+];
+const LUT5 = Array.from({length: 32}, (_, i) => Math.round(i * 255 / 31));
+const LUT6 = Array.from({length: 64}, (_, i) => Math.round(i * 255 / 63));
 
-function moodTargets(mood, asleep, charging) {
-  const m = String(mood || 'neutral').toLowerCase();
-  const out = { open: 1, lidL: 0, lidR: 0, tilt: 0, smile: charging ? 0.88 : 0, blush: 0, pScale: 1, scaleY: 1, love: false };
-  if (asleep || m === 'asleep') { out.open = 0; return out; }
-  if (m === 'ouch') { out.open = 0.22; out.pScale = 0.72; return out; }
-  switch (m) {
-    case 'happy': out.smile = Math.max(out.smile, 0.82); out.scaleY = 0.96; break;
-    case 'content': out.smile = Math.max(out.smile, 0.95); out.scaleY = 0.94; break;
-    case 'comfy': out.lidL = 0.32; out.lidR = 0.32; out.smile = Math.max(out.smile, 0.45); break;
-    case 'smug': out.lidL = 0.34; out.lidR = 0.26; out.smile = Math.max(out.smile, 0.55); break;
-    case 'yes': out.smile = Math.max(out.smile, 0.52); out.pScale = 1.05; break;
-    case 'love': out.love = true; out.smile = Math.max(out.smile, 0.48); out.blush = 0.78; break;
-    case 'shy': out.lidL = 0.16; out.lidR = 0.16; out.tilt = -0.18; out.smile = Math.max(out.smile, 0.35); out.blush = 0.85; break;
-    case 'angry': case 'belligerent': case 'swearing':
-      out.lidL = 0.32; out.lidR = 0.32; out.tilt = 0.52; out.pScale = 0.78; break;
-    case 'annoyed': case 'no':
-      out.lidL = 0.22; out.lidR = 0.22; out.tilt = 0.28; out.pScale = 0.9; break;
-    case 'furious': case 'rage':
-      out.lidL = 0.38; out.lidR = 0.38; out.tilt = 0.68; out.pScale = 0.64; break;
-    case 'indignant':
-      out.lidL = 0.18; out.lidR = 0.18; out.tilt = 0.42; out.pScale = 0.82; out.scaleY = 1.04; break;
-    case 'sad': case 'hurt': case 'despondent': case 'lonely':
-      out.lidL = 0.26; out.lidR = 0.26; out.tilt = -0.44; out.pScale = 1.12; break;
-    case 'dismayed':
-      out.lidL = 0.16; out.lidR = 0.16; out.tilt = -0.46; out.pScale = 0.86; out.scaleY = 1.04; break;
-    case 'afraid': case 'nervous':
-      out.lidL = 0.10; out.lidR = 0.10; out.tilt = -0.32; out.pScale = 0.68; out.scaleY = 1.08; break;
-    case 'sleepy': case 'tired': case 'bored': case 'gloomy': case 'dull':
-      out.lidL = 0.46; out.lidR = 0.46; out.tilt = -0.06; break;
-    case 'exhausted':
-      out.lidL = 0.62; out.lidR = 0.62; out.tilt = -0.14; break;
-    case 'stoned':
-      out.lidL = 0.42; out.lidR = 0.42; out.smile = Math.max(out.smile, 0.42); out.pScale = 1.08; break;
-    case 'sick': case 'nauseous':
-      out.lidL = 0.36; out.lidR = 0.44; out.tilt = -0.18; out.pScale = 0.92; break;
-    case 'pinkeye':
-      out.lidL = 0.22; out.lidR = 0.56; out.tilt = -0.10; break;
-    case 'surprised':
-      out.scaleY = 1.08; out.pScale = 0.72; break;
-    case 'shocked':
-      out.scaleY = 1.12; out.pScale = 0.56; break;
-    case 'amazed': case 'curious':
-      out.scaleY = 1.07; out.pScale = 1.14; break;
-    case 'skeptical':
-      out.lidL = 0.16; out.lidR = 0.46; out.scaleY = 0.84; break;
-    case 'suspicious': case 'cynical':
-      out.lidL = 0.42; out.lidR = 0.48; out.tilt = 0.08; out.scaleY = 0.88; break;
-    case 'puzzled':
-      out.lidL = 0.06; out.lidR = 0.38; break;
-    case 'cheeky':
-      out.lidL = 0.34; out.lidR = 0.08; out.tilt = 0.32; out.smile = Math.max(out.smile, 0.34); break;
+/* Exact palette definitions from ui/theme.c & tools/liquid_sprites.py */
+const PALETTE_DEFS = [
+  { id: 'peony', eye_sclera: 0xF5B4C8, eye_pupil: 0x00999E, eye_stroke: 0, pupil_rx: 0.600, pupil_ry: 0.894,
+    eye_hi: 0xFFE4ED, eye_mid: 0xF5B0C6, eye_deep: 0xAD5270, eye_caustic: 0xFFD9E6, pupil_hi: 0x4AE3E6, pupil_mid: 0x00979C, pupil_deep: 0x004A52, obsidian: false, rim: 0 },
+  { id: 'obsidian', eye_sclera: 0x000000, eye_pupil: 0x7CE8FF, eye_stroke: 0x4DD0FF, pupil_rx: 0.400, pupil_ry: 0.617,
+    eye_hi: 0x1A4963, eye_mid: 0x050F16, eye_deep: 0x000000, eye_caustic: 0x4DD0FF, pupil_hi: 0xE8FDFF, pupil_mid: 0x6BE2FF, pupil_deep: 0x0B86BD, obsidian: true, rim: 0x4DD0FF },
+  { id: 'bay', eye_sclera: 0x9BC9FF, eye_pupil: 0x154EC4, eye_stroke: 0, pupil_rx: 0.629, pupil_ry: 0.787,
+    eye_hi: 0xE0EFFF, eye_mid: 0x95C5FF, eye_deep: 0x447ED0, eye_caustic: 0xCCE4FF, pupil_hi: 0x5D94FF, pupil_mid: 0x154EC4, pupil_deep: 0x082266, obsidian: false, rim: 0 },
+  { id: 'hazel', eye_sclera: 0xB9E4BC, eye_pupil: 0x167A42, eye_stroke: 0, pupil_rx: 0.657, pupil_ry: 0.681,
+    eye_hi: 0xE8FAE9, eye_mid: 0xB4E2B8, eye_deep: 0x569460, eye_caustic: 0xDCF7DE, pupil_hi: 0x4AC47C, pupil_mid: 0x167A42, pupil_deep: 0x073B1D, obsidian: false, rim: 0 },
+  { id: 'coral', eye_sclera: 0xFFB096, eye_pupil: 0xD93C16, eye_stroke: 0, pupil_rx: 0.529, pupil_ry: 0.851,
+    eye_hi: 0xFFE5DC, eye_mid: 0xFFAA8E, eye_deep: 0xBF593B, eye_caustic: 0xFFD8CA, pupil_hi: 0xFF7A54, pupil_mid: 0xD93C16, pupil_deep: 0x731704, obsidian: false, rim: 0 },
+  { id: 'porcelain', eye_sclera: 0xD2DFD6, eye_pupil: 0x263834, eye_stroke: 0, pupil_rx: 0.600, pupil_ry: 0.894,
+    eye_hi: 0xEEF5F0, eye_mid: 0xD2DFD6, eye_deep: 0x8EA096, eye_caustic: 0xE6F0EA, pupil_hi: 0x4E6963, pupil_mid: 0x263834, pupil_deep: 0x101917, obsidian: false, rim: 0 },
+];
+
+const FX_NONE = 0, FX_SWEAR = 1, FX_RAIN = 2;
+const PIP_NEUTRAL = 0, PIP_ASLEEP = 6, PIP_LOVE = 9, PIP_DIZZY = 10, PIP_SWEARING = 21;
+const SHAPE_KEYS = ['w','h','roll','taper','lid','tilt','smile','pw','ph','square','heart','glint','spiral','veins','wet'];
+
+/* Exact 46-entry moods[] table from ui/pip.c lines 54..130 */
+const MOODS = [
+  { name: 'neutral', s: {} },
+  { name: 'happy', s: {w:118,h:124,roll:-.06,taper:-.1,smile:.42,pw:.36,ph:.38}, gy:-.8, head_roll:.12 },
+  { name: 'sad', s: {w:112,h:126,roll:-.14,taper:.15,lid:.22,tilt:-.35,pw:.52,ph:.56}, gy:.55, head_roll:-.1, slow:.3 },
+  { name: 'angry', s: {w:114,h:114,roll:.16,taper:.3,lid:.3,tilt:.45,pw:.2,ph:.4}, gy:.1 },
+  { name: 'surprised', s: {w:124,h:160,taper:-.05,pw:.24,ph:.26}, gy:-.1, look_rate:2 },
+  { name: 'sleepy', s: {w:122,h:124,lid:.5,tilt:-.05,pw:.44,ph:.44}, gy:.45, head_roll:.08, slow:.5, blink:1.6 },
+  { name: 'asleep', s: {w:122,h:124,pw:.44,ph:.44}, closed:1, gy:.4, head_roll:.1 },
+  { name: 'skeptical', s: {w:128,h:76,roll:.04,lid:.08,pw:.52,ph:.3}, lid_asym:.28, head_roll:-.06 },
+  { name: 'curious', s: {w:124,h:148,taper:-.05,pw:.5,ph:.54}, lid_asym:-.1, gy:-.1, head_roll:.22 },
+  { name: 'love', s: {w:120,h:128,taper:-.08,smile:.2,pw:.46,ph:.46,heart:1}, gy:-.15, head_roll:.1, blush:.6 },
+  { name: 'dizzy', s: {w:120,h:128,lid:.12,pw:.34,ph:.34}, lid_asym:.1 },
+  { name: 'ouch', s: {w:126,h:26,roll:.3,pw:.2,ph:.2} },
+
+  { name: 'stoned', s: {w:124,h:122,roll:-.04,lid:.42,tilt:-.04,smile:.24,pw:.46,ph:.48,veins:1}, gy:.1, head_roll:.1, tint:0xFFE4E0, look_amp:.5, slow:.75, sway_x:.06, sway_y:.04, blink:.6 },
+  { name: 'pinkeye', s: {w:118,h:128,lid:.25,tilt:-.1}, gy:.2, lid_asym:.4, size_asym:.08, tint:0xFF8C88, slow:.2, blink:2.5 },
+  { name: 'nauseous', s: {w:116,h:124,roll:-.06,lid:.3,tilt:-.2,pw:.38,ph:.4}, gy:.2, lid_asym:.12, tint:0xD2F2B4, slow:.4, sway_x:.12, sway_y:.08 },
+  { name: 'sick', s: {w:112,h:118,lid:.38,tilt:-.15,pw:.36,ph:.38}, gy:.35, tint:0xC6D0DA, slow:.5, tremble:1, blink:1.5 },
+  { name: 'tired', s: {w:120,h:120,lid:.45,tilt:-.12,pw:.42,ph:.44}, gy:.3, look_amp:.6, slow:.45, blink:1.8 },
+  { name: 'exhausted', s: {w:118,h:112,roll:-.06,lid:.62,tilt:-.15}, gy:.45, head_roll:.12, slow:.7, sway_y:.05, blink:2 },
+
+  { name: 'annoyed', s: {w:116,h:124,roll:.06,lid:.2,tilt:.22,pw:.36,ph:.4}, gx:.5, look_rate:.5, look_amp:.3 },
+  { name: 'furious', s: {w:112,h:110,roll:.2,taper:.35,lid:.36,tilt:.6,pw:.16,ph:.34}, tint:0xFFD6CC, look_amp:.3, tremble:1.2 },
+  { name: 'rage', s: {w:110,h:106,roll:.24,taper:.4,lid:.38,tilt:.7,pw:.14,ph:.3}, tint:0xFF3A28, look_rate:.3, look_amp:.2, tremble:3 },
+  { name: 'swearing', s: {w:118,h:118,roll:.16,taper:.28,lid:.3,tilt:.5,pw:.2,ph:.38}, look_rate:.5, tremble:1.5, fx:FX_SWEAR },
+  { name: 'indignant', s: {w:122,h:146,roll:.08,lid:.12,tilt:.35,pw:.26,ph:.3}, gy:-.2, head_roll:-.08, look_rate:1.5 },
+  { name: 'belligerent', s: {w:116,h:112,roll:.18,taper:.25,lid:.34,tilt:.5,pw:.3,ph:.42}, gy:-.5, look_rate:.4, look_amp:.2 },
+  { name: 'hurt', s: {w:114,h:124,roll:-.12,lid:.2,tilt:-.32,pw:.5,ph:.54,glint:1,wet:1}, gx:-.3, gy:.3, head_roll:-.12, look_amp:.3, slow:.3, tremble:.4 },
+
+  { name: 'disgusted', s: {w:118,h:104,roll:-.1,lid:.3,tilt:-.1,smile:.25,pw:.32,ph:.34}, gx:-.8, gy:.35, head_roll:-.15, lid_asym:.2, tint:0xE8F4D4 },
+  { name: 'suspicious', s: {w:124,h:86,lid:.44,tilt:.08,pw:.32,ph:.3}, head_roll:.08, lid_asym:.08, look_rate:.25, look_amp:.12, slow:.3 },
+  { name: 'cynical', s: {w:120,h:108,lid:.42,tilt:-.08,pw:.34,ph:.36}, gx:.3, gy:-.85, head_roll:.1, lid_asym:.1, look_rate:.3 },
+  { name: 'afraid', s: {w:126,h:160,roll:-.1,taper:-.1,lid:.08,tilt:-.3,pw:.18,ph:.2}, gy:.1, look_rate:2.5, look_amp:.5, tremble:2.2 },
+  { name: 'nervous', s: {w:118,h:140,lid:.06,tilt:-.15,pw:.3,ph:.32}, look_rate:4, look_amp:.7, tremble:.8, blink:2.2 },
+  { name: 'despondent', s: {w:108,h:114,roll:-.12,lid:.34,tilt:-.4,pw:.42,ph:.46}, gy:.7, head_roll:-.1, look_rate:.4, look_amp:.4, slow:.6 },
+  { name: 'lonely', s: {w:100,h:112,roll:-.08,lid:.18,tilt:-.25,pw:.46,ph:.5}, gx:-.6, gy:.5, tint:0xD4DCE8, look_rate:.4, slow:.5 },
+  { name: 'gloomy', s: {w:118,h:104,lid:.5,tilt:.02,pw:.36,ph:.38}, gy:.45, tint:0x9EA3AA, look_rate:.3, slow:.5, fx:FX_RAIN },
+  { name: 'dull', s: {w:122,h:126,lid:.35,pw:.3,ph:.32}, head_roll:.15, lid_asym:.1, cross:.7, look_rate:.3, slow:.6, blink:.5 },
+  { name: 'shy', s: {w:112,h:124,roll:-.06,lid:.12,tilt:-.15,smile:.15,pw:.44,ph:.46}, gx:-.7, gy:.55, head_roll:-.15, blush:.9, look_rate:.6, look_amp:.4 },
+  { name: 'smug', s: {w:124,h:104,lid:.38,tilt:-.06,smile:.3,pw:.36,ph:.38}, gx:.35, gy:-.1, head_roll:.14, lid_asym:.08, look_rate:.4, slow:.2 },
+  { name: 'bored', s: {w:122,h:114,lid:.45,tilt:-.04,pw:.34,ph:.36}, gx:.5, gy:-.5, look_rate:.3, slow:.5, blink:.7 },
+  { name: 'shocked', s: {w:138,h:172,taper:-.08,pw:.14,ph:.15}, look_rate:.02, look_amp:.05, tremble:1, blink:.05, text:'!', text_color:0xFFFFFF },
+  { name: 'dismayed', s: {w:118,h:146,roll:-.12,lid:.12,tilt:-.4,pw:.3,ph:.32}, gy:.1, look_rate:2.5, look_amp:.6, tremble:.6 },
+  { name: 'puzzled', s: {w:120,h:132,pw:.36,ph:.38}, gx:.3, gy:-.3, head_roll:-.22, lid_asym:.3, size_asym:-.15, look_rate:.5, text:'?', text_color:0xFFFFFF },
+
+  { name: 'amazed', s: {w:132,h:160,taper:-.06,pw:.48,ph:.5,glint:1}, gy:-.25, look_rate:.5, look_amp:.4 },
+  { name: 'cheeky', s: {w:120,h:126,lid:.22,tilt:.35,smile:.12,pw:.36,ph:.4}, gy:-.25, head_roll:-.18, lid_asym:-.3, size_asym:.1, look_rate:1.2, look_amp:.3, wink:2.8 },
+  { name: 'content', s: {w:124,h:124,roll:-.06,taper:-.1,smile:.72,pw:.36,ph:.38}, gy:-.3, head_roll:.1, look_rate:.3, slow:.4, blink:.6 },
+  { name: 'comfy', s: {w:124,h:118,lid:.38,smile:.2,pw:.4,ph:.42}, gy:.1, look_rate:.3, slow:.6, blink:.5 },
+
+  { name: 'yes', s: {w:120,h:130,taper:-.05,smile:.25,pw:.42,ph:.44,glint:.4}, head_roll:.06, look_rate:.1, look_amp:.1, nod:.13 },
+  { name: 'no', s: {w:118,h:120,roll:.04,lid:.2,tilt:.2,pw:.36,ph:.4}, look_rate:.1, look_amp:.1, wag:.2 },
+];
+
+function findMood(v) {
+  if (typeof v === 'number' && v >= 0 && v < MOODS.length) return v | 0;
+  if (v !== null && v !== undefined && /^\d+$/.test(String(v).trim())) {
+    const n = Number(v);
+    if (n >= 0 && n < MOODS.length) return n;
   }
-  return out;
+  const s = String(v || '').trim().toLowerCase();
+  const idx = MOODS.findIndex(m => m.name === s);
+  return idx >= 0 ? idx : -1;
 }
 
-function syncMoodTargets() {
-  if (!isLinked) {
-    openTarget = 0;
-    toLidL = 0; toLidR = 0; toTilt = 0; toSmile = 0; toBlush = 0; toPScale = 1; toScaleY = 1;
-    $('pipSvg').classList.remove('mood-love');
-    return;
+function moodShape(m) {
+  const s = m.s || {};
+  return [
+    s.w || 118, s.h || 138, s.roll || 0, s.taper || 0, s.lid || 0, s.tilt || 0, s.smile || 0,
+    s.pw || 0.40, s.ph || 0.44, s.square || 0, s.heart || 0, s.glint || 0, s.spiral || 0, s.veins || 0, s.wet || 0,
+  ];
+}
+const clamp01 = v => v < 0 ? 0 : (v > 1 ? 1 : v);
+const or1 = v => v ? v : 1;
+const smoothstep = (e0, e1, x) => { const t = clamp01((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); };
+const hexRgb01 = c => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
+const mix3 = (a, b, t) => { const k = clamp01(t); return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; };
+const grad3 = (c0, c1, c2, mid, t) => { const k = clamp01(t); return k <= mid ? mix3(c0, c1, k / mid) : mix3(c1, c2, (k - mid) / (1 - mid)); };
+const rgbHexTo565 = c => (((c >> 19) & 31) << 11) | (((c >> 10) & 63) << 5) | ((c >> 3) & 31);
+const rgb8To565 = (r, g, b) => ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+
+let rngState = params.has('seed') ? ((Number(params.get('seed')) >>> 0) || 1) : ((Math.random() * 0x7fffffff) | 1);
+function lvRand(min, max) {
+  let x = rngState >>> 0;
+  x ^= x << 13; x >>>= 0;
+  x ^= x >>> 17;
+  x ^= x << 5; x >>>= 0;
+  rngState = x || 1;
+  return min + (x % (max - min + 1));
+}
+const frand = (a, b) => a + (b - a) * lvRand(0, 10000) / 10000.0;
+
+/* ---------- Pre-baked Liquid Sprites (exact tools/liquid_sprites.py + ui/doodle.c) ---------- */
+function makeCanvas(w, h) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  return c;
+}
+function pack565Rgba(r, g, b, a, x, y, out, idx) {
+  const d = BAYER4[y & 3][x & 3];
+  const ri = Math.min(31, Math.max(0, (clamp01(r) * 31 + d) | 0));
+  const gi = Math.min(63, Math.max(0, (clamp01(g) * 63 + d) | 0));
+  const bi = Math.min(31, Math.max(0, (clamp01(b) * 31 + d) | 0));
+  out[idx] = LUT5[ri];
+  out[idx + 1] = LUT6[gi];
+  out[idx + 2] = LUT5[bi];
+  out[idx + 3] = Math.min(255, Math.max(0, (clamp01(a) * 255 + 0.5) | 0));
+}
+
+function heartSdf(x, y) {
+  x = Math.abs(x);
+  if (y + x > 1.0) return Math.hypot(x - 0.25, y - 0.75) - 0.35355339;
+  const ax = x, ay = y - 1.0, m = 0.5 * Math.max(x + y, 0.0);
+  const bx = x - m, by = y - m;
+  const d = Math.min(ax * ax + ay * ay, bx * bx + by * by);
+  return Math.sqrt(d) * (x > y ? 1.0 : -1.0);
+}
+
+const scleraCache = new Array(6).fill(null);
+const pupilCache = new Array(6).fill(null);
+let sharedSprites = null;
+
+function getScleraSprite(pidx) {
+  if (scleraCache[pidx]) return scleraCache[pidx];
+  const pal = PALETTE_DEFS[pidx];
+  const w = LIQ_SCLERA_W, h = LIQ_SCLERA_H, cx = w * 0.5, cy = h * 0.5, rx = LIQ_SCLERA_RX, ry = SCLERA_RY_F;
+  const c_hi = hexRgb01(pal.eye_hi), c_mid = hexRgb01(pal.eye_mid), c_deep = hexRgb01(pal.eye_deep), c_caus = hexRgb01(pal.eye_caustic);
+  const c_rim = pal.obsidian ? hexRgb01(pal.rim) : [1, 1, 1];
+  const obs = pal.obsidian;
+  const cv = makeCanvas(w, h), ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+  let p = 0;
+  for (let y = 0; y < h; y++) {
+    const dy = (y + 0.5) - cy, ny = dy / ry;
+    for (let x = 0; x < w; x++, p += 4) {
+      const dx = (x + 0.5) - cx, nx = dx / rx;
+      const r = Math.hypot(nx, ny);
+      const grad = r > 1e-6 ? Math.hypot(nx / rx, ny / ry) : (1.0 / Math.min(rx, ry));
+      const d_px = (1.0 - r) / grad;
+      const rt = Math.hypot((nx + 0.30) * 0.72, (ny + 0.40) * 0.72) / 1.15;
+      let col = grad3(c_hi, c_mid, c_deep, 0.54, rt);
+      const cx_c = obs ? 0.04 : 0.10, cy_c = obs ? 0.62 : 0.56;
+      const rc = Math.hypot((nx - cx_c) / 0.74, (ny - cy_c) / 0.36);
+      if (rc < 1.0) col = mix3(col, c_caus, Math.pow(1.0 - rc * rc, 1.6) * (obs ? 0.28 : 0.56));
+      const cov = clamp01(d_px + 0.5);
+      if (obs) {
+        const rim_core = clamp01(d_px + 1.1) * clamp01(4.7 - d_px);
+        const rim_col = mix3(c_rim, [0.78, 0.97, 1.0], clamp01((-nx * 0.5 - ny * 0.6) * 0.35 + 0.15));
+        if (d_px >= 0.0) {
+          const in_glow = Math.exp(-Math.pow(Math.max(0.0, d_px - 3.8) / 5.2, 2)) * 0.30;
+          col = mix3(col, c_rim, in_glow);
+          col = mix3(col, rim_col, rim_core);
+          const sheen = Math.exp(-Math.pow((d_px - 6.0) / 3.2, 2)) * clamp01(-nx * 0.6 - ny * 0.8) * 0.22;
+          col = mix3(col, [0.72, 0.94, 1.0], sheen);
+          pack565Rgba(col[0], col[1], col[2], 1.0, x, y, d, p);
+        } else {
+          const out_dist = -d_px;
+          const edge_win = clamp01((9.5 - out_dist) / 3.0);
+          const out_glow = Math.exp(-Math.pow(out_dist / 4.2, 2)) * 0.72 * edge_win;
+          const a = Math.max(cov, out_glow);
+          if (a > 1e-4) {
+            const edge_t = clamp01(cov / a);
+            const bcol = mix3(col, rim_col, clamp01(rim_core + 0.75));
+            const fin = mix3(rim_col, bcol, edge_t * 0.3);
+            pack565Rgba(fin[0], fin[1], fin[2], a, x, y, d, p);
+          }
+        }
+      } else if (cov > 1e-4) {
+        const dir_tl = -nx * 0.58 - ny * 0.81;
+        const edge_band = Math.exp(-Math.pow((d_px - 2.0) / 2.0, 2));
+        if (dir_tl > 0.0) col = mix3(col, [1, 1, 1], edge_band * Math.pow(dir_tl, 1.2) * 0.58);
+        else col = mix3(col, c_deep, edge_band * Math.pow(-dir_tl, 1.1) * 0.34);
+        pack565Rgba(col[0], col[1], col[2], cov, x, y, d, p);
+      }
+    }
   }
-  const t = moodTargets(devMood, devAsleep, devCharging);
-  openTarget = t.open;
-  toLidL = t.lidL; toLidR = t.lidR; toTilt = t.tilt;
-  toSmile = t.smile; toBlush = t.blush; toPScale = t.pScale; toScaleY = t.scaleY;
-  $('pipSvg').classList.toggle('mood-love', t.love);
+  ctx.putImageData(img, 0, 0);
+  scleraCache[pidx] = cv;
+  return cv;
+}
+
+function getPupilSprite(pidx) {
+  if (pupilCache[pidx]) return pupilCache[pidx];
+  const pal = PALETTE_DEFS[pidx];
+  const w = LIQ_PUPIL_W, h = LIQ_PUPIL_H, cx = w * 0.5, cy = h * 0.5, rx = LIQ_PUPIL_RX, ry = LIQ_PUPIL_RY;
+  const c_hi = hexRgb01(pal.pupil_hi), c_mid = hexRgb01(pal.pupil_mid), c_deep = hexRgb01(pal.pupil_deep);
+  const c_glow = pal.obsidian ? hexRgb01(pal.rim) : c_mid;
+  const obs = pal.obsidian;
+  const cv = makeCanvas(w, h), ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+  let p = 0;
+  for (let y = 0; y < h; y++) {
+    const dy = (y + 0.5) - cy, ny = dy / ry;
+    for (let x = 0; x < w; x++, p += 4) {
+      const dx = (x + 0.5) - cx, nx = dx / rx;
+      const r = Math.hypot(nx, ny);
+      const grad = r > 1e-6 ? Math.hypot(nx / rx, ny / ry) : (1.0 / Math.min(rx, ry));
+      const d_px = (1.0 - r) / grad;
+      const rt = Math.hypot((nx + 0.28) * 0.72, (ny + 0.38) * 0.72) / 1.12;
+      const col = grad3(c_hi, c_mid, c_deep, 0.52, rt);
+      const cov = clamp01(d_px + 0.5);
+      if (obs) {
+        const out_dist = Math.max(0.0, -d_px);
+        const edge_win = clamp01((11.5 - out_dist) / 3.5);
+        const halo = Math.exp(-Math.pow(out_dist / 5.4, 2)) * 0.78 * edge_win;
+        const core_t = smoothstep(-1.0, 1.4, d_px);
+        const a = Math.max(cov, halo);
+        if (a > 1e-4) {
+          const fin = mix3(c_glow, col, core_t);
+          pack565Rgba(fin[0], fin[1], fin[2], a, x, y, d, p);
+        }
+      } else if (cov > 1e-4) {
+        pack565Rgba(col[0], col[1], col[2], cov, x, y, d, p);
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  pupilCache[pidx] = cv;
+  return cv;
+}
+
+function buildMaskCanvas(w, h, r, g, b, alphaFn) {
+  const cv = makeCanvas(w, h), ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+  let p = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++, p += 4) {
+      const a = clamp01(alphaFn(x, y));
+      if (a > 0) { d[p] = r; d[p + 1] = g; d[p + 2] = b; d[p + 3] = Math.min(255, (a * 255 + 0.5) | 0); }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return cv;
+}
+
+function getSharedSprites() {
+  if (sharedSprites) return sharedSprites;
+  const ca1 = Math.cos(28 * Math.PI / 180), sa1 = Math.sin(28 * Math.PI / 180);
+  const ca2 = Math.cos(22 * Math.PI / 180), sa2 = Math.sin(22 * Math.PI / 180);
+  const specular = buildMaskCanvas(LIQ_SPEC_W, LIQ_SPEC_H, 255, 255, 255, (x, y) => {
+    const px = x + 0.5, py = y + 0.5;
+    const dx1 = px - 44.0, dy1 = py - 23.0, u1 = (dx1 * ca1 - dy1 * sa1) / 25.0, v1 = (dx1 * sa1 + dy1 * ca1) / 12.5, r1 = Math.hypot(u1, v1);
+    const a1 = r1 < 1.18 ? smoothstep(1.15, 0.65, r1) * smoothstep(0.95, -0.85, v1 * 0.85 + u1 * 0.25) * 0.86 : 0;
+    const dx2 = px - 20.0, dy2 = py - 47.0, u2 = (dx2 * ca2 - dy2 * sa2) / 5.5, v2 = (dx2 * sa2 + dy2 * ca2) / 3.6, r2 = Math.hypot(u2, v2);
+    const a2 = r2 < 1.18 ? smoothstep(1.15, 0.55, r2) * 0.78 : 0;
+    return 1.0 - (1.0 - a1) * (1.0 - a2);
+  });
+
+  const heart = (() => {
+    const w = LIQ_HEART_W, h = LIQ_HEART_H, cx = w * 0.5, cy = h * 0.5, scale = 68.0;
+    const c_hi = hexRgb01(0xFFB3CA), c_mid = hexRgb01(0xFF3E75), c_deep = hexRgb01(0x9E103D);
+    const cv = makeCanvas(w, h), ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+    let p = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++, p += 4) {
+        const hx = ((x + 0.5) - cx) / scale, hy = -((y + 0.5) - cy) / scale + 0.52;
+        const cov = clamp01(0.5 - heartSdf(hx, hy) * scale);
+        if (cov <= 1e-4) continue;
+        const rt = Math.hypot((hx + 0.18) * 1.1, (hy - 0.78) * 1.1) / 1.05;
+        let col = grad3(c_hi, c_mid, c_deep, 0.50, rt);
+        const gl = smoothstep(1.1, 0.3, Math.hypot((hx + 0.22) / 0.19, (hy - 0.80) / 0.11)) * 0.55;
+        col = mix3(col, [1, 1, 1], gl);
+        pack565Rgba(col[0], col[1], col[2], cov, x, y, d, p);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return cv;
+  })();
+
+  const blush = buildMaskCanvas(LIQ_BLUSH_W, LIQ_BLUSH_H, 0xFF, 0x7A, 0xA0, (x, y) => {
+    const nx = ((x + 0.5) - LIQ_BLUSH_W * 0.5) / (LIQ_BLUSH_W * 0.48);
+    const ny = ((y + 0.5) - LIQ_BLUSH_H * 0.5) / (LIQ_BLUSH_H * 0.46);
+    const r = Math.hypot(nx, ny);
+    return r < 1.0 ? Math.pow(clamp01(1.0 - r), 1.7) * 0.88 : 0.0;
+  });
+
+  const lid = buildMaskCanvas(LIQ_LID_W, LIQ_LID_H, 0, 0, 0, (x, y) => {
+    const py = y + 0.5, u = ((x + 0.5) - LIQ_LID_W * 0.5) / (LIQ_LID_W * 0.34);
+    const y_curve = LIQ_LID_EDGE_Y + 8.5 * Math.min(u * u, 1.85);
+    const d = py - y_curve;
+    if (d <= 0.0) return 1.0;
+    const lip = smoothstep(4.5, 0.0, d);
+    const shadow = 0.42 * Math.exp(-Math.pow(d / 9.0, 1.55));
+    const win = smoothstep(LIQ_LID_H - 1.5, LIQ_LID_H - 10.0, py);
+    return Math.max(lip, shadow) * win;
+  });
+
+  const smile = buildMaskCanvas(LIQ_SMILE_W, LIQ_SMILE_H, 0, 0, 0, (x, y) => {
+    const py = y + 0.5, u = ((x + 0.5) - LIQ_SMILE_W * 0.5) / (LIQ_SMILE_W * 0.34);
+    const y_curve = LIQ_SMILE_EDGE_Y + 22.0 * Math.min(u * u, 2.2);
+    const d = y_curve - py;
+    if (d <= 0.0) return 1.0;
+    const lip = smoothstep(4.2, 0.0, d);
+    const shadow = 0.34 * Math.exp(-Math.pow(d / 7.8, 1.5));
+    const win = smoothstep(1.5, 9.0, py);
+    return Math.max(lip, shadow) * win;
+  });
+
+  const wet = (() => {
+    const w = LIQ_WET_W, h = LIQ_WET_H, cx = w * 0.5, cy = (h - 1.0) - SCLERA_RY_F;
+    const c_water = hexRgb01(0x76DCFF);
+    const cv = makeCanvas(w, h), ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+    let p = 0;
+    for (let y = 0; y < h; y++) {
+      const ny = ((y + 0.5) - cy) / SCLERA_RY_F;
+      for (let x = 0; x < w; x++, p += 4) {
+        const nx = ((x + 0.5) - cx) / LIQ_SCLERA_RX;
+        const d_ell = (0.985 - Math.hypot(nx, ny)) * LIQ_SCLERA_RX;
+        if (d_ell <= -0.5) continue;
+        const cov = clamp01(d_ell + 0.5);
+        const ny_top = 0.63 + 0.022 * Math.sin(nx * 5.2);
+        const pool = smoothstep(ny_top - 0.03, ny_top + 0.04, ny) * 0.56;
+        const meniscus = Math.exp(-Math.pow((ny - ny_top) / 0.028, 2)) * 0.92 * clamp01(d_ell - 0.8);
+        const a = clamp01(Math.max(pool, meniscus)) * cov;
+        if (a > 1e-4) {
+          const col = mix3(c_water, [1, 1, 1], clamp01(meniscus / Math.max(a, 1e-3)));
+          pack565Rgba(col[0], col[1], col[2], a, x, y, d, p);
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return cv;
+  })();
+
+  const veins = buildMaskCanvas(LIQ_VEINS_W, LIQ_VEINS_H, 0xD8, 0x38, 0x38, (x, y) => {
+    const nx = ((x + 0.5) - LIQ_VEINS_W * 0.5) / LIQ_VEINS_RX;
+    const ny = ((y + 0.5) - LIQ_VEINS_H * 0.5) / VEINS_RY_F;
+    const rr = Math.hypot(nx, ny);
+    if (rr < 0.42 || rr > 0.97) return 0.0;
+    const ang = Math.atan2(ny, nx);
+    const v1 = ang * 1.114 + 0.18 * Math.sin(rr * 13.0 + ang * 5.0);
+    const v2 = ang * 2.069 + 0.30 * Math.sin(rr * 21.0 + ang * 2.0) + 0.5;
+    const d1 = Math.abs(v1 - Math.round(v1)) * 0.898 * rr * LIQ_VEINS_RX;
+    const d2 = Math.abs(v2 - Math.round(v2)) * 0.483 * rr * LIQ_VEINS_RX;
+    const m1 = clamp01(0.75 + 0.95 * (rr - 0.45) - d1) * clamp01((rr - 0.42) * 4.0);
+    const m2 = clamp01(0.55 - d2) * clamp01((rr - 0.70) * 5.0);
+    return Math.max(m1, m2) * 0.88 * smoothstep(0.97, 0.90, rr);
+  });
+
+  const rainCloud = (() => {
+    const w = 170, h = 80, puffs = [[40,50,24],[72,34,30],[108,38,28],[134,52,22],[86,56,22]];
+    const smin = (a, b, k) => { const hh = clamp01(0.5 + 0.5 * (b - a) / k); return b + (a - b) * hh - k * hh * (1 - hh); };
+    const cv = makeCanvas(w, h), ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+    let p = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++, p += 4) {
+        const fx = x + 0.5, fy = y + 0.5;
+        let sd = 1e9;
+        for (let i = 0; i < 5; i++) sd = smin(sd, Math.hypot(fx - puffs[i][0], fy - puffs[i][1]) - puffs[i][2], 10);
+        const a = clamp01(0.5 - sd);
+        if (a <= 0) continue;
+        const top = clamp01((44 - fy) / 30) * clamp01(-sd / 10);
+        const g = (92 + 36 * top) | 0;
+        d[p] = g; d[p + 1] = g + 4; d[p + 2] = g + 12; d[p + 3] = Math.min(255, (a * 255 + 0.5) | 0);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return cv;
+  })();
+
+  sharedSprites = { specular, heart, blush, lid, smile, wet, veins, rainCloud };
+  return sharedSprites;
+}
+
+const eyeScratch = makeCanvas(EYE_SCR, EYE_SCR);
+const eyeScratchCtx = eyeScratch.getContext('2d');
+const recolorScratch = makeCanvas(LIQ_SCLERA_W, LIQ_SCLERA_H);
+const recolorCtx = recolorScratch.getContext('2d');
+
+function getRecoloredSclera(pidx, r, g, b, opa255) {
+  const base = getScleraSprite(pidx);
+  if (opa255 <= 0) return base;
+  recolorCtx.globalCompositeOperation = 'source-over';
+  recolorCtx.clearRect(0, 0, LIQ_SCLERA_W, LIQ_SCLERA_H);
+  recolorCtx.drawImage(base, 0, 0);
+  recolorCtx.globalCompositeOperation = 'source-atop';
+  recolorCtx.fillStyle = `rgba(${r},${g},${b},${(opa255 / 255).toFixed(4)})`;
+  recolorCtx.fillRect(0, 0, LIQ_SCLERA_W, LIQ_SCLERA_H);
+  recolorCtx.globalCompositeOperation = 'source-over';
+  return recolorScratch;
+}
+
+/* ---------- Plain Renderer: exact 1:1 port of ui/face.c (face_draw) ---------- */
+let plainImg = null, plain32 = null;
+const plain565 = new Uint16Array(EYE_SCR * EYE_SCR);
+const prevRowScratch = new Float32Array(EYE_SCR + 2);
+
+function mix565(a, b, t) {
+  const k = clamp01(t), ik = 1 - k;
+  const r = (((a >> 11) & 31) * ik + ((b >> 11) & 31) * k + 0.5) | 0;
+  const g = (((a >> 5) & 63) * ik + ((b >> 5) & 63) * k + 0.5) | 0;
+  const bl = ((a & 31) * ik + (b & 31) * k + 0.5) | 0;
+  return (r << 11) | (g << 5) | bl;
+}
+function pixel565(eye, pupil, shade, p, a, dst, x, y) {
+  const d = BAYER4[y & 3][x & 3];
+  const e = shade * (1 - p) * a, q = p * a, k = 1 - a;
+  let r = (((eye >> 11) & 31) * e + ((pupil >> 11) & 31) * q + ((dst >> 11) & 31) * k + d) | 0;
+  let g = (((eye >> 5) & 63) * e + ((pupil >> 5) & 63) * q + ((dst >> 5) & 63) * k + d) | 0;
+  let b = ((eye & 31) * e + (pupil & 31) * q + (dst & 31) * k + d) | 0;
+  if (r > 31) r = 31; if (g > 63) g = 63; if (b > 31) b = 31;
+  return (r << 11) | (g << 5) | b;
+}
+function rboxSdf(x, y, hw, hh, r) {
+  const qx = Math.abs(x) - hw + r, qy = Math.abs(y) - hh + r;
+  return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+}
+function offInt(v) {
+  const t = Math.trunc(v), d = Math.abs(v - t);
+  return d > 0.5 ? 1 - d : d;
+}
+
+function eyePrepare(f, e) {
+  const cy_ = Math.cos(e.yaw), sy_ = Math.sin(e.yaw), cp = Math.cos(e.pitch), sp = Math.sin(e.pitch);
+  const cr = Math.cos(e.roll), sr = Math.sin(e.roll);
+  const ry_x = [cy_, 0, -sy_], ry_y = [-sy_ * sp, cp, -cy_ * sp], ry_z = [sy_ * cp, sp, cy_ * cp];
+  const ax = [cr * ry_x[0] - sr * ry_x[1], sr * ry_x[0] + cr * ry_x[1], ry_x[2]];
+  const ay = [cr * ry_y[0] - sr * ry_y[1], sr * ry_y[0] + cr * ry_y[1], ry_y[2]];
+  const az = [cr * ry_z[0] - sr * ry_z[1], sr * ry_z[0] + cr * ry_z[1], ry_z[2]];
+  const a = Math.max(e.w * 0.5, 1), b = Math.max(e.h * 0.5, 1), c = Math.max(e.depth * 0.5, 1);
+  const c0 = [ax[0] / a, ay[0] / b, az[0] / c], c1 = [ax[1] / a, ay[1] / b, az[1] / c], d = [ax[2] / a, ay[2] / b, az[2] / c];
+  const dd = d[0] * d[0] + d[1] * d[1] + d[2] * d[2];
+  const k0 = (c0[0] * d[0] + c0[1] * d[1] + c0[2] * d[2]) / dd;
+  const k1 = (c1[0] * d[0] + c1[1] * d[1] + c1[2] * d[2]) / dd;
+  const p0 = [c0[0] - d[0] * k0, c0[1] - d[1] * k0, c0[2] - d[2] * k0];
+  const p1 = [c1[0] - d[0] * k1, c1[1] - d[1] * k1, c1[2] - d[2] * k1];
+  const A = p0[0] * p0[0] + p0[1] * p0[1] + p0[2] * p0[2];
+  const B = p0[0] * p1[0] + p0[1] * p1[1] + p0[2] * p1[2];
+  const C = p1[0] * p1[0] + p1[1] * p1[1] + p1[2] * p1[2];
+  const det = A * C - B * B;
+  const ext_x = Math.sqrt(C / det), ext_y = Math.sqrt(A / det);
+  const wt = e.wob_t;
+  const gyw = e.look_x, gpt = e.look_y;
+  const g = [Math.sin(gyw) * Math.cos(gpt), Math.sin(gpt), Math.cos(gyw) * Math.cos(gpt)];
+  const u1 = [Math.cos(gyw), 0, -Math.sin(gyw)];
+  const u2 = [g[1] * u1[2] - g[2] * u1[1], g[2] * u1[0] - g[0] * u1[2], g[0] * u1[1] - g[1] * u1[0]];
+  const cpr = Math.cos(e.pupil_roll), spr = Math.sin(e.pupil_roll);
+  const t1 = [cpr * u1[0] + spr * u2[0], cpr * u1[1] + spr * u2[1], cpr * u1[2] + spr * u2[2]];
+  const t2 = [-spr * u1[0] + cpr * u2[0], -spr * u1[1] + cpr * u2[1], -spr * u1[2] + cpr * u2[2]];
+  const pw = Math.max(e.pw, 0.01), ph = Math.max(e.ph, 0.01), prr = (1 - clamp01(e.square)) * Math.min(pw, ph);
+  const hm = clamp01(e.heart), hs = Math.max(pw, ph) * 2.1;
+  const lid = (e.lid - 0.05) / 0.95, smile = (e.smile - 0.05) / 0.95;
+  const lid_y = -ext_y + lid * 2 * ext_y, lid_n = 1.0 / Math.hypot(1, e.tilt);
+  const cut_r = ext_x * 1.6, cut_y = ext_y + 1.5 - smile * 1.7 * ext_y + cut_r;
+  const taper = Math.max(-0.6, Math.min(0.6, e.taper));
+  const wb = Math.abs(e.wobble), rw = f.rim_width > 0 ? f.rim_width : 0;
+  const pad = 2 + wb;
+  const bx = ext_x * (1 + Math.abs(taper)) + pad, by = ext_y + pad;
+  const r = {
+    x1: Math.max(0, Math.floor(e.x - bx)), y1: Math.max(0, Math.floor(e.y - by)),
+    x2: Math.min(EYE_SCR - 1, Math.ceil(e.x + bx)), y2: Math.min(EYE_SCR - 1, Math.ceil(e.y + by)),
+  };
+  return {
+    cr, sr, A, B, C, ext_x, ext_y, a, b, c0, c1, d, dd, inv_dd: 1 / dd, inv_ext_y: 1 / ext_y, inv_A: 1 / A,
+    w2c: Math.cos(1.3 * wt), w2s: Math.sin(1.3 * wt), w3c: Math.cos(1 - 1.7 * wt), w3s: Math.sin(1 - 1.7 * wt),
+    w5c: Math.cos(2 + 2.3 * wt), w5s: Math.sin(2 + 2.3 * wt),
+    g, t1, t2, pw, ph, inv_pw: 1 / pw, inv_ph: 1 / ph, pmin: Math.min(pw, ph), prr, hm, hs, inv_hs: 1 / hs,
+    pupil_color: mix565(f.pupil_color, f.heart_color, hm),
+    lid, smile, lid_y, lid_n, cut_r, cut_y, taper,
+    in_k: (0.5 + wb) * (0.5 + wb) * 4, rim_k: (0.5 + wb + rw) * (0.5 + wb + rw) * 4,
+    grad_hint: 1 / (Math.min(a, b) * 0.5),
+    r_min: 1 / Math.sqrt((A + C) * 0.5 + Math.sqrt((A - C) * (A - C) * 0.25 + B * B)),
+    wb, rw, r,
+  };
+}
+
+function drawEyePlain(f, e, s) {
+  const { cr, sr, A, B, C, ext_y, a, b, c0, c1, d, dd, inv_dd, inv_ext_y, inv_A,
+          w2c, w2s, w3c, w3s, w5c, w5s, g, t1, t2, pw, ph, inv_pw, inv_ph, pmin, prr, hm, hs, inv_hs,
+          pupil_color, lid, smile, lid_y, lid_n, cut_r, cut_y, taper, in_k, rim_k, grad_hint, r_min, wb, rw, r } = s;
+  if (r.x2 < r.x1 || r.y2 < r.y1) return;
+  const has_rim = rw > 0;
+  const width = r.x2 - r.x1 + 1;
+  for (let i = 0; i < width; i++) prevRowScratch[i] = NaN;
+
+  for (let y = r.y1; y <= r.y2; y++) {
+    const sy = y + 0.5 - e.y;
+    const squeeze = 1.0 / (1 + taper * sy * inv_ext_y);
+    const mf = squeeze > 1 ? squeeze : 1, inv_sq = 1.0 / squeeze, xo = e.x - 0.5;
+    const m_out = (1.5 + wb) * mf;
+    const q_out = (1 + m_out / r_min) * (1 + m_out / r_min);
+    const by = B * sy, disc = by * by - A * (C * sy * sy - q_out);
+    if (q_out <= 0 || disc <= 0) {
+      for (let i = 0; i < width; i++) prevRowScratch[i] = NaN;
+      continue;
+    }
+    const rad = Math.sqrt(disc);
+    const xa = Math.floor(xo + (-by - rad) * inv_A * inv_sq) - 1;
+    const xb = Math.ceil(xo + (-by + rad) * inv_A * inv_sq) + 1;
+    let left = NaN;
+
+    for (let x = r.x1, i = 0; x <= r.x2; x++, i++) {
+      if (x < xa || x > xb) { prevRowScratch[i] = left = NaN; continue; }
+      const u = x + 0.5 - e.x, v = sy;
+      const sx = u * squeeze;
+      const Q = A * sx * sx + 2 * B * sx * sy + C * sy * sy;
+      const gx = A * sx + B * sy, gy = B * sx + C * sy, g2 = gx * gx + gy * gy, k = 1 - Q;
+      if (k < 0 && k * k >= in_k * g2) { prevRowScratch[i] = left = NaN; continue; }
+      const inside = k > 0 && k * k >= in_k * g2;
+      const deep = !has_rim ? inside : (k > 0 && k * k >= rim_k * g2);
+      let wob = 0;
+      if (!deep && e.wobble > 0) {
+        const rl = 1 / Math.sqrt(sx * sx + sy * sy + 1e-6), c1_ = sx * rl, s1_ = sy * rl;
+        const c2 = c1_ * c1_ - s1_ * s1_, s2 = 2 * s1_ * c1_;
+        const c3 = c2 * c1_ - s2 * s1_, s3 = s2 * c1_ + c2 * s1_;
+        const c5 = c3 * c2 - s3 * s2, s5 = s3 * c2 + c3 * s2;
+        wob = e.wobble * (0.3 * (s2 * w2c + c2 * w2s) + 0.5 * (s3 * w3c + c3 * w3s) + 0.2 * (s5 * w5c + c5 * w5s));
+      }
+      const d_ell = deep ? rw + 2.0 : wob + k * 0.5 / Math.sqrt(g2 + 1e-12);
+      let cov = inside ? 1 : clamp01(0.5 + d_ell);
+      if (cov <= 0) { prevRowScratch[i] = left = NaN; continue; }
+
+      const eu = cr * u + sr * v, ev = -sr * u + cr * v;
+      let d_edge = d_ell;
+      if (lid > 0) {
+        const dl = (ev - (lid_y + e.tilt * eu)) * lid_n;
+        cov *= clamp01(dl + 0.5);
+        if (dl < d_edge) d_edge = dl;
+      }
+      if (smile > 0) {
+        const dy = ev - cut_y;
+        const ds = Math.hypot(eu, dy) - cut_r;
+        cov *= clamp01(ds + 0.5);
+        if (ds < d_edge) d_edge = ds;
+      }
+      if (cov <= 0) { prevRowScratch[i] = left = NaN; continue; }
+      const rim_a = has_rim ? clamp01(rw - d_edge + 0.5) : 0;
+
+      const ox = sx * c0[0] + sy * c1[0], oy = sx * c0[1] + sy * c1[1], oz = sx * c0[2] + sy * c1[2];
+      const od = ox * d[0] + oy * d[1] + oz * d[2];
+      const tHit = (-od + Math.sqrt(Math.max(0, dd * k))) * inv_dd;
+      const px = ox + tHit * d[0], py = oy + tHit * d[1], pz = oz + tHit * d[2];
+
+      let pd = 1.0, ps = 0, pt = 0;
+      const real = (px * g[0] + py * g[1] + pz * g[2]) > 0;
+      if (real) {
+        ps = px * t1[0] + py * t1[1] + pz * t1[2];
+        pt = px * t2[0] + py * t2[1] + pz * t2[2];
+        if (e.square <= 0.001) {
+          pd = (Math.hypot(ps * inv_pw, pt * inv_ph) - 1.0) * pmin;
+        } else {
+          pd = rboxSdf(ps, pt, pw, ph, prr);
+        }
+        if (hm > 0) pd += (heartSdf(ps * inv_hs, -pt * inv_hs + 0.5) * hs - pd) * hm;
+      }
+      const gl = Number.isNaN(left) ? NaN : pd - left;
+      const gu = Number.isNaN(prevRowScratch[i]) ? NaN : pd - prevRowScratch[i];
+      const mStep = Number.isNaN(gl) ? (Number.isNaN(gu) ? grad_hint : Math.abs(gu)) : (Number.isNaN(gu) ? Math.abs(gl) : Math.max(Math.abs(gl), Math.abs(gu)));
+      let grad = -1, pc;
+      if (pd > 0.75 * mStep) pc = 0;
+      else if (pd < -0.75 * mStep) pc = 1;
+      else {
+        grad = Number.isNaN(gl) ? (Number.isNaN(gu) ? grad_hint : Math.abs(gu)) : (Number.isNaN(gu) ? Math.abs(gl) : Math.hypot(gl, gu));
+        pc = clamp01(0.5 - pd / Math.max(grad, 1e-4));
+      }
+      if (pc > 0 && grad < 0 && (e.glint > 0 || e.spiral > 0)) {
+        grad = Number.isNaN(gl) ? (Number.isNaN(gu) ? grad_hint : Math.abs(gu)) : (Number.isNaN(gu) ? Math.abs(gl) : Math.hypot(gl, gu));
+      }
+      prevRowScratch[i] = left = real ? pd : NaN;
+
+      if (pc > 0 && e.spiral > 0) {
+        const ang = Math.atan2(pt, ps), rr_ = Math.hypot(ps, pt) / Math.max(pw, ph);
+        const st = Math.sin(2 * ang + rr_ * 14 - e.wob_t * 6);
+        pc *= 1 - clamp01(e.spiral) * clamp01(0.5 + st * 2.5) * clamp01(rr_ * 3);
+      }
+      if (pc > 0 && e.glint > 0) {
+        const gm = Math.min(pw, ph) * clamp01(e.glint);
+        const d1 = Math.hypot(ps + 0.35 * pw, pt + 0.38 * ph) - 0.32 * gm;
+        const d2 = Math.hypot(ps - 0.30 * pw, pt - 0.32 * ph) - 0.14 * gm;
+        pc *= 1 - clamp01(0.5 - Math.min(d1, d2) / Math.max(grad, 1e-4));
+      }
+
+      let ecol = f.color, pcol = pupil_color;
+      const rr2 = e.veins > 0 ? px * px + py * py : 0;
+      if (rr2 > 0.42 * 0.42) {
+        const ang = Math.atan2(py, px), rr_ = Math.sqrt(rr2), R = Math.min(a, b);
+        const v1 = ang * 1.114 + 0.18 * Math.sin(rr_ * 13 + ang * 5);
+        const v2 = ang * 2.069 + 0.3 * Math.sin(rr_ * 21 + ang * 2) + 0.5;
+        const d1 = offInt(v1) * 0.898 * rr_ * R, d2 = offInt(v2) * 0.483 * rr_ * R;
+        const m1 = clamp01(0.6 + 0.9 * (rr_ - 0.45) - d1) * clamp01((rr_ - 0.42) * 4);
+        const m2 = clamp01(0.4 - d2) * clamp01((rr_ - 0.72) * 5);
+        ecol = mix565(ecol, f.vein_color, clamp01(e.veins) * 0.85 * Math.max(m1, m2));
+      }
+      if (e.wet > 0) {
+        const top = ext_y * (1 - 0.34 * clamp01(e.wet)) + 1.5 * Math.sin(eu * 0.08 + e.wob_t * 2);
+        const pool = clamp01(ev - top + 0.5) * 0.5 * clamp01(e.wet);
+        const rim = clamp01(1.6 - Math.abs(ev - top - 0.8)) * clamp01(e.wet);
+        ecol = mix565(mix565(ecol, f.water_color, pool), 0xFFFF, rim);
+        pcol = mix565(mix565(pcol, f.water_color, pool), 0xFFFF, rim);
+      }
+      if (rim_a > 0) {
+        ecol = rim_a >= 1 ? f.rim_color : mix565(ecol, f.rim_color, rim_a);
+        pcol = rim_a >= 1 ? f.rim_color : mix565(pcol, f.rim_color, rim_a);
+      }
+      const idx = y * EYE_SCR + x;
+      plain565[idx] = pixel565(ecol, pcol, 1, pc, cov, plain565[idx], x, y);
+    }
+  }
+}
+
+function drawBlushPlain(f, e) {
+  const rx = e.w * 0.36, ry = e.h * 0.1 + 5, cx = e.x, cy = e.y + e.h * 0.5 + ry * 0.4;
+  const x1 = Math.max(0, (cx - rx) | 0), x2 = Math.min(EYE_SCR - 1, (cx + rx + 1) | 0);
+  const y1 = Math.max(0, (cy - ry) | 0), y2 = Math.min(EYE_SCR - 1, (cy + ry + 1) | 0);
+  for (let y = y1; y <= y2; y++) {
+    const ny = (y + 0.5 - cy) / ry;
+    for (let x = x1; x <= x2; x++) {
+      const nx = (x + 0.5 - cx) / rx;
+      const a = f.blush * 0.9 * clamp01((1 - Math.hypot(nx, ny)) * 2.0);
+      if (a > 0) {
+        const idx = y * EYE_SCR + x;
+        plain565[idx] = pixel565(f.blush_color, 0, 1, 0, a, plain565[idx], x, y);
+      }
+    }
+  }
+}
+
+function renderPlainEyes(ctx, f) {
+  if (!plainImg) {
+    plainImg = ctx.createImageData(EYE_SCR, EYE_SCR);
+    plain32 = new Uint32Array(plainImg.data.buffer);
+  }
+  plain565.fill(0);
+  if (f.blush > 0.01) {
+    drawBlushPlain(f, f.eye[0]);
+    drawBlushPlain(f, f.eye[1]);
+  }
+  const first = f.eye[0].w * f.eye[0].h < f.eye[1].w * f.eye[1].h ? 0 : 1;
+  const s0 = eyePrepare(f, f.eye[first]);
+  drawEyePlain(f, f.eye[first], s0);
+  const s1 = eyePrepare(f, f.eye[1 - first]);
+  drawEyePlain(f, f.eye[1 - first], s1);
+
+  for (let i = 0; i < EYE_SCR * EYE_SCR; i++) {
+    const c = plain565[i];
+    plain32[i] = 0xFF000000 | (LUT5[c & 31] << 16) | (LUT6[(c >> 5) & 63] << 8) | LUT5[(c >> 11) & 31];
+  }
+  ctx.putImageData(plainImg, 0, 0);
+}
+
+/* ---------- Liquid Renderer: exact 1:1 port of ui/pip.c liquid_draw_cb ---------- */
+function liquidEyeGeom(e) {
+  const squeeze = e.h < 32.0 ? 1.0 + 0.08 * (1.0 - Math.max(e.h, 0.0) / 32.0) : 1.0;
+  const lid_push = e.lid > 0.05 ? 1.0 + 0.04 * Math.min(1.0, e.lid) : 1.0;
+  const eff_w = Math.max(e.w * squeeze * lid_push * Math.max(0.55, Math.cos(e.yaw * 0.75)), 18.0);
+  const eh = Math.max(e.h, 7.0);
+  return { eff_w, eh, ang: e.roll };
+}
+
+function drawTransformedSprite(ctx, img, cx, cy, pivX, pivY, sx256, sy256, rad, opa255) {
+  if (opa255 <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, opa255 / 255);
+  ctx.translate(cx, cy);
+  ctx.rotate(rad);
+  ctx.scale(sx256 / 256, sy256 / 256);
+  ctx.drawImage(img, -pivX, -pivY);
+  ctx.restore();
+}
+
+function renderLiquidEyes(ctx, f, pidx, tintR, tintG, tintB, tintOpa) {
+  const sp = getSharedSprites();
+  const sclSrc = getRecoloredSclera(pidx, tintR, tintG, tintB, tintOpa);
+  const pupSrc = getPupilSprite(pidx);
+  const is_obs = PALETTE_DEFS[pidx].obsidian;
+
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, EYE_SCR, EYE_SCR);
+
+  const first = f.eye[0].w * f.eye[0].h < f.eye[1].w * f.eye[1].h ? 0 : 1;
+  for (let n = 0; n < 2; n++) {
+    const idx = n ? 1 - first : first;
+    const eye = f.eye[idx];
+    const { eff_w, eh, ang } = liquidEyeGeom(eye);
+    const rx = eff_w * 0.5, ry = eh * 0.5;
+    const sx = Math.max(24, Math.round(256.0 * (eff_w / (2.0 * LIQ_SCLERA_RX))));
+    const sy = Math.max(14, Math.round(256.0 * (eh / (2.0 * LIQ_SCLERA_RY))));
+    const ca = Math.cos(ang), sa = Math.sin(ang);
+
+    const ec = eyeScratchCtx;
+    ec.globalCompositeOperation = 'source-over';
+    ec.globalAlpha = 1;
+    ec.clearRect(0, 0, EYE_SCR, EYE_SCR);
+
+    /* 1. Pre-baked glossy sclera droplet */
+    drawTransformedSprite(ec, sclSrc, eye.x, eye.y, LIQ_SCLERA_W / 2, LIQ_SCLERA_H / 2, sx, sy, ang, 255);
+
+    /* 1b. Bloodshot rim veins for PIP_STONED */
+    if (eye.veins > 0.05) {
+      const vsx = Math.round(256.0 * (eff_w / (2.0 * LIQ_VEINS_RX)));
+      const vsy = Math.round(256.0 * (eh / (2.0 * LIQ_VEINS_RY)));
+      drawTransformedSprite(ec, sp.veins, eye.x, eye.y, LIQ_VEINS_W / 2, LIQ_VEINS_H / 2, vsx, vsy, ang, Math.round(Math.min(1, eye.veins) * 215));
+    }
+
+    /* 2. Volumetric pupil (or glossy heart in PIP_LOVE), fading cleanly during deep blink/sleep */
+    const det_a = Math.min(1.0, Math.max(0.0, (eye.h - 18.0) / 26.0));
+    if (det_a > 0.05) {
+      const prx = rx * eye.pw * Math.max(0.62, Math.cos(eye.look_x * 0.72));
+      const pry = ry * eye.ph * Math.max(0.75, Math.cos(eye.look_y * 0.65));
+      const max_dx = Math.max(2.0, rx - prx * 0.94 - (is_obs ? 9.5 : 3.5));
+      const max_dy = Math.max(2.0, ry - pry * 0.94 - (is_obs ? 9.5 : 3.5));
+      let ux = Math.sin(eye.look_x) * 0.95, uy = Math.sin(eye.look_y) * 0.95 + 0.04;
+      const ulen = Math.hypot(ux, uy);
+      if (ulen > 1.0) { ux /= ulen; uy /= ulen; }
+      const lx = ux * max_dx, ly = uy * max_dy;
+      const pxi = eye.x + lx * ca - ly * sa, pyi = eye.y + lx * sa + ly * ca;
+      const pOpa = Math.round(det_a * 255);
+
+      if (eye.heart > 0.35) {
+        const cos_x = Math.max(0.46, Math.cos(eye.look_x * 1.05)) * Math.max(0.68, Math.cos(eye.yaw * 0.65));
+        const cos_y = Math.max(0.68, Math.cos(eye.look_y * 0.90));
+        const base_hr = Math.max(rx * eye.pw, ry * eye.ph) * (is_obs ? 1.06 : 1.18);
+        const hrx = base_hr * cos_x, hry = base_hr * cos_y;
+        const h_mdx = Math.max(4.0, rx - hrx * 0.88 - (is_obs ? 9.5 : 3.0));
+        const h_mdy = Math.max(4.0, ry - hry * 0.88 - (is_obs ? 9.5 : 3.0));
+        let hux = Math.sin(eye.look_x) * 1.08, huy = Math.sin(eye.look_y) * 1.08;
+        const hlen = Math.hypot(hux, huy);
+        if (hlen > 1.0) { hux /= hlen; huy /= hlen; }
+        const hlx = hux * h_mdx, hly = huy * h_mdy;
+        const hxi = eye.x + hlx * ca - hly * sa, hyi = eye.y + hlx * sa + hly * ca;
+        const h_rot = ang - Math.sin(eye.look_x) * Math.sin(eye.look_y) * 0.45;
+        const hsx = Math.max(28, Math.round(256.0 * (2.0 * hrx / LIQ_HEART_W)));
+        const hsy = Math.max(28, Math.round(256.0 * (2.0 * hry / LIQ_HEART_H)));
+        drawTransformedSprite(ec, sp.heart, hxi, hyi, LIQ_HEART_W / 2, LIQ_HEART_H / 2, hsx, hsy, h_rot, pOpa);
+      } else {
+        const psx = Math.max(24, Math.round(256.0 * (prx / LIQ_PUPIL_RX)));
+        const psy = Math.max(24, Math.round(256.0 * (pry / LIQ_PUPIL_RY)));
+        drawTransformedSprite(ec, pupSrc, pxi, pyi, LIQ_PUPIL_W / 2, LIQ_PUPIL_H / 2, psx, psy, ang + eye.pupil_roll, pOpa);
+      }
+
+      /* 2b. Sparkle catchlights (PIP_AMAZED, PIP_HURT, PIP_YES) */
+      if (eye.glint > 0.05 && eye.heart <= 0.35) {
+        const gk = Math.min(1.0, eye.glint), prm = Math.min(prx, pry);
+        const r1 = Math.max(3, Math.round(prm * 0.30 * gk)), r2 = Math.max(2, Math.round(prm * 0.14 * gk));
+        const gx1 = -0.32 * prx, gy1 = -0.34 * pry, gx2 = 0.28 * prx, gy2 = 0.30 * pry;
+        const cx1 = pxi + gx1 * ca - gy1 * sa, cy1 = pyi + gx1 * sa + gy1 * ca;
+        const cx2 = pxi + gx2 * ca - gy2 * sa, cy2 = pyi + gx2 * sa + gy2 * ca;
+        ec.save();
+        ec.fillStyle = '#FFFFFF';
+        ec.globalAlpha = det_a * gk * (245 / 255);
+        ec.beginPath(); ec.arc(cx1, cy1, r1, 0, Math.PI * 2); ec.fill();
+        ec.beginPath(); ec.arc(cx2, cy2, r2, 0, Math.PI * 2); ec.fill();
+        ec.restore();
+      }
+
+      /* 3. Moving liquid glass specular highlight */
+      const slx = -rx * 0.24 + Math.sin(eye.look_x) * rx * 0.22;
+      const sly = -ry * 0.38 + Math.sin(eye.look_y) * ry * 0.18;
+      const spx = eye.x + slx * ca - sly * sa, spy = eye.y + slx * sa + sly * ca;
+      drawTransformedSprite(ec, sp.specular, spx, spy, LIQ_SPEC_W / 2, LIQ_SPEC_H / 2, sx, sy, ang, Math.round(det_a * (is_obs ? 165 : 225)));
+
+      /* 3b. Shimmering lower tear pool for PIP_HURT */
+      if (eye.wet > 0.05) {
+        const wx_p = eye.x - sa * ry, wy_p = eye.y + ca * ry;
+        drawTransformedSprite(ec, sp.wet, wx_p, wy_p, LIQ_WET_W / 2, LIQ_WET_H - 1, sx, sy, ang, Math.round(det_a * Math.min(1, eye.wet) * 235));
+      }
+    }
+
+    /* 4. Per-eye leak-free curved eyelid & smile (destination-out erases 100% of upper rim & outer halo above lid) */
+    const lid = (eye.lid - 0.05) / 0.95;
+    const smile = (eye.smile - 0.05) / 0.95;
+    if (lid > 0.001) {
+      const lid_y = -ry + lid * 2.0 * ry;
+      const lx_p = eye.x - sa * lid_y, ly_p = eye.y + ca * lid_y;
+      const lid_ang = ang + Math.atan(eye.tilt);
+      const lsx = Math.round(256.0 * (eff_w * 1.78 / LIQ_LID_W)) / 256;
+      const lsy = Math.round(256.0 * (Math.max(eh * 1.50, 180.0) / LIQ_LID_EDGE_Y)) / 256;
+      ec.save();
+      ec.globalCompositeOperation = 'destination-out';
+      ec.globalAlpha = 1;
+      ec.translate(lx_p, ly_p);
+      ec.rotate(lid_ang);
+      ec.scale(lsx, lsy);
+      ec.translate(-LIQ_LID_W / 2, -LIQ_LID_EDGE_Y);
+      ec.drawImage(sp.lid, 0, 0);
+      ec.fillStyle = '#000000';
+      ec.fillRect(-1200, -1200, 2400 + LIQ_LID_W, 1200.5);
+      ec.fillRect(-1200, 0, 1200.5, 197.7);
+      ec.fillRect(LIQ_LID_W - 0.5, 0, 1200, 197.7);
+      ec.restore();
+    }
+    if (smile > 0.001) {
+      const sm_y = ry + 1.5 - smile * 1.7 * ry;
+      const sx_p = eye.x - sa * sm_y, sy_p = eye.y + ca * sm_y;
+      const ssx = Math.round(256.0 * (eff_w * 1.78 / LIQ_SMILE_W)) / 256;
+      const ssy = Math.round(256.0 * (Math.max(eh * 1.30, 155.0) / (LIQ_SMILE_H - LIQ_SMILE_EDGE_Y))) / 256;
+      ec.save();
+      ec.globalCompositeOperation = 'destination-out';
+      ec.globalAlpha = 1;
+      ec.translate(sx_p, sy_p);
+      ec.rotate(ang);
+      ec.scale(ssx, ssy);
+      ec.translate(-LIQ_SMILE_W / 2, -LIQ_SMILE_EDGE_Y);
+      ec.drawImage(sp.smile, 0, 0);
+      ec.fillStyle = '#000000';
+      ec.fillRect(-1200, LIQ_SMILE_H - 0.5, 2400 + LIQ_SMILE_W, 1200);
+      ec.fillRect(-1200, 76.4, 1200.5, 1200);
+      ec.fillRect(LIQ_SMILE_W - 0.5, 76.4, 1200, 1200);
+      ec.restore();
+    }
+
+    ctx.drawImage(eyeScratch, 0, 0);
+  }
+
+  /* 5. Soft pink blush cheeks under the eyes */
+  if (f.blush > 0.01) {
+    const bopa = Math.round(Math.min(1.0, f.blush) * 215);
+    for (let i = 0; i < 2; i++) {
+      const eye = f.eye[i];
+      const eh = Math.max(eye.h, 11.0);
+      const brx = eye.w * 0.36, bry = eye.h * 0.10 + 5.0;
+      const bcx = eye.x, bcy = eye.y + eh * 0.5 + bry * 0.45;
+      const bsx = Math.round(256.0 * (2.0 * brx / LIQ_BLUSH_W));
+      const bsy = Math.round(256.0 * (2.0 * bry / LIQ_BLUSH_H));
+      drawTransformedSprite(ctx, sp.blush, bcx, bcy, LIQ_BLUSH_W / 2, LIQ_BLUSH_H / 2, bsx, bsy, 0, bopa);
+    }
+  }
+}
+
+/* ---------- Firmware Character State Machine & Springs (exact ui/pip.c) ---------- */
+const mkSpr = (x = 0) => ({x, v: 0});
+function stepSpr(s, to, stiff, zeta, dt) {
+  s.v += ((to - s.x) * stiff - s.v * 2.0 * Math.sqrt(stiff) * zeta) * dt;
+  s.x += s.v * dt;
+}
+
+const pip = {
+  mood: PIP_ASLEEP,
+  shown: PIP_ASLEEP,
+  shape: [moodShape(MOODS[PIP_ASLEEP]).map(mkSpr), moodShape(MOODS[PIP_ASLEEP]).map(mkSpr)],
+  open: mkSpr(0), squash: mkSpr(0),
+  look_x: mkSpr(0), look_y: mkSpr(0.24),
+  head_yaw: mkSpr(0), head_pitch: mkSpr(0.12), head_roll: mkSpr(0.1),
+  dizzy: mkSpr(0),
+  tint: [mkSpr(1), mkSpr(1), mkSpr(1)], liq_tint: mkSpr(0),
+  blush: mkSpr(0), tremble: mkSpr(0), nod: mkSpr(0), wag: mkSpr(0),
+  lastTheme: -1,
+  t: 0, blink_t: -1, next_blink: 2.0, wink_t: -1, next_wink: 2.8,
+  next_look: 0.8, tgx: 0, tgy: 0, idle_roll: 0, beat: 0,
+  micro_x: 0, micro_y: 0, next_micro: 0.25,
+  jx: 0, jy: 0,
+  fx_shown: FX_NONE, spawn_t: 0,
+  swear: [{ch:'', col:'#fff', x:0, y:0, vx:0, vy:0, life:0, max:1}, {ch:'', col:'#fff', x:0, y:0, vx:0, vy:0, life:0, max:1}],
+  drops: Array.from({length: 28}, () => ({x:0, y:0, vx:0, vy:0, life:0, max:1})),
+  face: {
+    eye: [{}, {}],
+    color: 0xFFFF, pupil_color: 0x18C3, heart_color: 0xFA2F,
+    rim_color: 0, rim_width: 0, shading: 0, blush: 0,
+    blush_color: 0xFBD4, vein_color: 0xD9A7, water_color: 0xAEDF,
+  },
+  liqTintR: 255, liqTintG: 255, liqTintB: 255, liqTintOpa: 0,
+};
+
+let devMood = 'neutral', devMoodIdx = PIP_NEUTRAL, devAsleep = false, devCharging = false;
+let ptrX = 0, ptrY = 0, lastPointer = -1e9, fixedGaze = null;
+
+function activePaletteIdx() {
+  const i = PIXELS.indexOf(document.documentElement.dataset.pixel);
+  return i >= 0 ? i : 0;
+}
+function targetMoodIdx() {
+  if (!isLinked || devAsleep) return PIP_ASLEEP;
+  return devMoodIdx;
+}
+
+function pipStep(dt, mIdx, m, isDizzy) {
+  const slow = m.slow || 0;
+  const baseSh = moodShape(m);
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < SHAPE_KEYS.length; j++) {
+      let to = baseSh[j];
+      if (i === 1 && j === 4) to += (m.lid_asym || 0);
+      stepSpr(pip.shape[i][j], to, 220 * (1 - 0.6 * slow), 0.5, dt);
+    }
+  }
+  stepSpr(pip.open, 1 - (m.closed || 0), 30, 1.0, dt);
+  stepSpr(pip.squash, 0, 300, 0.25, dt);
+  stepSpr(pip.dizzy, isDizzy ? 1 : 0, 20, 1.0, dt);
+
+  const pidx = activePaletteIdx(), pal = PALETTE_DEFS[pidx];
+  const baseHex = pal.eye_stroke ? pal.eye_stroke : pal.eye_sclera;
+  const tintHex = m.tint ? m.tint : baseHex;
+  if (pidx !== pip.lastTheme) {
+    pip.lastTheme = pidx;
+    for (let c = 0; c < 3; c++) { pip.tint[c].x = ((tintHex >> (16 - 8 * c)) & 255) / 255; pip.tint[c].v = 0; }
+  } else {
+    for (let c = 0; c < 3; c++) stepSpr(pip.tint[c], ((tintHex >> (16 - 8 * c)) & 255) / 255, 20, 1.0, dt);
+  }
+  stepSpr(pip.liq_tint, m.tint ? 1.0 : 0.0, 20, 1.0, dt);
+  stepSpr(pip.blush, m.blush || 0, 20, 1.0, dt);
+  stepSpr(pip.tremble, m.tremble || 0, 20, 1.0, dt);
+  stepSpr(pip.nod, m.nod || 0, 20, 1.0, dt);
+  stepSpr(pip.wag, m.wag || 0, 20, 1.0, dt);
+
+  let tx = pip.tgx + (m.gx || 0), ty = pip.tgy + (m.gy || 0);
+  tx = Math.max(-1.2, Math.min(1.2, tx));
+  ty = Math.max(-1.0, Math.min(1.0, ty));
+  const eye_k = 900 * (1 - 0.85 * slow), head_k = 45 * (1 - 0.7 * slow);
+  const sway = pip.t * 1.4;
+  stepSpr(pip.look_x, tx * 0.9 + pip.micro_x, eye_k, 0.65, dt);
+  stepSpr(pip.look_y, ty * 0.6 + pip.micro_y, eye_k, 0.65, dt);
+  stepSpr(pip.head_yaw, tx * 0.7 + (m.sway_x || 0) * Math.sin(sway), head_k, 0.7, dt);
+  stepSpr(pip.head_pitch, ty * 0.3 + (m.sway_y || 0) * Math.cos(sway), head_k, 0.7, dt);
+  stepSpr(pip.head_roll, (m.head_roll || 0) + pip.idle_roll, 30, 0.6, dt);
+  void mIdx;
+}
+
+function stepParticles(pool, dt) {
+  for (const p of pool) {
+    if (p.life <= 0) continue;
+    p.life -= dt;
+    if (p.life <= 0) continue;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+  }
+}
+
+function updateEffects(fx, dt) {
+  if (fx !== pip.fx_shown) {
+    pip.fx_shown = fx;
+    pip.spawn_t = 0;
+    for (const p of pip.swear) p.life = 0;
+    for (const p of pip.drops) p.life = 0;
+  }
+  pip.spawn_t -= dt;
+  if (fx === FX_SWEAR && pip.spawn_t <= 0) {
+    const slot = pip.swear.find(p => p.life <= 0);
+    if (slot) {
+      const glyphs = '%$#@!&*';
+      const cols = ['#FF4A3A', '#FFD23A', '#FFFFFF', '#FF8A2A'];
+      slot.ch = glyphs[lvRand(0, glyphs.length - 1)];
+      slot.col = cols[lvRand(0, 3)];
+      slot.x = EYE_SCR / 2 + frand(-35, 35); slot.y = 372;
+      slot.vx = frand(-55, 55); slot.vy = frand(-130, -90);
+      slot.life = slot.max = frand(1.2, 1.7);
+      pip.spawn_t = 5.0;
+    }
+  }
+  if (fx === FX_RAIN && pip.spawn_t <= 0) {
+    const slot = pip.drops.find(p => p.life <= 0);
+    if (slot) {
+      const cx = EYE_SCR / 2 - 85 + Math.sin(pip.t * 0.7) * 10;
+      slot.x = cx + frand(30, 140); slot.y = 92;
+      slot.vx = -25; slot.vy = frand(300, 360);
+      slot.life = slot.max = 1.0;
+      pip.spawn_t = frand(0.03, 0.08);
+    }
+  }
+  stepParticles(pip.swear, dt);
+  stepParticles(pip.drops, dt);
+}
+
+function buildEyeGeometry(mIdx, m, shut, wink) {
+  const pidx = activePaletteIdx(), pal = PALETTE_DEFS[pidx];
+  const awake = (m.closed || 0) < 1;
+  const cx = EYE_SCR / 2;
+  const cy = EYE_SCR / 2 + Math.sin(pip.t * (awake ? 1.6 : 0.9)) * (awake ? 2.5 : 5.0);
+  const swing = Math.sin(pip.t * 13);
+  const hy = pip.head_yaw.x + pip.wag.x * swing;
+  const hp = pip.head_pitch.x + pip.nod.x * swing;
+  const hr = pip.head_roll.x;
+  const open = Math.max(pip.open.x, 0) * (1 - shut);
+  const sq = pip.squash.x;
+  const trem = Math.max(pip.tremble.x, 0);
+  const jx = trem > 0.001 ? frand(-1, 1) * trem : 0;
+  const jy = trem > 0.001 ? frand(-1, 1) * trem : 0;
+  pip.jx = jx; pip.jy = jy;
+
+  for (let i = 0; i < 2; i++) {
+    const side = i ? 1.0 : -1.0;
+    const sh = pip.shape[i];
+    const w = sh[0].x, h = sh[1].x, roll = sh[2].x, taper = sh[3].x, lid = sh[4].x, tilt = sh[5].x, smile = sh[6].x;
+    const pw = sh[7].x, ph = sh[8].x, square = sh[9].x, heart = sh[10].x, glint = sh[11].x, spiral = sh[12].x, veins = sh[13].x, wet = sh[14].x;
+    const e = pip.face.eye[i];
+    const phi = hy + side * SPREAD;
+    let k = EYE_SCALE * (1 + 0.35 * (Math.cos(phi) - 0.8525));
+    let x0 = HEAD_R * Math.sin(phi), y0 = 240.0 * Math.sin(hp);
+    if (i) k *= 1 + (m.size_asym || 0);
+
+    e.w = w * SITE_W_K * k * (1 + 0.12 * (1 - open)) * (1 - 0.5 * sq);
+    e.h = h * SITE_H_K * k * open * (1 + sq) * (i ? 1 - 0.95 * wink : 1);
+    e.depth = e.w * 0.5;
+    y0 += (h * SITE_H_K * k - e.h) * 0.25;
+    e.x = cx + x0 * Math.cos(hr) - y0 * Math.sin(hr) + jx + (trem > 0.001 ? frand(-0.3, 0.3) * trem : 0);
+    e.y = cy + x0 * Math.sin(hr) + y0 * Math.cos(hr) + jy + (trem > 0.001 ? frand(-0.3, 0.3) * trem : 0);
+    e.yaw = hy + side * SPREAD * 0.5;
+    e.pitch = hp;
+    const awake_k = Math.min(1.0, Math.max(0.0, (e.h - 36.0) / 70.0));
+    const rest_roll = side * 0.2269 * awake_k;
+    e.roll = hr - side * roll + rest_roll;
+    e.taper = taper;
+    e.lid = lid;
+    e.tilt = -side * tilt;
+    e.smile = smile;
+
+    const dz = pip.dizzy.x * 0.45, dph = pip.t * 9 * side;
+    e.look_x = Math.max(-0.85, Math.min(0.85, pip.look_x.x - e.yaw + Math.cos(dph) * dz - side * (m.cross || 0)));
+    e.look_y = Math.max(-0.7, Math.min(0.7, pip.look_y.x - hp + Math.sin(dph) * dz));
+
+    const base_pw = pal.pupil_rx > 0.01 ? pal.pupil_rx : 0.40;
+    const base_ph = pal.pupil_ry > 0.01 ? pal.pupil_ry : 0.44;
+    const hm = clamp01(heart);
+    const spw = Math.min(0.85, base_pw * (pw / 0.40));
+    const sph = Math.min(0.90, base_ph * (ph / 0.44));
+    e.pw = spw + (pw - spw) * hm;
+    e.ph = sph + (ph - sph) * hm;
+    e.pupil_roll = -side * 0.1047 * awake_k * (1.0 - hm);
+    e.square = square; e.heart = heart; e.glint = glint; e.spiral = spiral; e.veins = veins; e.wet = wet;
+    e.wobble = 0.022 * Math.min(e.w, e.h) * 0.5;
+    e.wob_t = pip.t + i * 7.3;
+  }
+
+  const tr = Math.round(clamp01(pip.tint[0].x) * 255);
+  const tg = Math.round(clamp01(pip.tint[1].x) * 255);
+  const tb = Math.round(clamp01(pip.tint[2].x) * 255);
+  const tinted565 = rgb8To565(tr, tg, tb);
+  if (pal.eye_stroke) {
+    pip.face.color = rgbHexTo565(pal.eye_sclera);
+    pip.face.rim_color = tinted565;
+    pip.face.rim_width = 6.5;
+  } else {
+    pip.face.color = tinted565;
+    pip.face.rim_color = 0;
+    pip.face.rim_width = 0;
+  }
+  pip.face.pupil_color = rgbHexTo565(pal.eye_pupil);
+  pip.face.blush = Math.max(pip.blush.x, 0);
+  pip.liqTintR = tr; pip.liqTintG = tg; pip.liqTintB = tb;
+  pip.liqTintOpa = Math.round(clamp01(pip.liq_tint.x) * (pal.obsidian ? 95.0 : 178.0));
+
+  /* Keep both eyes inside the 466x466 round screen (exact ui/pip.c rim clamp) */
+  for (let pass = 0; pass < 3; pass++) {
+    let mx = 0, my = 0, worst = 0;
+    for (let i = 0; i < 2; i++) {
+      const e = pip.face.eye[i];
+      const dx = e.x - EYE_SCR / 2, dy = e.y - EYE_SCR / 2, d = Math.hypot(dx, dy) + 1e-3;
+      const ea = e.w * 0.5 * (1 + Math.abs(e.taper)), eb = e.h * 0.5;
+      const over = d + Math.hypot(ea * dx, eb * dy) / d - (EYE_SCR / 2 - 8);
+      if (over > worst) { worst = over; mx = -dx / d * over; my = -dy / d * over; }
+    }
+    if (worst <= 0) break;
+    for (let i = 0; i < 2; i++) { pip.face.eye[i].x += mx; pip.face.eye[i].y += my; }
+  }
+  void mIdx;
+}
+
+function pipUpdate(dt, nowMs = performance.now()) {
+  const mood = targetMoodIdx();
+  if (mood !== pip.shown) {
+    pip.shown = mood;
+    pip.next_look = 0;
+    if (isLinked) pip.squash.v -= 3.0;
+  }
+  const m = MOODS[mood];
+  const awake = (m.closed || 0) < 1;
+  const rate = or1(m.look_rate), amp = or1(m.look_amp);
+  const ecoOn = !!$('eco')?.checked;
+
+  if (awake && fixedGaze === null && (pip.next_blink -= dt) <= 0) {
+    pip.blink_t = 0;
+    pip.next_blink = lvRand(0, 100) < 15 ? 0.3 : frand(1.8, 5.0) / or1(m.blink);
+  }
+  let shut = 0;
+  if (pip.blink_t >= 0) {
+    const close = 0.07, open = 0.14;
+    shut = Math.max(pip.blink_t < close ? pip.blink_t / close : 1.0 - (pip.blink_t - close) / open, 0);
+    if ((pip.blink_t += dt) > close + open) pip.blink_t = -1;
+  }
+  let wink = 0;
+  if (awake && fixedGaze === null && (m.wink || 0) > 0 && (pip.next_wink -= dt) <= 0) {
+    pip.wink_t = 0;
+    pip.next_wink = m.wink * frand(0.7, 1.3);
+  }
+  if (pip.wink_t >= 0) {
+    wink = Math.max(0, pip.wink_t < 0.08 ? pip.wink_t / 0.08 : (pip.wink_t < 0.25 ? 1 : 1 - (pip.wink_t - 0.25) / 0.15));
+    if ((pip.wink_t += dt) > 0.4) pip.wink_t = -1;
+  }
+  if (mood === PIP_LOVE && (pip.beat -= dt) <= 0) { pip.squash.v += 2.2; pip.beat = 0.7; }
+
+  if (fixedGaze !== null) {
+    pip.tgx = fixedGaze[0]; pip.tgy = fixedGaze[1];
+    pip.micro_x = 0; pip.micro_y = 0; pip.idle_roll = 0;
+  } else if (!awake || ecoOn) {
+    pip.tgx = 0; pip.tgy = 0; pip.micro_x = 0; pip.micro_y = 0; pip.idle_roll = 0;
+  } else if (nowMs - lastPointer < 2600) {
+    pip.tgx = ptrX; pip.tgy = ptrY;
+  } else if (mood === PIP_DIZZY) {
+    pip.tgx = Math.cos(pip.t * 6) * 0.6;
+    pip.tgy = Math.sin(pip.t * 6) * 0.4;
+    pip.idle_roll = Math.sin(pip.t * 2.5) * 0.25;
+  } else if ((pip.next_look -= dt) <= 0) {
+    const centre = lvRand(0, 100) < 25 || !awake;
+    const nx = centre ? 0 : (lvRand(0, 1) ? 1 : -1) * frand(0.4, 1.1) * amp;
+    const ny = centre ? 0 : frand(-0.6, 0.6) * amp;
+    if (awake && Math.abs(nx - pip.tgx) > 0.9 && lvRand(0, 100) < 50) pip.blink_t = 0;
+    pip.tgx = nx; pip.tgy = ny;
+    pip.idle_roll = lvRand(0, 100) < 25 ? frand(-0.12, 0.12) : 0;
+    pip.next_look = frand(0.5, 2.2) / rate;
+  }
+  if (awake && fixedGaze === null && !ecoOn && rate >= 0.2 && (pip.next_micro -= dt) <= 0) {
+    pip.micro_x = frand(-0.08, 0.08);
+    pip.micro_y = frand(-0.06, 0.06);
+    pip.next_micro = frand(0.15, 0.5);
+  }
+  pip.tgx = Math.max(-1.2, Math.min(1.2, pip.tgx));
+  pip.tgy = Math.max(-1.0, Math.min(1.0, pip.tgy));
+
+  for (let left = dt; left > 0; left -= 1 / 120) {
+    pipStep(Math.min(left, 1 / 120), mood, m, mood === PIP_DIZZY);
+  }
+  pip.t += dt;
+  updateEffects(m.fx || FX_NONE, dt);
+  buildEyeGeometry(mood, m, shut, wink);
+}
+
+function snapPipToMood(moodIdx) {
+  pip.mood = pip.shown = moodIdx;
+  const m = MOODS[moodIdx];
+  const baseSh = moodShape(m);
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < SHAPE_KEYS.length; j++) {
+      let to = baseSh[j];
+      if (i === 1 && j === 4) to += (m.lid_asym || 0);
+      pip.shape[i][j].x = to; pip.shape[i][j].v = 0;
+    }
+  }
+  pip.open.x = 1 - (m.closed || 0); pip.open.v = 0;
+  pip.squash.x = 0; pip.squash.v = 0;
+  pip.dizzy.x = moodIdx === PIP_DIZZY ? 1 : 0; pip.dizzy.v = 0;
+  const tx = Math.max(-1.2, Math.min(1.2, (fixedGaze ? fixedGaze[0] : 0) + (m.gx || 0)));
+  const ty = Math.max(-1.0, Math.min(1.0, (fixedGaze ? fixedGaze[1] : 0) + (m.gy || 0)));
+  pip.tgx = fixedGaze ? fixedGaze[0] : 0; pip.tgy = fixedGaze ? fixedGaze[1] : 0;
+  pip.micro_x = 0; pip.micro_y = 0; pip.idle_roll = 0;
+  pip.look_x.x = tx * 0.9; pip.look_x.v = 0;
+  pip.look_y.x = ty * 0.6; pip.look_y.v = 0;
+  pip.head_yaw.x = tx * 0.7; pip.head_yaw.v = 0;
+  pip.head_pitch.x = ty * 0.3; pip.head_pitch.v = 0;
+  pip.head_roll.x = m.head_roll || 0; pip.head_roll.v = 0;
+  pip.blush.x = m.blush || 0; pip.blush.v = 0;
+  pip.tremble.x = m.tremble || 0; pip.tremble.v = 0;
+  pip.nod.x = m.nod || 0; pip.nod.v = 0;
+  pip.wag.x = m.wag || 0; pip.wag.v = 0;
+  pip.liq_tint.x = m.tint ? 1 : 0; pip.liq_tint.v = 0;
+  pip.lastTheme = -1;
+  const pidx = activePaletteIdx(), pal = PALETTE_DEFS[pidx];
+  const tintHex = m.tint ? m.tint : (pal.eye_stroke ? pal.eye_stroke : pal.eye_sclera);
+  for (let c = 0; c < 3; c++) { pip.tint[c].x = ((tintHex >> (16 - 8 * c)) & 255) / 255; pip.tint[c].v = 0; }
+  pip.lastTheme = pidx;
+  pip.blink_t = -1; pip.wink_t = -1;
+  buildEyeGeometry(moodIdx, m, 0, 0);
+}
+
+function drawSceneFx(ctx, moodIdx) {
+  const m = MOODS[moodIdx];
+  if (pip.fx_shown === FX_RAIN) {
+    const sp = getSharedSprites();
+    const rcx = Math.round(EYE_SCR / 2 - 85 + Math.sin(pip.t * 0.7) * 10);
+    ctx.drawImage(sp.rainCloud, rcx, 26);
+    ctx.save();
+    ctx.fillStyle = '#9CC4FF';
+    for (const p of pip.drops) {
+      if (p.life <= 0) continue;
+      const k = p.life / p.max, age = p.max - p.life;
+      ctx.globalAlpha = Math.min(1, age / 0.12) * Math.min(1, k / 0.4);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(p.x - 1.5, p.y - 8, 3, 16, 2);
+      else ctx.rect(p.x - 1.5, p.y - 8, 3, 16);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  if (pip.fx_shown === FX_SWEAR) {
+    ctx.save();
+    ctx.font = '700 48px "Onest", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const p of pip.swear) {
+      if (p.life <= 0) continue;
+      const k = p.life / p.max, age = p.max - p.life;
+      ctx.globalAlpha = Math.min(1, age / 0.12) * Math.min(1, k / 0.4);
+      ctx.fillStyle = p.col;
+      ctx.fillText(p.ch, p.x, p.y);
+    }
+    ctx.restore();
+  }
+  if (m.text) {
+    const bob = moodIdx === PIP_SWEARING ? 0 : Math.sin(pip.t * 3) * 6;
+    const hex = '#' + (m.text_color || 0xFFFFFF).toString(16).padStart(6, '0');
+    ctx.save();
+    ctx.font = '700 48px "Onest", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = hex;
+    ctx.fillText(m.text, EYE_SCR / 2 + pip.jx * 2, 48 + bob + pip.jy * 2);
+    ctx.restore();
+  }
+}
+
+function renderCurrentEyes() {
+  const cv = $('eyesCanvas');
+  if (!cv) return;
+  const pidx = activePaletteIdx();
+  const moodIdx = targetMoodIdx();
+  const m = MOODS[moodIdx];
+  /* If palette changed while idle/disconnected, refresh face colors immediately */
+  if (pidx !== pip.lastTheme) {
+    const pal = PALETTE_DEFS[pidx];
+    const tintHex = m.tint ? m.tint : (pal.eye_stroke ? pal.eye_stroke : pal.eye_sclera);
+    for (let c = 0; c < 3; c++) { pip.tint[c].x = ((tintHex >> (16 - 8 * c)) & 255) / 255; pip.tint[c].v = 0; }
+    pip.lastTheme = pidx;
+  }
+  let shut = 0, wink = 0;
+  if (pip.blink_t >= 0) {
+    const close = 0.07, open = 0.14;
+    shut = Math.max(pip.blink_t < close ? pip.blink_t / close : 1.0 - (pip.blink_t - close) / open, 0);
+  }
+  if (pip.wink_t >= 0) {
+    wink = Math.max(0, pip.wink_t < 0.08 ? pip.wink_t / 0.08 : (pip.wink_t < 0.25 ? 1 : 1 - (pip.wink_t - 0.25) / 0.15));
+  }
+  buildEyeGeometry(moodIdx, m, shut, wink);
+
+  const ctx = cv.getContext('2d');
+  if (isLiquidEyes()) {
+    renderLiquidEyes(ctx, pip.face, pidx, pip.liqTintR, pip.liqTintG, pip.liqTintB, pip.liqTintOpa);
+  } else {
+    renderPlainEyes(ctx, pip.face);
+  }
+  drawSceneFx(ctx, moodIdx);
 }
 
 /* ---------- Wakeup expanding glowing line -> thin white stage border fade ---------- */
@@ -2062,13 +2969,11 @@ function stepWakeLoop(now) {
 }
 
 function triggerWakeup() {
-  targetX = 0; targetY = 0; curX = 0; curY = 0; velX = 0; velY = 0;
-  lightX = -0.18; lightY = -0.22;
-  blinkPos = 0; blinkVel = 0; blinkTarget = 0;
-  syncMoodTargets();
+  pip.blink_t = -1;
+  pip.next_blink = 2.0;
+  pip.tgx = 0; pip.tgy = 0;
   if (reducedMotion()) {
-    eyeOpen = openTarget;
-    eyeOpenVel = 0;
+    snapPipToMood(targetMoodIdx());
     renderCurrentEyes();
     return;
   }
@@ -2078,151 +2983,16 @@ function triggerWakeup() {
   wakeRaf = requestAnimationFrame(stepWakeLoop);
 }
 
-function setEll(el, cx, rx, ry, rot) {
-  el.setAttribute('cx', cx.toFixed(1));
-  el.setAttribute('rx', Math.max(0, rx).toFixed(1));
-  el.setAttribute('ry', Math.max(0, ry).toFixed(1));
-  el.setAttribute('transform', `rotate(${rot.toFixed(2)} ${cx.toFixed(1)} 200)`);
-}
-
-function setUpperLidPath(el, cx, isRight, drop, tilt) {
-  if (drop <= 0.005 && Math.abs(tilt) <= 0.005) {
-    el.setAttribute('d', 'M 0 0 L 0 0 Z');
-    return;
-  }
-  const yBase = 104 + drop * 150;
-  const dy = tilt * 44 * (isRight ? -1 : 1);
-  const xL = cx - 96, xR = cx + 96;
-  const yL = yBase - dy, yR = yBase + dy;
-  const yMid = (yL + yR) * 0.5 + 10 * drop;
-  el.setAttribute('d', `M ${xL} 60 L ${xR} 60 L ${xR} ${yR.toFixed(1)} Q ${cx} ${yMid.toFixed(1)} ${xL} ${yL.toFixed(1)} Z`);
-}
-
-function applyEyeFrame(x, y, vx, vy, b, lx, ly, openVal) {
-  const o = Math.max(0, Math.min(1.08, openVal));
-  const oClamped = Math.max(0, Math.min(1, o));
-  const bClamped = Math.max(-0.14, Math.min(1, b * oClamped));
-  const bPos = Math.max(0, bClamped);
-  const liquid = isLiquidEyes();
-  const isObs = document.documentElement.dataset.pixel === 'obsidian';
-
-  /* Toggle crisp non-gooey filter when closed or half-closed so horizontal dashes never erode */
-  const useGoo = liquid && oClamped > 0.86 && bPos > 0.04;
-  $('gooBodyGroup').classList.toggle('no-goo', !useGoo);
-  $('obsGooGroup').classList.toggle('no-goo', !useGoo);
-  $('pipSvg').classList.toggle('closed-dash', oClamped < 0.22);
-  $('obsOutL').classList.toggle('liq-dash', liquid && oClamped < 0.28);
-  $('obsOutR').classList.toggle('liq-dash', liquid && oClamped < 0.28);
-
-  /* Smooth morph: short horizontal dashes (rx=42, ry=5.5, rot=0°) <-> tilted oval eyes (rx=70, ry=94, rot=∓13°) */
-  const baseRx = 42 + (70 - 42) * oClamped;
-  const openRy = 94 * mScaleY * (liquid ? Math.max(0.2, 1 - bPos * 0.72) : Math.max(0.08, 1 - bPos * 0.92));
-  const baseRy = 5.5 + (openRy - 5.5) * o;
-  const pinch = liquid ? bPos * 35 * oClamped : 0;
-  const cxL = 112 + pinch, cxR = 288 - pinch;
-  const rotMag = 13 * oClamped * (1 - bPos * 0.55);
-  const rotL = -rotMag, rotR = rotMag;
-
-  if (isObs && liquid) {
-    /* Closed Onyx dash = solid luminous cyan; opening hollows out black liquid dome inside cyan rim */
-    const rimPad = 5.5 * oClamped;
-    setEll($('obsOutL'), cxL, baseRx + rimPad, Math.max(7, baseRy + rimPad), rotL);
-    setEll($('obsOutR'), cxR, baseRx + rimPad, Math.max(7, baseRy + rimPad), rotR);
-    const innerT = Math.max(0, Math.min(1, (oClamped - 0.18) / 0.82));
-    setEll($('scleraL'), cxL, baseRx * innerT, Math.max(0, baseRy * innerT), rotL);
-    setEll($('scleraR'), cxR, baseRx * innerT, Math.max(0, baseRy * innerT), rotR);
-  } else {
-    setEll($('obsOutL'), cxL, baseRx + 5.5 * oClamped, Math.max(7, baseRy + 5.5 * oClamped), rotL);
-    setEll($('obsOutR'), cxR, baseRx + 5.5 * oClamped, Math.max(7, baseRy + 5.5 * oClamped), rotR);
-    setEll($('scleraL'), cxL, baseRx, Math.max(5.5, baseRy), rotL);
-    setEll($('scleraR'), cxR, baseRx, Math.max(5.5, baseRy), rotR);
-  }
-
-  setEll($('clipEllL'), cxL, Math.max(0, baseRx - 1), Math.max(0, baseRy - 1), rotL);
-  setEll($('clipEllR'), cxR, Math.max(0, baseRx - 1), Math.max(0, baseRy - 1), rotR);
-  setEll($('edgeL'), cxL, Math.max(0, baseRx - 1.2), Math.max(0, baseRy - 1.0), rotL);
-  setEll($('edgeR'), cxR, Math.max(0, baseRx - 1.2), Math.max(0, baseRy - 1.0), rotR);
-  setEll($('simpleRimL'), cxL, baseRx, Math.max(5.5, baseRy), rotL);
-  setEll($('simpleRimR'), cxR, baseRx, Math.max(5.5, baseRy), rotR);
-  $('simpleRimL').style.strokeOpacity = isObs && oClamped < 0.22 ? '0' : '1';
-  $('simpleRimR').style.strokeOpacity = isObs && oClamped < 0.22 ? '0' : '1';
-
-  const edgeOp = isObs ? 0 : (liquid ? Math.max(0, (0.38 + 0.17 * oClamped) * (1 - bPos * 2.8)) : 0);
-  $('edgeL').style.opacity = edgeOp.toFixed(2);
-  $('edgeR').style.opacity = edgeOp.toFixed(2);
-
-  if (liquid && oClamped > 0.86) {
-    const speed = Math.min(1, Math.hypot(vx, vy) * 2.2);
-    const sx = 1 + bPos * 0.16 + speed * 0.055;
-    $('liquidScale').setAttribute('transform', `translate(200 200) scale(${sx.toFixed(3)} 1) translate(-200 -200)`);
-    const br = Math.max(0, bPos - 0.14) / 0.86;
-    $('gooBridge').setAttribute('rx', (br * 76).toFixed(1)); $('gooBridge').setAttribute('ry', (br * 56).toFixed(1));
-    $('obsBridge').setAttribute('rx', (br * 82).toFixed(1)); $('obsBridge').setAttribute('ry', (br * 62).toFixed(1));
-  } else {
-    $('liquidScale').setAttribute('transform', '');
-    $('gooBridge').setAttribute('rx', '0'); $('gooBridge').setAttribute('ry', '0');
-    $('obsBridge').setAttribute('rx', '0'); $('obsBridge').setAttribute('ry', '0');
-  }
-
-  /* Interior pupils, highlights & mood eyelids emerge smoothly as eyes open */
-  const openReveal = Math.max(0, Math.min(1, (oClamped - 0.24) / 0.52));
-  const blinkFade = liquid && bPos > 0.72 ? Math.max(0.12, 1 - (bPos - 0.72) * 3.1) : 1;
-  $('eyeDetails').style.opacity = (openReveal * blinkFade).toFixed(3);
-
-  const px = (x * 20 * oClamped).toFixed(2), py = (y * 15 * oClamped).toFixed(2);
-  const ex = (x * 6 * oClamped).toFixed(2), ey = (y * 4.5 * oClamped).toFixed(2);
-  const ps = mPScale.toFixed(3);
-  $('pupilL').setAttribute('transform', `translate(${(Number(px) + pinch).toFixed(2)} ${py}) translate(118 202) scale(${ps}) translate(-118 -202)`);
-  $('pupilR').setAttribute('transform', `translate(${(Number(px) - pinch).toFixed(2)} ${py}) translate(282 202) scale(${ps}) translate(-282 -202)`);
-  $('eyeShift').setAttribute('transform', `translate(${ex} ${ey})`);
-
-  /* Mood eyelids, lower smile cheek & blush (active when open) */
-  setUpperLidPath($('moodLidL'), cxL, false, mLidL * openReveal, mTilt * openReveal);
-  setUpperLidPath($('moodLidR'), cxR, true, mLidR * openReveal, mTilt * openReveal);
-  const sm = mSmile * openReveal;
-  const cheek = $('chargeCheek');
-  if (sm > 0.01) {
-    cheek.style.opacity = Math.min(1, sm * 1.4).toFixed(3);
-    cheek.setAttribute('transform', `translate(0 ${((1 - sm) * 44).toFixed(1)})`);
-  } else {
-    cheek.style.opacity = '0';
-  }
-  const blOp = (mBlush * openReveal).toFixed(3);
-  $('blushL').style.opacity = blOp;
-  $('blushR').style.opacity = blOp;
-
-  if (liquid) {
-    const fx = (46 + lx * 26 * oClamped).toFixed(1) + '%';
-    const fy = (40 + ly * 24 * oClamped).toFixed(1) + '%';
-    $('gradScleraL').setAttribute('fx', fx); $('gradScleraL').setAttribute('fy', fy);
-    $('gradScleraR').setAttribute('fx', fx); $('gradScleraR').setAttribute('fy', fy);
-    $('gradPupilL').setAttribute('fx', fx); $('gradPupilL').setAttribute('fy', fy);
-    $('gradPupilR').setAttribute('fx', fx); $('gradPupilR').setAttribute('fy', fy);
-
-    const spX = (lx * 18 * oClamped).toFixed(2), spY = (ly * 14 * oClamped).toFixed(2);
-    $('specL').setAttribute('transform', `translate(${(Number(spX) + pinch).toFixed(2)} ${spY})`);
-    $('specR').setAttribute('transform', `translate(${(Number(spX) - pinch).toFixed(2)} ${spY})`);
-
-    const caX = (-lx * 14 * oClamped).toFixed(2), caY = (-ly * 10 * oClamped).toFixed(2);
-    $('causticL').setAttribute('transform', `translate(${(Number(caX) + pinch).toFixed(2)} ${caY})`);
-    $('causticR').setAttribute('transform', `translate(${(Number(caX) - pinch).toFixed(2)} ${caY})`);
-  }
-}
-
-function renderCurrentEyes() {
-  applyEyeFrame(curX, curY, velX, velY, blinkPos, lightX, lightY, eyeOpen);
-}
-
 function aimAt(clientX, clientY) {
-  if (!isLinked) return;
+  if (!isLinked || fixedGaze !== null) return;
   const r = $('pipOrb').getBoundingClientRect();
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  const dx = (clientX - cx) / Math.max(window.innerWidth * 0.42, 220);
-  const dy = (clientY - cy) / Math.max(window.innerHeight * 0.42, 220);
+  const dx = (clientX - cx) / Math.max(window.innerWidth * 0.36, 180);
+  const dy = (clientY - cy) / Math.max(window.innerHeight * 0.36, 180);
   const len = Math.hypot(dx, dy);
   const clamp = len > 1 ? 1 / len : 1;
-  targetX = dx * clamp;
-  targetY = dy * clamp;
+  ptrX = dx * clamp;
+  ptrY = dy * clamp;
   lastPointer = performance.now();
 }
 window.addEventListener('pointermove', e => aimAt(e.clientX, e.clientY), {passive: true});
@@ -2231,102 +3001,52 @@ window.addEventListener('touchmove', e => {
 }, {passive: true});
 
 function blinkOnce() {
-  if (!isLinked || openTarget < 0.5 || simpleMode() || previewBlink !== null) return;
-  blinkTarget = 1;
-  setTimeout(() => { blinkTarget = 0; }, 145);
+  if (!isLinked || (MOODS[targetMoodIdx()].closed || 0) >= 1 || reducedMotion()) return;
+  pip.blink_t = 0;
 }
-function scheduleBlink() {
-  setTimeout(() => {
-    if (isLinked && openTarget > 0.5 && !document.hidden && !simpleMode() && previewBlink === null) blinkOnce();
-    scheduleBlink();
-  }, 4200 + Math.random() * 3400);
-}
-scheduleBlink();
 
-function updateEyeMood(moodText, charging, asleep = false) {
-  devMood = moodText && moodText !== '—' ? moodText : 'neutral';
+function updateEyeMood(moodText, charging, asleep = false, moodIndex = undefined) {
   devCharging = !!charging;
   devAsleep = !!asleep;
-  syncMoodTargets();
+  if (moodText && moodText !== '—') devMood = moodText;
+  const idx = moodIndex !== undefined && moodIndex >= 0 && moodIndex < MOODS.length ? moodIndex : findMood(moodText);
+  if (idx >= 0) devMoodIdx = idx;
+  else if (!moodText || moodText === '—') devMoodIdx = PIP_NEUTRAL;
   if (reducedMotion()) {
-    eyeOpen = openTarget; eyeOpenVel = 0;
-    mLidL = toLidL; mLidR = toLidR; mTilt = toTilt;
-    mSmile = toSmile; mBlush = toBlush; mPScale = toPScale; mScaleY = toScaleY;
+    snapPipToMood(targetMoodIdx());
     renderCurrentEyes();
   }
 }
 
-/* Initial render: disconnected -> closed horizontal dashes in active palette & eye style */
+/* Initial render: disconnected -> exact PIP_ASLEEP closed state in active palette & eye style */
 eyesReady = true;
 setEyeStyle(document.documentElement.dataset.eyeStyle || 'liquid', false);
+snapPipToMood(PIP_ASLEEP);
 renderCurrentEyes();
 
-let lastEcoDraw = 0, wakeFreeze = false;
+let lastFrameTime = performance.now(), lastEcoDraw = 0, wakeFreeze = false;
 function animateEyes(now) {
-  const dt = Math.min(64, Math.max(1, now - lastFrameTime));
+  const dtMs = Math.min(100, Math.max(1, now - lastFrameTime));
   lastFrameTime = now;
   const ecoOn = !!$('eco')?.checked;
   if (!wakeFreeze && twinMode === 'eyes') {
     if (reducedMotion()) {
-      eyeOpen = openTarget; eyeOpenVel = 0;
-      mLidL = toLidL; mLidR = toLidR; mTilt = toTilt;
-      mSmile = toSmile; mBlush = toBlush; mPScale = toPScale; mScaleY = toScaleY;
-      renderCurrentEyes();
+      const want = targetMoodIdx();
+      if (pip.shown !== want) { snapPipToMood(want); renderCurrentEyes(); }
       return requestAnimationFrame(animateEyes);
     }
-
-    const needTransition = Math.abs(openTarget - eyeOpen) > 0.002 || Math.abs(eyeOpenVel) > 0.002;
-    if (!isLinked && !needTransition) {
+    const want = targetMoodIdx();
+    const settling = !isLinked && (pip.shown !== PIP_ASLEEP || pip.open.x > 0.002 || Math.abs(pip.open.v) > 0.002 || Math.abs(pip.head_roll.x - 0.1) > 0.003);
+    if (!isLinked && !settling) {
       return requestAnimationFrame(animateEyes);
     }
-
-    /* Auto-fallback to simple mode if device consistently drops below ~20 fps while linked */
-    if (isLinked && !simpleMode() && !ecoOn && !document.hidden && dt > 52 && dt < 400 && previewBlink === null) {
-      if (++slowFrames >= 14) { setSimpleFx(true, false); return requestAnimationFrame(animateEyes); }
-    } else if (dt < 38) slowFrames = 0;
-
-    if (!isLinked) {
-      targetX = 0; targetY = 0;
-    } else if (ecoOn) {
-      if (!needTransition && now - lastEcoDraw < 50) return requestAnimationFrame(animateEyes);
-      lastEcoDraw = now;
-      targetX = 0; targetY = 0;
-    } else if (now - lastPointer > 3600) {
-      targetX = Math.sin(now / 2800) * 0.32 - 0.12;
-      targetY = Math.cos(now / 3600) * 0.18 - 0.16;
+    if (ecoOn && !settling && now - lastEcoDraw < 50) {
+      return requestAnimationFrame(animateEyes);
     }
-
-    /* Smooth spring opening (wake) & closing (disconnect / asleep) */
-    const oStiff = openTarget > eyeOpen ? 0.095 : 0.12;
-    const oDamp = openTarget > eyeOpen ? 0.76 : 0.72;
-    eyeOpenVel = (eyeOpenVel + (openTarget - eyeOpen) * oStiff) * oDamp;
-    eyeOpen += eyeOpenVel;
-    if (!openTarget && eyeOpen < 0.003 && Math.abs(eyeOpenVel) < 0.003) { eyeOpen = 0; eyeOpenVel = 0; }
-
-    /* Smooth mood shape interpolation */
-    const mk = 0.14;
-    mLidL += (toLidL - mLidL) * mk;
-    mLidR += (toLidR - mLidR) * mk;
-    mTilt += (toTilt - mTilt) * mk;
-    mSmile += (toSmile - mSmile) * mk;
-    mBlush += (toBlush - mBlush) * mk;
-    mPScale += (toPScale - mPScale) * mk;
-    mScaleY += (toScaleY - mScaleY) * mk;
-
-    /* 2nd-order elastic springs for gaze, light reflection & liquid blink merge */
-    velX = (velX + (targetX - curX) * 0.16) * 0.72;
-    velY = (velY + (targetY - curY) * 0.16) * 0.72;
-    curX += velX; curY += velY;
-
-    lightX += (targetX - lightX) * 0.12;
-    lightY += (targetY - lightY) * 0.12;
-
-    const bStiff = blinkTarget > 0.5 ? 0.36 : 0.22;
-    const bDamp = blinkTarget > 0.5 ? 0.62 : 0.66;
-    blinkVel = (blinkVel + (blinkTarget - blinkPos) * bStiff) * bDamp;
-    blinkPos += blinkVel;
-
-    applyEyeFrame(curX, curY, velX, velY, previewBlink ?? blinkPos, lightX, lightY, eyeOpen);
+    if (ecoOn) lastEcoDraw = now;
+    pipUpdate(dtMs / 1000, now);
+    renderCurrentEyes();
+    void want;
   }
   requestAnimationFrame(animateEyes);
 }
@@ -2419,10 +3139,9 @@ function onLine(l) {
     alive = Date.now();
     if (wasTimedOut) state(port ? 'По кабелю' : 'По Bluetooth', true);
     const s = JSON.parse(l.slice(3));
-    const shownMood = s.r || s.m;
-    $('mood').textContent = shownMood;
+    $('mood').textContent = s.m;
     $('bat').textContent = s.bat >= 0 ? `${s.bat}%${s.ch ? ' · заряджається' : ''}` : '—';
-    updateEyeMood(shownMood, s.ch, s.sl);
+    updateEyeMood(s.m, s.ch, s.sl, s.mi);
   } else if (l.startsWith('@C ')) { cfg = JSON.parse(l.slice(3)); fill(); }
   else if (l.startsWith('@B ') && batRows) {
     if (l === '@B end') {
@@ -2583,7 +3302,7 @@ function fill() {
   for (const [f] of FEATS) $('f' + f).checked = !!cfg.feat[f];
   $('ver').textContent = cfg.ver || '—';
   $('needlink').textContent = 'Зміни зберігаються в самому брелоку одразу.';
-  renderTwinBadge(); renderTwinQr(); updateTwinHint();
+  renderTwinBadge(); renderTwinQr(); renderCurrentEyes(); updateTwinHint();
 }
 const flashSaved = id => { $(id).classList.add('show'); setTimeout(() => $(id).classList.remove('show'), 1500); };
 $('saveName').onclick = () => { send(`name ${clean($('first').value)}|${clean($('last').value)}|${clean($('org').value)}`); flashSaved('savedName'); };
@@ -2593,7 +3312,7 @@ $('saveLinks').onclick = async () => {
 };
 $('power').onchange = e => send('power ' + e.target.value);
 $('bright').onchange = e => send('bright ' + e.target.value);
-$('eco').onchange = e => { send('eco ' + (e.target.checked ? 1 : 0)); updateTwinHint(); };
+$('eco').onchange = e => { send('eco ' + (e.target.checked ? 1 : 0)); renderCurrentEyes(); updateTwinHint(); };
 $('theme').onchange = e => send('theme ' + e.target.value);
 $('privacy').onchange = e => send('privacy ' + e.target.value);
 $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked ? 1 : 0}`);
@@ -2601,7 +3320,7 @@ $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked
 /* Initial Digital Twin setup + optional preview URL parameters */
 if (params.get('theme') === '1' || params.get('theme') === '3') $('theme').value = params.get('theme');
 if (params.has('bright')) { $('bright').value = params.get('bright'); syncBright($('bright').value); }
-if (params.get('eco') === '1') $('eco').checked = true;
+if (params.get('eco') === '1') { $('eco').checked = true; renderCurrentEyes(); }
 if (params.get('demoqr')) {
   $('ls0').value = 'Соцмережа'; $('lh0').value = '@bibi'; $('lu0').value = 'https://example.com';
   $('ls1').value = 'bibi'; $('lh1').value = 'Панель'; $('lu1').value = 'https://omeha3ds.github.io/BiBi-KeyPet/';
@@ -2683,20 +3402,24 @@ $('flash').onclick = async () => {
 
 /* ---------- Simulator / Test Harness for Digital Twin connection & @S/@C telemetry ---------- */
 window.__bibiSim = {
+  moods: MOODS.map(m => m.name),
   connect(via = 'По кабелю', mood = 'neutral', bat = 92, ch = 0) {
     wakeFreeze = false;
+    const mi = findMood(mood);
+    const mName = mi >= 0 ? MOODS[mi].name : 'neutral';
     state(via, true);
-    onLine(`@C {"ver":"1.2.0","power":30,"bright":80,"eco":0,"eyes":${document.documentElement.dataset.eyeStyle === 'plain' ? 0 : 1},"theme":${4 + Math.max(0, PIXELS.indexOf(document.documentElement.dataset.pixel))},"privacy":1,"feat":[1,1,1,1,1,0,1],"first":"Твоє","last":"Ім'я","org":"bibi","links":[["","",""],["","",""],["","",""],["","",""]]}`);
-    onLine(`@S {"m":${JSON.stringify(mood)},"r":"","sl":${mood === 'asleep' ? 1 : 0},"bat":${bat},"ch":${ch}}`);
+    onLine(`@C {"ver":"1.2.0","power":30,"bright":80,"eco":0,"eyes":${document.documentElement.dataset.eyeStyle === 'plain' ? 0 : 1},"theme":${4 + activePaletteIdx()},"privacy":1,"feat":[1,1,1,1,1,0,1],"first":"Твоє","last":"Ім'я","org":"bibi","links":[["","",""],["","",""],["","",""],["","",""]]}`);
+    onLine(`@S {"m":${JSON.stringify(mName)},"mi":${mi >= 0 ? mi : 0},"r":"","sl":${mName === 'asleep' ? 1 : 0},"bat":${bat},"ch":${ch}}`);
   },
   status(mood = 'neutral', bat = 92, ch = 0, sl = 0, react = '') {
-    onLine(`@S {"m":${JSON.stringify(mood)},"r":${JSON.stringify(react)},"sl":${sl},"bat":${bat},"ch":${ch}}`);
+    const mi = findMood(mood);
+    const mName = mi >= 0 ? MOODS[mi].name : String(mood);
+    onLine(`@S {"m":${JSON.stringify(mName)},"mi":${mi >= 0 ? mi : 0},"r":${JSON.stringify(react)},"sl":${sl},"bat":${bat},"ch":${ch}}`);
   },
   disconnect() {
     wakeFreeze = false;
     state('Не підключено', false);
   },
-  /* Deterministic frame snapshot helper for testing wakeup wave + eye opening at exact elapsed ms */
   freezeWakeAt(ms, openVal) {
     if (wakeRaf) { cancelAnimationFrame(wakeRaf); wakeRaf = 0; }
     wakeStart = -1;
@@ -2706,23 +3429,69 @@ window.__bibiSim = {
     document.body.classList.add('linked');
     $('ver').textContent = '1.2.0';
     $('bat').textContent = '92%';
-    $('mood').textContent = devMood || 'neutral';
-    syncMoodTargets();
-    eyeOpen = openVal; eyeOpenVel = 0;
-    mLidL = toLidL; mLidR = toLidR; mTilt = toTilt;
-    mSmile = toSmile; mBlush = toBlush; mPScale = toPScale; mScaleY = toScaleY;
-    applyEyeFrame(0, 0, 0, 0, 0, -0.18, -0.22, eyeOpen);
+    $('mood').textContent = MOODS[devMoodIdx].name;
+    fixedGaze = [0, 0];
+    snapPipToMood(PIP_ASLEEP);
+    pip.shown = devMoodIdx;
+    const steps = Math.max(0, Math.round(ms / 16));
+    for (let k = 0; k < steps; k++) pipUpdate(0.016, 0);
+    if (openVal !== null && openVal !== undefined && !Number.isNaN(openVal)) {
+      pip.open.x = openVal;
+    }
+    renderCurrentEyes();
     drawWakeAt(ms);
+  },
+  freezeShot({ mood = 'neutral', wait = 1200, blinkMs = null, gaze = null } = {}) {
+    if (wakeRaf) { cancelAnimationFrame(wakeRaf); wakeRaf = 0; drawWakeAt(-1); }
+    wakeFreeze = true;
+    isLinked = true;
+    document.body.classList.add('linked');
+    const mi = findMood(mood);
+    devMoodIdx = mi >= 0 ? mi : 0;
+    devMood = MOODS[devMoodIdx].name;
+    devAsleep = devMoodIdx === PIP_ASLEEP;
+    $('state').textContent = 'По кабелю';
+    $('ver').textContent = '1.2.0';
+    $('bat').textContent = '92%';
+    $('mood').textContent = devMood;
+    fixedGaze = gaze;
+    /* Start from neutral (matching pip_create in ui/pip.c) and advance exact 16 ms frames */
+    snapPipToMood(PIP_NEUTRAL);
+    pip.t = 0;
+    pip.next_blink = 2.0;
+    pip.next_look = 0;
+    const frames = Math.max(45, Math.ceil(wait / 16));
+    for (let k = 0; k <= frames; k++) pipUpdate(0.016, 1e9);
+    if (blinkMs !== null && !Number.isNaN(blinkMs)) {
+      pip.blink_t = blinkMs / 1000;
+    }
+    renderCurrentEyes();
   }
 };
-if (params.has('wakeMs')) {
-  devMood = params.get('mood') || 'neutral';
-  window.__bibiSim.freezeWakeAt(Number(params.get('wakeMs')), Number(params.get('open') ?? 1));
+if (params.get('gaze')) fixedGaze = params.get('gaze').split(',').map(Number);
+if (params.get('shot') === '1') {
+  window.__bibiSim.freezeShot({
+    mood: params.get('mood') ?? 'neutral',
+    wait: Number(params.get('wait') || 1200),
+    blinkMs: params.has('blinkMs') ? Number(params.get('blinkMs')) : null,
+    gaze: fixedGaze,
+  });
+} else if (params.has('wakeMs')) {
+  const mi = findMood(params.get('mood') || 'neutral');
+  devMoodIdx = mi >= 0 ? mi : 0;
+  devMood = MOODS[devMoodIdx].name;
+  window.__bibiSim.freezeWakeAt(Number(params.get('wakeMs')), params.has('open') ? Number(params.get('open')) : null);
 } else if (params.get('simdisc') === '1') {
-  isLinked = true; eyeOpen = 1; openTarget = 1; renderCurrentEyes();
+  isLinked = true; devMoodIdx = PIP_NEUTRAL; snapPipToMood(PIP_NEUTRAL); renderCurrentEyes();
   setTimeout(() => window.__bibiSim.disconnect(), 200);
 } else if (params.get('simlink') === '1') {
   setTimeout(() => window.__bibiSim.connect('По кабелю', params.get('mood') || 'neutral', 94, params.get('ch') === '1' ? 1 : 0), 180);
+}
+if (params.get('long') === '1') {
+  $('mood').textContent = 'belligerent';
+  $('bat').textContent = '98% · заряджається';
+  $('ver').textContent = '1.2.0-rc4 (bibi)';
+  $('state').textContent = 'bibi не відповідає — перепідключи';
 }
 </script>
 </body>
