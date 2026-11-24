@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Піп — панель керування</title>
+<link rel="canonical" href="https://omeha3ds.github.io/BiBi-KeyPet/">
+<title>bibi — панель керування</title>
 <script>
 try{
   const q=new URLSearchParams(location.search);
@@ -20,13 +21,17 @@ try{
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap" rel="stylesheet">
 <style>
-/* Pure-black editorial stage for Pip keychain.
+@font-face{font-family:"Onest";font-style:normal;font-weight:400 500;font-display:swap;src:url("fonts/onest-cyrillic-500.woff") format("woff");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-style:normal;font-weight:400 500;font-display:swap;src:url("fonts/onest-latin-500.woff") format("woff");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+FEFF,U+FFFD}
+@font-face{font-family:"Onest";font-style:normal;font-weight:600 700;font-display:swap;src:url("fonts/onest-cyrillic-700.woff") format("woff");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-style:normal;font-weight:600 700;font-display:swap;src:url("fonts/onest-latin-700.woff") format("woff");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+FEFF,U+FFFD}
+/* Pure-black editorial stage for bibi keychain.
    Flat matte dark surfaces (#0d0d0d-#161616), zero borders, zero gradients, zero UI glow.
-   Pixel colorways smoothly recolor both Pip's expressive eyes and UI accent controls. */
+   Palettes smoothly recolor both expressive eyes and UI accent controls. */
 :root{
-  --font-sans:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-sans:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color-scheme:dark;
 
@@ -46,7 +51,7 @@ try{
   --spring-spatial:cubic-bezier(.22,1.15,.36,1);
   --ease-std:cubic-bezier(.2,0,0,1);
 
-  /* Default: Pixel Peony (iOS liquid pink sclera + vivid teal liquid pupil) */
+  /* Default: Sakura (pink sclera + vivid teal liquid pupil) */
   --accent:#f5b4c8;
   --on-accent:#0a0a0a;
   --accent-soft:#24191d;
@@ -63,7 +68,7 @@ try{
   --eye-stroke-w:0;
 }
 
-/* Pixel Obsidian: liquid pitch-black droplets + luminous sky-blue glass rim & liquid cyan pupils */
+/* Onyx: liquid pitch-black droplets + luminous sky-blue glass rim & liquid cyan pupils */
 :root[data-pixel="obsidian"]{
   --accent:#66d4ff;
   --on-accent:#041016;
@@ -81,7 +86,7 @@ try{
   --eye-stroke-w:5.5;
 }
 
-/* Pixel Bay (blue) */
+/* Lagoon (blue) */
 :root[data-pixel="bay"]{
   --accent:#8ec2ff;
   --on-accent:#071324;
@@ -99,7 +104,7 @@ try{
   --eye-stroke-w:0;
 }
 
-/* Pixel Hazel / Sage (green) */
+/* Mint (green) */
 :root[data-pixel="hazel"]{
   --accent:#9fd9a8;
   --on-accent:#08170b;
@@ -117,7 +122,7 @@ try{
   --eye-stroke-w:0;
 }
 
-/* Pixel Coral (warm orange-coral) */
+/* Peach (warm orange-peach) */
 :root[data-pixel="coral"]{
   --accent:#ff9b7d;
   --on-accent:#1c0904;
@@ -135,7 +140,7 @@ try{
   --eye-stroke-w:0;
 }
 
-/* Pixel Fog / Туман (Google Pixel 11 Pro Fog: pale misty mint + silver-grey chrome) */
+/* Frost / Іній (pale misty mint + silver-grey accent) */
 :root[data-pixel="porcelain"]{
   --accent:#bcc3c6;
   --on-accent:#121716;
@@ -929,13 +934,13 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 <body>
 <div class="stage">
   <header class="topbar">
-    <div class="brand"><h1>Піп</h1><span>панель брелока</span></div>
+    <div class="brand"><h1>bibi</h1><span>панель брелока</span></div>
     <div class="top-right">
       <div class="notice" id="nobrowser" hidden>
         <span class="ico">info</span>
         <span>Для USB потрібен <b>Chrome</b> або <b>Edge</b></span>
       </div>
-      <a class="icon-link" href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener" title="Вихідний код на GitHub" aria-label="Вихідний код на GitHub">
+      <a class="icon-link" href="https://github.com/omeha3ds/BiBi-KeyPet" target="_blank" rel="noopener" title="Вихідний код на GitHub" aria-label="Вихідний код на GitHub">
         <span class="ico">code</span>
       </a>
     </div>
@@ -979,7 +984,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         </div>
 
         <!-- Centerpiece: Digital Twin of the 466x466 round AMOLED keychain display -->
-        <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Цифровий двійник екрана Піпа">
+        <div class="pip-orb" id="pipOrb" role="button" tabindex="0" aria-label="Цифровий двійник екрана bibi">
           <div class="twin-screen" id="twinScreen">
             <!-- Mode 1: Pip Eyes (Liquid / Plain / Simple applies ONLY here) -->
             <div class="twin-layer active" id="twinEyes">
@@ -1158,14 +1163,14 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
       </div>
 
       <div class="palette-bar">
-        <span class="pixel-tag" id="pixelName">Півонія</span>
-        <div class="swatches" id="swatches" role="group" aria-label="Колір очей і теми Pixel">
-          <button type="button" class="swatch" data-set-pixel="peony" data-label="Півонія" style="--sw:#f5b4c8;--sw-p:#00999e" title="Півонія" aria-label="Півонія" aria-pressed="true"></button>
-          <button type="button" class="swatch" data-set-pixel="obsidian" data-label="Обсидіан" style="--sw:#020508;--sw-p:#7ce8ff" title="Обсидіан" aria-label="Обсидіан" aria-pressed="false"></button>
-          <button type="button" class="swatch" data-set-pixel="bay" data-label="Затока" style="--sw:#9bc9ff;--sw-p:#154ec4" title="Затока" aria-label="Затока" aria-pressed="false"></button>
-          <button type="button" class="swatch" data-set-pixel="hazel" data-label="Шавлія" style="--sw:#b9e4bc;--sw-p:#167a42" title="Шавлія" aria-label="Шавлія" aria-pressed="false"></button>
-          <button type="button" class="swatch" data-set-pixel="coral" data-label="Корал" style="--sw:#ffb096;--sw-p:#d93c16" title="Корал" aria-label="Корал" aria-pressed="false"></button>
-          <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Туман" style="--sw:#d2dfd6;--sw-p:#263834" title="Туман" aria-label="Туман" aria-pressed="false"></button>
+        <span class="pixel-tag" id="pixelName">Сакура</span>
+        <div class="swatches" id="swatches" role="group" aria-label="Палітра кольорів">
+          <button type="button" class="swatch" data-set-pixel="peony" data-label="Сакура" style="--sw:#f5b4c8;--sw-p:#00999e" title="Сакура" aria-label="Сакура" aria-pressed="true"></button>
+          <button type="button" class="swatch" data-set-pixel="obsidian" data-label="Онікс" style="--sw:#020508;--sw-p:#7ce8ff" title="Онікс" aria-label="Онікс" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="bay" data-label="Лагуна" style="--sw:#9bc9ff;--sw-p:#154ec4" title="Лагуна" aria-label="Лагуна" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="hazel" data-label="М'ята" style="--sw:#b9e4bc;--sw-p:#167a42" title="М'ята" aria-label="М'ята" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="coral" data-label="Персик" style="--sw:#ffb096;--sw-p:#d93c16" title="Персик" aria-label="Персик" aria-pressed="false"></button>
+          <button type="button" class="swatch" data-set-pixel="porcelain" data-label="Іній" style="--sw:#d2dfd6;--sw-p:#263834" title="Іній" aria-label="Іній" aria-pressed="false"></button>
         </div>
         <div class="seg" id="eyeStyleBar" role="group" aria-label="Стиль очей">
           <button type="button" data-eye-style="plain" aria-pressed="false">Звичайні</button>
@@ -1182,6 +1187,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         <button type="button" class="nav-btn" data-tab="settings"><span class="ico">tune</span><span>Налаштування</span></button>
         <button type="button" class="nav-btn" data-tab="flash"><span class="ico">system_update</span><span>Прошивка</span></button>
         <button type="button" class="nav-btn" data-tab="dev"><span class="ico">terminal</span><span>Розробникам</span></button>
+        <button type="button" class="nav-btn" data-tab="licenses"><span class="ico">gavel</span><span>Ліцензії</span></button>
       </nav>
     </footer>
   </div>
@@ -1189,13 +1195,14 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 
 <!-- Overlay Sheet (Right Side Sheet on desktop, Bottom Sheet on mobile) -->
 <div class="scrim" id="scrim"></div>
-<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Панель керування Піпом">
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Панель керування bibi">
   <div class="sheet-handle" aria-hidden="true"></div>
   <div class="sheet-top">
     <div class="sheet-tabs" id="sheetTabs">
       <button type="button" data-tab="settings">Налаштування</button>
       <button type="button" data-tab="flash">Прошивка</button>
       <button type="button" data-tab="dev">Розробникам</button>
+      <button type="button" data-tab="licenses">Ліцензії</button>
     </div>
     <button type="button" class="sheet-close" id="closeSheet" aria-label="Закрити панель">
       <span class="ico">close</span>
@@ -1206,7 +1213,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
     <section data-tab="settings">
       <div class="sec-head">
         <h2>Налаштування</h2>
-        <p id="needlink">Підключи Піпа кнопкою «Підключити по кабелю» — його поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
+        <p id="needlink">Підключи bibi кнопкою «Підключити по кабелю» — поточні налаштування завантажаться сюди. Зміни зберігаються в самому брелоку.</p>
       </div>
 
       <div class="stack">
@@ -1218,7 +1225,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
                 <div><label for="first">Ім'я (1-й рядок)</label><input type="text" id="first" maxlength="30" placeholder="Твоє"></div>
                 <div><label for="last">Прізвище (2-й рядок)</label><input type="text" id="last" maxlength="30" placeholder="Ім'я"></div>
               </div>
-              <div style="margin-top:10px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="KeyPet"></div>
+              <div style="margin-top:10px"><label for="org">Підпис унизу (можна залишити порожнім)</label><input type="text" id="org" maxlength="22" placeholder="bibi"></div>
               <div class="row" style="margin-top:12px">
                 <button type="button" class="main" id="saveName"><span class="ico">check</span>Зберегти бейдж</button>
                 <span class="saved" id="savedName"><span class="ico">check_circle</span>Збережено</span>
@@ -1232,7 +1239,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 
         <div class="group">
           <div class="group-title"><span class="group-ico"><span class="ico">qr_code_2</span></span><h3>Посилання для Quick QR <span class="tag">до чотирьох</span></h3></div>
-          <p class="muted">На екрані брелока показується чистий QR-код, гортається свайпом. Назва й підпис потрібні лише для зручності тут у списку; Telegram та Instagram отримують значок у центрі коду.</p>
+          <p class="muted">На екрані брелока показується чистий QR-код із нейтральним значком посилання в центрі, гортається свайпом. Назва й підпис потрібні лише для зручності тут у списку.</p>
           <div class="links" id="links"></div>
           <div class="row">
             <button type="button" class="main" id="saveLinks"><span class="ico">check</span>Зберегти посилання</button>
@@ -1243,7 +1250,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         <div class="group">
           <div class="group-title"><span class="group-ico"><span class="ico">battery_saver</span></span><h3>Екран і батарея</h3></div>
           <div class="toggle">
-            <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли Піп прокинеться)</small></div>
+            <div><div class="toggle-title">Режим енергозбереження</div><small>не більше 20 кадрів/с, очі не стежать за нахилом, мікрофон вимкнено, уві сні вимикається Bluetooth (сповіщення прийдуть, коли bibi прокинеться)</small></div>
             <label class="switch"><input type="checkbox" id="eco" aria-label="Режим енергозбереження"><span></span></label>
           </div>
           <div class="seg-row">
@@ -1257,7 +1264,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
             <div><div class="toggle-title">Спрощена графіка сторінки</div><small>вимикає SVG-фільтри для слабких пристроїв (автоматично при зменшенні руху)</small></div>
             <label class="switch"><input type="checkbox" id="simpleFx" aria-label="Спрощена графіка сторінки"><span></span></label>
           </div>
-          <div><label for="power">Засинати, якщо Піпа не чіпати</label>
+          <div><label for="power">Засинати, якщо bibi не чіпати</label>
             <select id="power">
               <option value="15">через 15 секунд (найдовша робота)</option>
               <option value="30">через 30 секунд</option>
@@ -1281,7 +1288,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         </div>
 
         <div class="group">
-          <div class="group-title"><span class="group-ico"><span class="ico">notifications</span></span><h3>Сповіщення з iPhone</h3></div>
+          <div class="group-title"><span class="group-ico"><span class="ico">notifications</span></span><h3>Сповіщення з iOS-телефона</h3></div>
           <div><label for="privacy">Що видно на екрані брелока</label>
             <select id="privacy">
               <option value="1">Приховано: додаток і час, текст — коли відкриєш</option>
@@ -1294,12 +1301,12 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
           </div>
           <div class="tip">
             <span class="ico">smartphone</span>
-            <p class="muted"><b style="color:#fff">Підключити iPhone:</b> Налаштування → Bluetooth → Pip, далі підтвердь код на брелоку верхньою кнопкою.</p>
+            <p class="muted"><b style="color:#fff">Підключити iOS-телефон:</b> Налаштування → Bluetooth → bibi, далі підтвердь код на брелоку верхньою кнопкою.</p>
           </div>
         </div>
 
         <div class="group">
-          <div class="group-title"><span class="group-ico"><span class="ico">sensors</span></span><h3>Що Піп помічає</h3></div>
+          <div class="group-title"><span class="group-ico"><span class="ico">sensors</span></span><h3>Що bibi помічає</h3></div>
           <div class="toggles" id="feats"></div>
         </div>
       </div>
@@ -1307,7 +1314,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
 
     <section data-tab="flash" hidden>
       <div class="sec-head">
-        <h2>Прошити або оновити Піпа</h2>
+        <h2>Прошити або оновити bibi</h2>
         <p id="fwinfo"></p>
       </div>
       <div class="stack">
@@ -1319,7 +1326,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         <div class="group">
           <button type="button" class="main" id="flash"><span class="ico">download</span>Прошити</button>
           <div class="bar"><i id="prog"></i></div>
-          <p id="flashState" class="muted">Улюбленець, налаштування та підключений iPhone при оновленні зберігаються.</p>
+          <p id="flashState" class="muted">Улюбленець, налаштування та підключений iOS-телефон при оновленні зберігаються.</p>
           <details class="muted"><summary><span>Не виходить?</span><span class="ico chev">expand_more</span></summary>
             <p>Брелок не з'являється у списку: спробуй інший кабель або інший USB-порт. На Linux один раз виконай
               <code>sudo usermod -aG dialout $USER</code> і перезайди.</p>
@@ -1332,7 +1339,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
     <section data-tab="dev" hidden>
       <div class="sec-head">
         <h2>Для розробників</h2>
-        <p>Чому в Піпа такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
+        <p>Чому в bibi такий настрій (дерево емоцій), історія за добу, показ будь-якої емоції та налаштування правил.</p>
       </div>
       <div class="stack">
         <div class="group">
@@ -1342,7 +1349,7 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         </div>
         <div class="group">
           <div class="group-title"><span class="group-ico"><span class="ico">developer_mode</span></span><h3>Режим розробника</h3></div>
-          <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх Піпа прямо на екрані брелока.</p>
+          <p class="muted">Каркас очей, погляд, зони перемальовування та показники поверх bibi прямо на екрані брелока.</p>
           <div class="row">
             <button type="button" id="devOn"><span class="ico">visibility</span>Увімкнути</button>
             <button type="button" class="ghost" id="devOff"><span class="ico">visibility_off</span>Вимкнути</button>
@@ -1350,11 +1357,37 @@ code{font-family:var(--font-mono);background:var(--surface-1);padding:2px 6px;bo
         </div>
         <div class="group">
           <div class="group-title"><span class="group-ico"><span class="ico">monitoring</span></span><h3>Лог батареї</h3></div>
-          <p class="muted">Піп щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
+          <p class="muted">bibi щохвилини записує заряд і напругу у свою пам'ять (~17 годин). Заряди до 100%, від'єднай кабель, дочекайся розряду, підключи та завантаж.</p>
           <div class="row">
             <button type="button" id="batGet"><span class="ico">file_download</span>Завантажити CSV</button>
             <button type="button" class="ghost" id="batClear"><span class="ico">delete</span>Очистити</button>
             <span class="saved" id="batState"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section data-tab="licenses" hidden>
+      <div class="sec-head">
+        <h2>Відкриті ліцензії</h2>
+        <p>Прошивка й панель керування bibi побудовані на відкритих компонентах із дотриманням усіх умов їхніх ліцензій.</p>
+      </div>
+      <div class="stack">
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">favorite</span></span><h3>Походження проєкту</h3></div>
+          <p class="muted">Створено на основі відкритого проєкту <a href="https://github.com/NovikovVisuals/Pip-KeyPet" target="_blank" rel="noopener" style="color:var(--accent)">Pip-KeyPet</a> — <b style="color:#fff">Copyright (c) 2026 David Novikov</b> (MIT License).</p>
+          <p class="muted"><b style="color:#fff">Copyright (c) 2026 saint</b> (modifications).</p>
+        </div>
+        <div class="group">
+          <div class="group-title"><span class="group-ico"><span class="ico">inventory_2</span></span><h3>Сторонні компоненти</h3></div>
+          <p class="muted"><b style="color:#fff">MIT:</b> LVGL 9.5.0 (LVGL Kft), Project Nayuki QR Code Generator, Three.js (симулятор).</p>
+          <p class="muted"><b style="color:#fff">Apache-2.0:</b> ESP-IDF 5.5, компоненти Espressif, Waveshare BSP та драйвер тача CST9217, esptool-js, Material Symbols Rounded.</p>
+          <p class="muted"><b style="color:#fff">ESPRESSIF MIT:</b> espressif/esp_new_jpeg (для продуктів Espressif Systems).</p>
+          <p class="muted"><b style="color:#fff">FreeType License (FTL):</b> Portions of this software are copyright &copy; 2026 The FreeType Project (https://freetype.org). All rights reserved.</p>
+          <p class="muted"><b style="color:#fff">libpng-2.0 / Zlib:</b> libpng 1.6, zlib 1.3.</p>
+          <p class="muted"><b style="color:#fff">SIL OFL 1.1:</b> шрифт Onest, Font Awesome 5 Free (13 гліфів, Fonticons, Inc.).</p>
+          <div class="row" style="margin-top:4px">
+            <a class="icon-link" style="width:auto;padding:0 16px;gap:8px;font-size:13px;font-weight:600;text-decoration:none" href="https://github.com/omeha3ds/BiBi-KeyPet/blob/main/THIRD_PARTY_LICENSES.md" target="_blank" rel="noopener"><span class="ico">description</span>Повні тексти ліцензій</a>
           </div>
         </div>
       </div>
@@ -1485,7 +1518,7 @@ function renderTwinBadge() {
   const first = ($('first').value || $('first').placeholder || 'Твоє').trim();
   const last = ($('last').value || $('last').placeholder || 'Ім\'я').trim();
   const org = ($('org').value || '').trim();
-  const sans = '"Google Sans Flex","Roboto Flex",system-ui,-apple-system,sans-serif';
+  const sans = '"Onest",system-ui,-apple-system,sans-serif';
   const f1 = fitFont(first, 50, 9), f2 = fitFont(last, 50, 9);
 
   const miniEyes = `<defs>
@@ -1653,43 +1686,46 @@ function getActiveLinks() {
   return list;
 }
 function qrBrand(url) {
-  if (/t\.me\/|telegram\.me\//i.test(url)) return 'tg';
-  if (/instagram\.com\//i.test(url)) return 'ig';
-  return '';
+  return url && url.trim() ? 'link' : '';
 }
 function drawBrandMark(ctx, brand, cx, cy, size, terminal, ink, paper) {
+  if (!brand) return;
   ctx.save();
   ctx.translate(cx, cy);
   const r = size / 2;
   if (terminal) {
     ctx.fillStyle = paper;
     ctx.fillRect(-r - 4, -r - 4, size + 8, size + 8);
-    ctx.fillStyle = ink; ctx.strokeStyle = ink;
+    ctx.strokeStyle = ink;
   } else {
     ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath(); ctx.roundRect(-r - 4, -r - 4, size + 8, size + 8, 12); ctx.fill();
-    if (brand === 'tg') {
-      ctx.fillStyle = '#229ED9';
-      ctx.beginPath(); ctx.arc(0, 0, r * 0.92, 0, Math.PI * 2); ctx.fill();
-    } else {
-      ctx.fillStyle = '#E1306C';
-      ctx.beginPath(); ctx.roundRect(-r * 0.88, -r * 0.88, size * 0.88, size * 0.88, r * 0.42); ctx.fill();
-    }
-    ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.arc(0, 0, r * 1.02, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1E2428';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.84, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#FFFFFF';
   }
-  if (brand === 'tg') {
-    const k = size * 0.01;
-    ctx.beginPath();
-    ctx.moveTo(26 * k, -20 * k); ctx.lineTo(-26 * k, 1 * k); ctx.lineTo(-8 * k, 8 * k);
-    ctx.lineTo(14 * k, -9 * k); ctx.lineTo(-2 * k, 12 * k); ctx.lineTo(16 * k, 24 * k);
-    ctx.closePath(); ctx.fill();
-  } else if (brand === 'ig') {
-    const b = size * 0.52;
-    ctx.lineWidth = Math.max(2.5, size * 0.075);
-    ctx.beginPath(); ctx.roundRect(-b / 2, -b / 2, b, b, b * 0.28); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, 0, b * 0.23, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(b * 0.28, -b * 0.28, b * 0.06, 0, Math.PI * 2); ctx.fill();
-  }
+  /* Neutral chain-link symbol matching firmware doodle_brand */
+  ctx.rotate(-Math.PI / 4);
+  const lw = Math.max(2.6, size * 0.068);
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'round';
+  const rx = size * 0.12, ry = size * 0.088, off = size * 0.115;
+  ctx.beginPath();
+  ctx.moveTo(-off + rx * 0.45, -ry);
+  ctx.lineTo(-off - rx * 0.35, -ry);
+  ctx.arc(-off - rx * 0.35, 0, ry, -Math.PI / 2, Math.PI / 2, true);
+  ctx.lineTo(-off + rx * 0.45, ry);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(off - rx * 0.45, -ry);
+  ctx.lineTo(off + rx * 0.35, -ry);
+  ctx.arc(off + rx * 0.35, 0, ry, -Math.PI / 2, Math.PI / 2, false);
+  ctx.lineTo(off - rx * 0.45, ry);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-size * 0.085, 0);
+  ctx.lineTo(size * 0.085, 0);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -1701,7 +1737,7 @@ function renderTwinQr() {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
   if (!list.length) {
-    /* Minimalist empty state — no fallback QR to NovikovVisuals */
+    /* Minimalist empty state */
     ctx.fillStyle = '#141414';
     ctx.beginPath(); ctx.roundRect(179, 114, 108, 108, 28); ctx.fill();
     ctx.strokeStyle = '#6E6E6E'; ctx.lineWidth = 4;
@@ -1714,10 +1750,10 @@ function renderTwinQr() {
     ctx.fillRect(239, 174, 8, 8); ctx.fillRect(253, 174, 8, 8);
     ctx.fillRect(239, 188, 8, 8); ctx.fillRect(253, 188, 8, 8);
 
-    ctx.font = '700 22px "Google Sans Flex","Roboto Flex",system-ui,sans-serif';
+    ctx.font = '700 22px "Onest",system-ui,sans-serif';
     ctx.fillStyle = '#FFFFFF';
     ctx.fillText('Посилань ще немає', 233, 272);
-    ctx.font = '500 15px "Google Sans Flex","Roboto Flex",system-ui,sans-serif';
+    ctx.font = '500 15px "Onest",system-ui,sans-serif';
     ctx.fillStyle = '#9E9E9E';
     ctx.fillText('Додай посилання в Налаштуваннях', 233, 304);
     return;
@@ -2035,8 +2071,9 @@ $('sheetTabs').onclick = e => { const b = e.target.closest('button[data-tab]'); 
 $('closeSheet').onclick = closeSheet;
 $('scrim').onclick = closeSheet;
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('sheet-open')) closeSheet(); });
-const urlSheet = new URLSearchParams(location.search).get('sheet');
-if (['settings', 'flash', 'dev'].includes(urlSheet)) openSheet(urlSheet);
+const urlSheet = new URLSearchParams(location.search).get('sheet') || (location.hash === '#licenses' ? 'licenses' : null);
+if (['settings', 'flash', 'dev', 'licenses'].includes(urlSheet)) openSheet(urlSheet);
+window.addEventListener('hashchange', () => { if (location.hash === '#licenses' && openTab !== 'licenses') openSheet('licenses'); });
 
 /* ---------- brightness slider tonal fill + live Digital Twin luminance ---------- */
 function syncBright(v) {
@@ -2051,7 +2088,7 @@ const FEATS = [
   [0, 'Тряска', 'струснеш — закрутиться голова'],
   [1, 'Подмухати', 'дмухнеш у мікрофон — примружиться'],
   [2, 'Сон екраном униз', 'покладеш екраном униз — засне і вимкне екран'],
-  [3, 'Звук', 'Піп пищить, муркоче й бурчить'],
+  [3, 'Звук', 'bibi пищить, муркоче й бурчить'],
   [4, 'Зарядка = їжа', 'на зарядці радіє та наїдається'],
   [6, 'Гучні звуки', 'плескіт поруч його лякає'],
 ];
@@ -2081,7 +2118,7 @@ function onLine(l) {
         const [seq, up, mv, pct, fl, lit] = r.split(' ').map(Number);
         return [seq, up, mv, pct, fl & 1, fl >> 1 & 1, fl >> 2 & 1, lit].join(',');
       }).join('\n') + '\n';
-      const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(new Blob([csv], {type: 'text/csv'})), download: 'pip-battery.csv'});
+      const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(new Blob([csv], {type: 'text/csv'})), download: 'bibi-battery.csv'});
       a.click();
       $('batState').textContent = `${batRows.length} рядків`; $('batState').classList.add('show');
       batRows = null;
@@ -2140,7 +2177,7 @@ $('ble').onclick = async () => {
   const SVC = '50495044-4247-4b45-5950-455400000001', RX = '50495044-4247-4b45-5950-455400000002', TX = '50495044-4247-4b45-5950-455400000003';
   state('Шукаю по Bluetooth...', false, true);
   try {
-    const dev = await navigator.bluetooth.requestDevice({filters: [{name: 'Pip'}], optionalServices: [SVC]});
+    const dev = await navigator.bluetooth.requestDevice({filters: [{name: 'bibi'}, {name: 'Pip'}], optionalServices: [SVC]});
     const svc = await (await dev.gatt.connect()).getPrimaryService(SVC);
     const tx = await svc.getCharacteristic(TX);
     ble = await svc.getCharacteristic(RX);
@@ -2156,13 +2193,13 @@ $('ble').onclick = async () => {
     send('config');
   } catch (e) { state(e.name === 'NotFoundError' ? 'Не підключено' : 'Bluetooth: ' + e.message, false, false); }
 };
-setInterval(() => { if ((port || ble) && Date.now() - alive > 4000 && alive) state('Піп не відповідає — перепідключи', false); }, 1000);
+setInterval(() => { if ((port || ble) && Date.now() - alive > 4000 && alive) state('bibi не відповідає — перепідключи', false); }, 1000);
 
 /* ---------- settings ---------- */
 for (let i = 0; i < 4; i++) $('links').insertAdjacentHTML('beforeend',
-  `<div class="link"><span class="n">${i + 1}</span><input type="text" placeholder="Telegram" maxlength="18" id="ls${i}" aria-label="Назва ${i + 1}">` +
+  `<div class="link"><span class="n">${i + 1}</span><input type="text" placeholder="Соцмережа" maxlength="18" id="ls${i}" aria-label="Назва ${i + 1}">` +
   `<input type="text" placeholder="@нік" maxlength="46" id="lh${i}" aria-label="Підпис ${i + 1}">` +
-  `<input type="url" placeholder="https://t.me/нік" maxlength="198" id="lu${i}" aria-label="Посилання ${i + 1}"></div>`);
+  `<input type="url" placeholder="https://example.com" maxlength="198" id="lu${i}" aria-label="Посилання ${i + 1}"></div>`);
 for (const [f, name, note] of FEATS) $('feats').insertAdjacentHTML('beforeend',
   `<div class="toggle"><div><div class="toggle-title">${name}</div><small>${note}</small></div><label class="switch"><input type="checkbox" id="f${f}" aria-label="${name}"><span></span></label></div>`);
 const clean = s => s.replace(/[|\n\r]/g, ' ').trim();
@@ -2225,9 +2262,9 @@ $('feats').onchange = e => send(`feat ${e.target.id.slice(1)} ${e.target.checked
 if (params.get('theme') === '1' || params.get('theme') === '3') $('theme').value = params.get('theme');
 if (params.has('bright')) { $('bright').value = params.get('bright'); syncBright($('bright').value); }
 if (params.get('eco') === '1') $('eco').checked = true;
-if (params.get('demoqr') === 'tg') {
-  $('ls0').value = 'Telegram'; $('lh0').value = '@pip_keypet'; $('lu0').value = 'https://t.me/pip_keypet';
-  $('ls1').value = 'GitHub'; $('lh1').value = 'Pip-KeyPet'; $('lu1').value = 'https://github.com/NovikovVisuals/Pip-KeyPet';
+if (params.get('demoqr')) {
+  $('ls0').value = 'Соцмережа'; $('lh0').value = '@bibi'; $('lu0').value = 'https://example.com';
+  $('ls1').value = 'bibi'; $('lh1').value = 'Панель'; $('lu1').value = 'https://omeha3ds.github.io/BiBi-KeyPet/';
 }
 if (params.get('demoName')) {
   const [f, l, o] = params.get('demoName').split('|');
@@ -2254,7 +2291,7 @@ $('flash').onclick = async () => {
     $('flashState').textContent = 'Готуюся...';
     const {ESPLoader, Transport} = await import('https://unpkg.com/esptool-js@0.6.1/bundle.js');
     if (!port) await openPort(await navigator.serial.requestPort({filters: [{usbVendorId: 0x303a}]}));
-    $('flashState').textContent = "Зв'язуюся з Піпом...";
+    $('flashState').textContent = "Зв'язуюся з bibi...";
     for (let t = 0; !cfg && t < 60; t++) await new Promise(r => setTimeout(r, 100));
     if (cfg) { await send('update'); await new Promise(r => setTimeout(r, 600)); }
     const p = await closePort();
@@ -2280,7 +2317,7 @@ $('flash').onclick = async () => {
     await transport.setRTS(false);
     await transport.disconnect();
     $('prog').style.width = '100%';
-    $('flashState').textContent = 'Готово! Піп перезавантажується. За кілька секунд натисни «Підключити по кабелю», щоб налаштувати його.';
+    $('flashState').textContent = 'Готово! bibi перезавантажується. За кілька секунд натисни «Підключити по кабелю», щоб налаштувати його.';
     state('Не підключено', false);
   } catch (e) {
     $('flashState').textContent = 'Не вийшло: ' + (e.message || e) + '. Зазирни в «Не виходить?» нижче.';

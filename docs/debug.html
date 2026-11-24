@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Піп — відладка</title>
+<title>bibi — відладка</title>
 <script>
 try{
   const q=new URLSearchParams(location.search);
@@ -11,12 +11,13 @@ try{
   if(['peony','obsidian','bay','hazel','coral','porcelain'].includes(p))document.documentElement.dataset.pixel=p;
 }catch(e){}
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&family=Roboto+Flex:opsz,wght@8..144,400..700&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:"Onest";font-style:normal;font-weight:400 500;font-display:swap;src:url("fonts/onest-cyrillic-500.woff") format("woff");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-style:normal;font-weight:400 500;font-display:swap;src:url("fonts/onest-latin-500.woff") format("woff");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+FEFF,U+FFFD}
+@font-face{font-family:"Onest";font-style:normal;font-weight:600 700;font-display:swap;src:url("fonts/onest-cyrillic-700.woff") format("woff");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-style:normal;font-weight:600 700;font-display:swap;src:url("fonts/onest-latin-700.woff") format("woff");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+FEFF,U+FFFD}
 :root{
-  --font-sans:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-sans:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:dark;
   --bg:#000000;
   --surface-1:#0e0e0e;
@@ -38,7 +39,7 @@ try{
 :root[data-pixel="bay"]{--acc:#8ec2ff;--on-acc:#071324;--acc-soft:#131b26}
 :root[data-pixel="hazel"]{--acc:#9fd9a8;--on-acc:#08170b;--acc-soft:#131e15}
 :root[data-pixel="coral"]{--acc:#ffa78c;--on-acc:#1c0904;--acc-soft:#241612}
-:root[data-pixel="porcelain"]{--acc:#f0dfb2;--on-acc:#1a1407;--acc-soft:#221d14}
+:root[data-pixel="porcelain"]{--acc:#bcc3c6;--on-acc:#121716;--acc-soft:#1b2022}
 *{box-sizing:border-box}
 body{
   margin:0;background:var(--bg);color:var(--text);
@@ -200,7 +201,7 @@ select{width:auto;padding-right:14px}
       <button data-c="sleep">Заснути</button><button data-c="wake">Розбудити</button>
       <button data-c="rare">Рідкісна картка</button><button data-c="game 0">Виграв</button><button data-c="game 1">Програв</button>
       <button data-c="game 2">Рекорд</button>
-      <button data-c="btn 0">Верхня</button><button data-c="btn 1">Нижня</button><button data-c="home">До Піпа</button>
+      <button data-c="btn 0">Верхня</button><button data-c="btn 1">Нижня</button><button data-c="home">До bibi</button>
       <select id="app"><option value="">Відкрити екран…</option></select>
     </div>
   </section>
@@ -288,7 +289,7 @@ $('usb').onclick = async () => {
 };
 $('bt').onclick = async () => {
   try {
-    const dev = await navigator.bluetooth.requestDevice({filters: [{name: 'Pip'}], optionalServices: [SVC]});
+    const dev = await navigator.bluetooth.requestDevice({filters: [{name: 'bibi'}, {name: 'Pip'}], optionalServices: [SVC]});
     const srv = await dev.gatt.connect(), svc = await srv.getPrimaryService(SVC);
     const tx = await svc.getCharacteristic(TX);
     bt = await svc.getCharacteristic(RX);
@@ -420,7 +421,7 @@ function drawHist() {
   const t0 = hist[0].t, t1 = hist[hist.length - 1].t || t0 + 1, X = t => (t - t0) / Math.max(60, t1 - t0) * (W - 20) + 10;
   g.strokeStyle = '#222'; g.lineWidth = 1;
   for (let k = 0; k <= 4; k++) { const y = 10 + k * (H - 20) / 4; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-  g.fillStyle = '#787878'; g.font = '18px "Google Sans Flex",system-ui,sans-serif';
+  g.fillStyle = '#787878'; g.font = '18px "Onest",system-ui,sans-serif';
   for (let t = Math.ceil(t0 / 3600) * 3600; t <= t1; t += 3600) {
     const d = new Date(t * 1000), x = X(t);
     g.fillText(String(d.getHours()).padStart(2, '0'), x + 3, H - 6); g.fillRect(x, 0, 1, H);
