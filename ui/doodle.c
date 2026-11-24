@@ -280,14 +280,7 @@ void doodle_icon(int icon, int style, uint32_t color, uint32_t ink, uint32_t lin
         }
 }
 
-/* ---------- brand marks ---------- */
-
-static uint32_t lerp_rgb(uint32_t a, uint32_t b, float t)
-{
-    uint32_t o = 0xFF000000u;
-    for (int sh = 0; sh < 24; sh += 8) o |= (uint32_t)(((a >> sh) & 255) * (1 - t) + ((b >> sh) & 255) * t) << sh;
-    return o;
-}
+/* ---------- neutral QR link badge ---------- */
 
 /* Neutral chain-link symbol for QR codes (no third-party brand marks) */
 static float link_glyph(float fx, float fy, float k)
